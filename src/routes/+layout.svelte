@@ -1,25 +1,25 @@
 <script lang="ts">
-  import '../app.css';
-  import { page } from '$app/stores';
-  import { auth, isAuthenticated, user } from '$lib/stores/auth';
-  import { goto } from '$app/navigation';
+  import "../app.css";
+  import { page } from "$app/stores";
+  import { auth, isAuthenticated, user } from "$lib/stores/auth";
+  import { goto } from "$app/navigation";
 
   // Navigation items
   const publicNav = [
-    { href: '/', label: 'Home' },
-    { href: '/login', label: 'Login' },
-    { href: '/register', label: 'Register' },
+    { href: "/", label: "Home" },
+    { href: "/login", label: "Login" },
+    { href: "/register", label: "Register" },
   ];
 
   const authNav = [
-    { href: '/dashboard', label: 'Dashboard' },
-    { href: '/payments', label: 'Payments' },
-    { href: '/wallets', label: 'Wallets' },
+    { href: "/dashboard", label: "Dashboard" },
+    { href: "/payments", label: "Payments" },
+    { href: "/wallets", label: "Wallets" },
   ];
 
   async function handleLogout() {
     await auth.logout();
-    goto('/');
+    goto("/");
   }
 </script>
 
@@ -31,9 +31,11 @@
         <!-- Logo -->
         <div class="flex items-center">
           <a href="/" class="flex items-center gap-2">
-            <div class="h-8 w-8 rounded-lg bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center">
-              <span class="text-white font-bold text-sm">PC</span>
-            </div>
+            <img
+              src="/logo.png"
+              alt="Pay-Chain Logo"
+              class="h-8 w-8 object-contain"
+            />
             <span class="text-white font-semibold text-lg">Pay-Chain</span>
           </a>
         </div>
@@ -50,9 +52,11 @@
                 {item.label}
               </a>
             {/each}
-            
+
             <!-- User menu -->
-            <div class="flex items-center gap-3 ml-4 pl-4 border-l border-gray-700">
+            <div
+              class="flex items-center gap-3 ml-4 pl-4 border-l border-gray-700"
+            >
               <span class="text-gray-400 text-sm">{$user?.email}</span>
               <button
                 on:click={handleLogout}
@@ -90,8 +94,11 @@
           © 2026 Pay-Chain. Cross-chain stablecoin payment gateway.
         </p>
         <div class="flex gap-4">
-          <a href="/docs" class="text-gray-400 hover:text-white text-sm">Docs</a>
-          <a href="/support" class="text-gray-400 hover:text-white text-sm">Support</a>
+          <a href="/docs" class="text-gray-400 hover:text-white text-sm">Docs</a
+          >
+          <a href="/support" class="text-gray-400 hover:text-white text-sm"
+            >Support</a
+          >
         </div>
       </div>
     </div>

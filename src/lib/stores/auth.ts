@@ -143,7 +143,8 @@ function createAuthStore() {
     };
 }
 
-export const auth = createAuthStore();
+export const authStore = createAuthStore();
+export const auth = authStore;
 
 // Derived stores
 export const user = derived(auth, $auth => $auth.user);
