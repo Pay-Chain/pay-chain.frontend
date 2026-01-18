@@ -109,11 +109,50 @@ export interface CreatePaymentResponse {
     feeAmount: string;
     bridgeType?: string;
     feeBreakdown: {
-        platformFee: number;
-        bridgeFee: number;
-        totalFee: number;
-        netAmount: number;
+        platformFee: string;
+        bridgeFee: string;
+        gasFee: string;
+        totalFee: string;
+        netAmount: string;
     };
+}
+
+// Payment Request Types (NEW)
+export interface PaymentRequest {
+    id: string;
+    merchantId: string;
+    walletId: string;
+    chainId: string;
+    tokenAddress: string;
+    amount: string;
+    decimals: number;
+    description?: string;
+    status: 'pending' | 'completed' | 'expired' | 'cancelled';
+    expiresAt: string;
+    txHash?: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface CreatePaymentRequestInput {
+    chainId: string;
+    tokenAddress: string;
+    amount: string;
+    decimals: number;
+    description?: string;
+}
+
+export interface PaymentRequestResponse {
+    requestId: string;
+    txData: {
+        hex?: string;   // For EVM chains
+        base64?: string; // For SVM chains
+    };
+    contractAddress: string;
+    amount: string;
+    decimals: number;
+    chainId: string;
+    expiresAt: string;
 }
 
 class ApiClient {
@@ -155,10 +194,17 @@ class ApiClient {
     }
 
     // Auth
-    async register(name: string, email: string, password: string): Promise<ApiResponse<AuthResponse>> {
+    async register(name: string, email: string, password: string, walletAddress?: string, walletChainId?: string, walletSignature?: string): Promise<ApiResponse<AuthResponse>> {
         return this.request('/v1/auth/register', {
             method: 'POST',
-            body: JSON.stringify({ name, email, password }),
+            body: JSON.stringify({
+                name,
+                email,
+                password,
+                walletAddress,
+                walletChainId,
+                walletSignature
+            }),
         });
     }
 
@@ -256,6 +302,28 @@ class ApiClient {
         return this.request('/v1/merchants/status');
     }
 
+    // Payment Requests (NEW)
+    async createPaymentRequest(input: CreatePaymentRequestInput): Promise<ApiResponse<PaymentRequestResponse>> {
+        return this.request('/v1/payment-requests', {
+            method: 'POST',
+            body: JSON.stringify(input),
+        });
+    }
+
+    async getPaymentRequest(id: string): Promise<ApiResponse<PaymentRequestResponse>> {
+        return this.request(`/v1/payment-requests/${id}`);
+    }
+
+    async listPaymentRequests(page = 1, limit = 10): Promise<ApiResponse<{ paymentRequests: PaymentRequest[]; pagination: any }>> {
+        return this.request(`/v1/payment-requests/merchant?page=${page}&limit=${limit}`);
+    }
+
+    async cancelPaymentRequest(id: string): Promise<ApiResponse<{ message: string }>> {
+        return this.request(`/v1/payment-requests/${id}/cancel`, {
+            method: 'POST',
+        });
+    }
+
     // Smart Contracts
     async listContracts(chainId?: string): Promise<ApiResponse<{ contracts: any[] }>> {
         const query = chainId ? `?chainId=${chainId}` : '';
@@ -268,3 +336,4 @@ class ApiClient {
 }
 
 export const api = new ApiClient();
+

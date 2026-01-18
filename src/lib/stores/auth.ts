@@ -63,10 +63,10 @@ function createAuthStore() {
     return {
         subscribe,
 
-        async register(email: string, name: string, password: string) {
+        async register(email: string, name: string, password: string, walletAddress?: string, walletChainId?: string, walletSignature?: string) {
             update(s => ({ ...s, isLoading: true }));
 
-            const result = await api.register(email, name, password);
+            const result = await api.register(name, email, password, walletAddress, walletChainId, walletSignature);
 
             update(s => ({ ...s, isLoading: false }));
 
