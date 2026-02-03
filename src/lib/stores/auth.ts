@@ -125,7 +125,7 @@ function createAuthStore() {
 
             if (result.error) {
                 // Refresh failed, logout
-                this.logout();
+                // For server-side sync, we don't necessarily logout here as the cookie might still be valid or handled by hooks
                 return false;
             }
 
@@ -140,6 +140,32 @@ function createAuthStore() {
 
             return true;
         },
+
+        // Sync with server-side data passed from layout
+        syncServerData(isAuthenticated: boolean, user: User | null, accessToken: string | null = null) {
+            update(s => {
+                if (
+                    s.isAuthenticated === isAuthenticated &&
+                    JSON.stringify(s.user) === JSON.stringify(user) &&
+                    s.accessToken === accessToken
+                ) {
+                    return s;
+                }
+
+                // If we lose authentication on server, clear client local storage
+                if (!isAuthenticated) {
+                    if (browser) localStorage.removeItem('auth');
+                    api.setAccessToken(null);
+                    return { ...s, isAuthenticated, user, accessToken: null, refreshToken: null };
+                }
+
+                if (accessToken) {
+                    api.setAccessToken(accessToken);
+                }
+
+                return { ...s, isAuthenticated, user, accessToken: accessToken || s.accessToken };
+            });
+        }
     };
 }
 

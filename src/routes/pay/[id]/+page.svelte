@@ -2,6 +2,12 @@
     import { onMount } from "svelte";
     import { page } from "$app/stores";
     import { api, type PaymentRequestResponse } from "$lib/services/api";
+    import {
+        sendTransaction,
+        sendSolanaTransaction,
+        getChainId,
+        switchChain,
+    } from "$lib/utils/web3";
 
     let requestId = "";
     let paymentRequest: PaymentRequestResponse | null = null;
@@ -18,7 +24,7 @@
         isLoading = true;
         const result = await api.getPaymentRequest(requestId);
         if (result.error) {
-            error = result.error;
+            error = result.error || "Failed to load payment request";
         } else if (result.data) {
             paymentRequest = result.data;
             startTimer();
@@ -79,6 +85,48 @@
         navigator.clipboard.writeText(data);
         isCopied = true;
         setTimeout(() => (isCopied = false), 2000);
+    }
+
+    let isPaying = false;
+    async function handlePay() {
+        if (!paymentRequest) return;
+        error = "";
+        isPaying = true;
+
+        try {
+            if (paymentRequest.chainId.startsWith("eip155:")) {
+                const chainId = parseInt(paymentRequest.chainId.split(":")[1]);
+                const currentChainId = await getChainId();
+                if (parseInt(currentChainId, 16) !== chainId) {
+                    await switchChain(chainId);
+                }
+
+                if (paymentRequest.txData.hex) {
+                    const txHash = await sendTransaction(
+                        paymentRequest.contractAddress,
+                        paymentRequest.txData.hex,
+                    );
+                    console.log("Payment sent:", txHash);
+                    location.reload(); // Simple way to refresh status
+                }
+            } else if (paymentRequest.chainId.startsWith("solana:")) {
+                if (
+                    paymentRequest.txData.base64 &&
+                    paymentRequest.txData.programId
+                ) {
+                    const signature = await sendSolanaTransaction(
+                        paymentRequest.txData.programId,
+                        paymentRequest.txData.base64,
+                    );
+                    console.log("Solana payment sent:", signature);
+                    location.reload();
+                }
+            }
+        } catch (e: any) {
+            error = e.message || "Failed to process payment";
+        } finally {
+            isPaying = false;
+        }
     }
 
     function copyContractAddress() {
@@ -291,18 +339,17 @@
                                 class="flex-shrink-0 w-6 h-6 bg-primary-500/20 text-primary-400 rounded-full flex items-center justify-center text-xs font-medium"
                                 >2</span
                             >
-                            <span>Copy the transaction data above</span>
-                        </li>
-                        <li class="flex gap-3">
-                            <span
-                                class="flex-shrink-0 w-6 h-6 bg-primary-500/20 text-primary-400 rounded-full flex items-center justify-center text-xs font-medium"
-                                >3</span
-                            >
-                            <span
-                                >Send the transaction using your wallet or dApp</span
-                            >
+                            <span>Click the "Pay Now" button below </span>
                         </li>
                     </ol>
+
+                    <button
+                        on:click={handlePay}
+                        disabled={isPaying || timeLeft <= 0}
+                        class="w-full mt-6 bg-primary-500 hover:bg-primary-600 disabled:bg-gray-700 text-white font-bold py-3 px-4 rounded-xl transition-colors shadow-lg shadow-primary-500/20"
+                    >
+                        {isPaying ? "Processing..." : "Pay Now"}
+                    </button>
                 </div>
 
                 <!-- Footer -->

@@ -9,9 +9,21 @@ export interface EthereumProvider {
     isMetaMask?: boolean;
 }
 
+export interface SolanaProvider {
+    publicKey: { toBase58: () => string } | null;
+    signTransaction: (transaction: any) => Promise<any>;
+    signAllTransactions: (transactions: any[]) => Promise<any[]>;
+    signMessage: (message: Uint8Array) => Promise<{ signature: Uint8Array }>;
+    connect: () => Promise<{ publicKey: any }>;
+    disconnect: () => Promise<void>;
+    on: (event: string, handler: (args: any) => void) => void;
+    isPhantom?: boolean;
+}
+
 declare global {
     interface Window {
         ethereum?: EthereumProvider;
+        solana?: SolanaProvider;
     }
 }
 
@@ -84,6 +96,46 @@ export async function signMessage(message: string, address: string): Promise<str
         method: 'personal_sign',
         params: [message, address],
     });
+}
+
+/**
+ * Send an EVM transaction
+ */
+export async function sendTransaction(to: string, data: string): Promise<string> {
+    if (!window.ethereum) throw new Error('MetaMask not installed');
+    const accounts = await getAccounts();
+    if (accounts.length === 0) throw new Error('Please connect your wallet first');
+
+    return await window.ethereum.request({
+        method: 'eth_sendTransaction',
+        params: [{
+            from: accounts[0],
+            to,
+            data,
+        }],
+    });
+}
+
+/**
+ * Send an SVM transaction (Solana)
+ */
+export async function sendSolanaTransaction(programId: string, base64Data: string): Promise<string> {
+    if (!window.solana) throw new Error('Solana wallet (Phantom) not installed');
+
+    // We'll need @solana/web3.js for full implementation, but for now we'll assume 
+    // the wallet handles the instruction data if we passed it correctly.
+    // In a real implementation: 
+    // 1. Decode base64Data
+    // 2. Create TransactionInstruction
+    // 3. Create Transaction
+    // 4. Sign and send
+
+    // For now, let's just trigger a connect if not connected
+    if (!window.solana.publicKey) {
+        await window.solana.connect();
+    }
+
+    throw new Error('Solana transaction sending requires @solana/web3.js integration (Coming soon)');
 }
 
 /**

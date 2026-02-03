@@ -1,47 +1,45 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { goto } from '$app/navigation';
-  import Button from '$lib/components/atoms/Button.svelte';
-  import Input from '$lib/components/atoms/Input.svelte';
-  import Badge from '$lib/components/atoms/Badge.svelte';
-  import { authStore, isAuthenticated } from '$lib/stores/auth';
-  import { api } from '$lib/services/api';
-  import type { MerchantStatus } from '$lib/services/api';
+  import { onMount } from "svelte";
+  import { goto } from "$app/navigation";
+  import Button from "$lib/components/atoms/Button.svelte";
+  import Input from "$lib/components/atoms/Input.svelte";
+  import Badge from "$lib/components/atoms/Badge.svelte";
+  import { authStore, isAuthenticated } from "$lib/stores/auth";
+  import { api } from "$lib/services/api";
+  import type { MerchantStatus } from "$lib/services/api";
 
   let loading = true;
   let submitting = false;
   let merchantStatus: MerchantStatus | null = null;
-  let error = '';
-  let success = '';
+  let error = "";
+  let success = "";
 
   // Form fields
-  let businessName = '';
-  let businessEmail = '';
-  let merchantType = 'retail';
-  let taxId = '';
-  let businessAddress = '';
+  let businessName = "";
+  let businessEmail = "";
+  let merchantType = "retail";
+  let taxId = "";
+  let businessAddress = "";
 
   const merchantTypes = [
-    { value: 'retail', label: 'Retail' },
-    { value: 'umkm', label: 'UMKM (Small Business)' },
-    { value: 'corporate', label: 'Corporate' },
-    { value: 'partner', label: 'Partner' },
+    { value: "retail", label: "Retail" },
+    { value: "umkm", label: "UMKM (Small Business)" },
+    { value: "corporate", label: "Corporate" },
+    { value: "partner", label: "Partner" },
   ];
 
-  const statusVariant: Record<string, 'default' | 'success' | 'warning' | 'error' | 'info'> = {
-    pending: 'warning',
-    active: 'success',
-    suspended: 'error',
-    rejected: 'error',
-    not_applied: 'default',
+  const statusVariant: Record<
+    string,
+    "default" | "success" | "warning" | "error" | "info"
+  > = {
+    pending: "warning",
+    active: "success",
+    suspended: "error",
+    rejected: "error",
+    not_applied: "default",
   };
 
   onMount(async () => {
-    if (!$isAuthenticated) {
-      goto('/login');
-      return;
-    }
-
     await loadStatus();
   });
 
@@ -54,7 +52,7 @@
         merchantStatus = res.data;
       }
     } catch (err) {
-      console.error('Failed to load merchant status:', err);
+      console.error("Failed to load merchant status:", err);
     } finally {
       loading = false;
     }
@@ -62,17 +60,17 @@
 
   async function handleApply() {
     if (!businessName || !businessEmail) {
-      error = 'Please fill in all required fields';
+      error = "Please fill in all required fields";
       return;
     }
 
     submitting = true;
-    error = '';
-    success = '';
+    error = "";
+    success = "";
 
     try {
       api.setAccessToken($authStore.accessToken);
-      
+
       const res = await api.applyMerchant({
         businessName,
         businessEmail,
@@ -84,11 +82,11 @@
       if (res.error) {
         error = res.error;
       } else if (res.data) {
-        success = res.data.message || 'Application submitted successfully';
+        success = res.data.message || "Application submitted successfully";
         merchantStatus = res.data;
       }
     } catch (err: any) {
-      error = err.message || 'Failed to submit application';
+      error = err.message || "Failed to submit application";
     } finally {
       submitting = false;
     }
@@ -101,7 +99,9 @@
 
 <div class="max-w-2xl mx-auto px-4 py-8">
   <h1 class="text-2xl font-bold text-white mb-2">Become a Merchant</h1>
-  <p class="text-gray-400 mb-8">Accept cross-chain payments for your business</p>
+  <p class="text-gray-400 mb-8">
+    Accept cross-chain payments for your business
+  </p>
 
   {#if loading}
     <div class="space-y-4">
@@ -109,7 +109,7 @@
         <div class="h-12 bg-gray-800 rounded animate-pulse"></div>
       {/each}
     </div>
-  {:else if merchantStatus && merchantStatus.status !== 'not_applied'}
+  {:else if merchantStatus && merchantStatus.status !== "not_applied"}
     <!-- Existing Application Status -->
     <div class="p-6 rounded-xl border border-gray-800 bg-gray-900/50">
       <div class="flex items-start justify-between mb-6">
@@ -137,22 +137,29 @@
         </div>
       {/if}
 
-      {#if merchantStatus.status === 'active'}
-        <div class="mt-6 p-4 rounded-lg bg-green-500/10 border border-green-500/20">
+      {#if merchantStatus.status === "active"}
+        <div
+          class="mt-6 p-4 rounded-lg bg-green-500/10 border border-green-500/20"
+        >
           <p class="text-green-400">
-            🎉 Congratulations! Your merchant account is active. You can now accept payments.
+            🎉 Congratulations! Your merchant account is active. You can now
+            accept payments.
           </p>
         </div>
-      {:else if merchantStatus.status === 'pending'}
-        <div class="mt-6 p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+      {:else if merchantStatus.status === "pending"}
+        <div
+          class="mt-6 p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/20"
+        >
           <p class="text-yellow-400">
-            ⏳ Your application is being reviewed. This usually takes 1-3 business days.
+            ⏳ Your application is being reviewed. This usually takes 1-3
+            business days.
           </p>
         </div>
-      {:else if merchantStatus.status === 'rejected'}
+      {:else if merchantStatus.status === "rejected"}
         <div class="mt-6">
           <p class="text-gray-400 mb-4">
-            Your application was rejected. Please contact support for more information.
+            Your application was rejected. Please contact support for more
+            information.
           </p>
           <Button variant="secondary">Contact Support</Button>
         </div>
@@ -164,14 +171,14 @@
       <h2 class="text-lg font-semibold text-white mb-6">Application Form</h2>
 
       <form on:submit|preventDefault={handleApply} class="space-y-6">
-        <Input 
+        <Input
           label="Business Name"
           bind:value={businessName}
           placeholder="Your business name"
           required
         />
 
-        <Input 
+        <Input
           type="email"
           label="Business Email"
           bind:value={businessEmail}
@@ -193,7 +200,7 @@
           </select>
         </div>
 
-        <Input 
+        <Input
           label="Tax ID (Optional)"
           bind:value={taxId}
           placeholder="Tax identification number"
@@ -212,13 +219,17 @@
         </div>
 
         {#if error}
-          <div class="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+          <div
+            class="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm"
+          >
             {error}
           </div>
         {/if}
 
         {#if success}
-          <div class="p-3 rounded-lg bg-green-500/10 border border-green-500/20 text-green-400 text-sm">
+          <div
+            class="p-3 rounded-lg bg-green-500/10 border border-green-500/20 text-green-400 text-sm"
+          >
             {success}
           </div>
         {/if}
@@ -234,17 +245,23 @@
       <div class="p-4 rounded-lg border border-gray-800 bg-gray-900/50">
         <div class="text-2xl mb-2">💰</div>
         <h3 class="text-white font-medium">Lower Fees</h3>
-        <p class="text-gray-500 text-sm">Get discounted transaction fees as a verified merchant</p>
+        <p class="text-gray-500 text-sm">
+          Get discounted transaction fees as a verified merchant
+        </p>
       </div>
       <div class="p-4 rounded-lg border border-gray-800 bg-gray-900/50">
         <div class="text-2xl mb-2">🌐</div>
         <h3 class="text-white font-medium">Multi-Chain</h3>
-        <p class="text-gray-500 text-sm">Accept payments from any supported blockchain</p>
+        <p class="text-gray-500 text-sm">
+          Accept payments from any supported blockchain
+        </p>
       </div>
       <div class="p-4 rounded-lg border border-gray-800 bg-gray-900/50">
         <div class="text-2xl mb-2">📊</div>
         <h3 class="text-white font-medium">Analytics</h3>
-        <p class="text-gray-500 text-sm">Access detailed transaction analytics and reports</p>
+        <p class="text-gray-500 text-sm">
+          Access detailed transaction analytics and reports
+        </p>
       </div>
     </div>
   {/if}

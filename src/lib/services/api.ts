@@ -66,6 +66,7 @@ export interface Token {
     decimals: number;
     logoUrl?: string;
     isStablecoin: boolean;
+    contractAddress?: string; // Optional for base Token, required for SupportedToken
 }
 
 export interface SupportedToken extends Token {
@@ -115,6 +116,11 @@ export interface CreatePaymentResponse {
         totalFee: string;
         netAmount: string;
     };
+    signatureData?: {
+        to?: string;        // EVM contract address
+        data?: string;      // EVM hex calldata or Solana data
+        programId?: string; // Solana program ID
+    };
 }
 
 // Payment Request Types (NEW)
@@ -145,8 +151,10 @@ export interface CreatePaymentRequestInput {
 export interface PaymentRequestResponse {
     requestId: string;
     txData: {
-        hex?: string;   // For EVM chains
-        base64?: string; // For SVM chains
+        hex?: string;        // For EVM chains (calldata)
+        base64?: string;     // For SVM chains (serialized instruction or data)
+        to?: string;         // For EVM (contract address)
+        programId?: string;  // For SVM (program ID)
     };
     contractAddress: string;
     amount: string;

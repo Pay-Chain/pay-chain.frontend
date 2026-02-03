@@ -1,14 +1,19 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { page } from '$app/stores';
-  import { goto } from '$app/navigation';
-  import Button from '$lib/components/atoms/Button.svelte';
-  import Badge from '$lib/components/atoms/Badge.svelte';
-  import Icon from '$lib/components/atoms/Icon.svelte';
-  import { authStore, isAuthenticated } from '$lib/stores/auth';
-  import { api } from '$lib/services/api';
-  import { formatDateTime, formatCurrency, shortenAddress, copyToClipboard } from '$lib/utils/format';
-  import type { Payment, PaymentEvent } from '$lib/services/api';
+  import { onMount } from "svelte";
+  import { page } from "$app/stores";
+  import { goto } from "$app/navigation";
+  import Button from "$lib/components/atoms/Button.svelte";
+  import Badge from "$lib/components/atoms/Badge.svelte";
+  import Icon from "$lib/components/atoms/Icon.svelte";
+  import { authStore, isAuthenticated } from "$lib/stores/auth";
+  import { api } from "$lib/services/api";
+  import {
+    formatDateTime,
+    formatCurrency,
+    shortenAddress,
+    copyToClipboard,
+  } from "$lib/utils/format";
+  import type { Payment, PaymentEvent } from "$lib/services/api";
 
   let loading = true;
   let payment: Payment | null = null;
@@ -17,20 +22,18 @@
 
   $: paymentId = $page.params.id;
 
-  const statusVariant: Record<string, 'default' | 'success' | 'warning' | 'error' | 'info'> = {
-    pending: 'warning',
-    processing: 'info',
-    completed: 'success',
-    failed: 'error',
-    refunded: 'default',
+  const statusVariant: Record<
+    string,
+    "default" | "success" | "warning" | "error" | "info"
+  > = {
+    pending: "warning",
+    processing: "info",
+    completed: "success",
+    failed: "error",
+    refunded: "default",
   };
 
   onMount(async () => {
-    if (!$isAuthenticated) {
-      goto('/login');
-      return;
-    }
-
     await loadPayment();
   });
 
@@ -38,7 +41,7 @@
     loading = true;
     try {
       api.setAccessToken($authStore.accessToken);
-      
+
       const [paymentRes, eventsRes] = await Promise.all([
         api.getPayment(paymentId),
         api.getPaymentEvents(paymentId),
@@ -51,7 +54,7 @@
         events = eventsRes.data.events || [];
       }
     } catch (error) {
-      console.error('Failed to load payment:', error);
+      console.error("Failed to load payment:", error);
     } finally {
       loading = false;
     }
@@ -60,7 +63,7 @@
   async function handleCopy(text: string) {
     await copyToClipboard(text);
     copied = true;
-    setTimeout(() => copied = false, 2000);
+    setTimeout(() => (copied = false), 2000);
   }
 </script>
 
@@ -70,7 +73,10 @@
 
 <div class="max-w-4xl mx-auto px-4 py-8">
   <!-- Back Button -->
-  <a href="/payments" class="inline-flex items-center gap-2 text-gray-400 hover:text-white mb-6">
+  <a
+    href="/payments"
+    class="inline-flex items-center gap-2 text-gray-400 hover:text-white mb-6"
+  >
     <Icon name="chevron-left" size={20} />
     Back to Payments
   </a>
@@ -101,7 +107,7 @@
     <!-- Payment Info -->
     <div class="p-6 rounded-xl border border-gray-800 bg-gray-900/50 mb-6">
       <h2 class="text-lg font-semibold text-white mb-4">Transfer Details</h2>
-      
+
       <div class="grid md:grid-cols-2 gap-6">
         <!-- From -->
         <div class="space-y-3">
@@ -109,7 +115,8 @@
           <div class="p-4 rounded-lg bg-gray-800">
             <p class="text-white font-medium">{payment.sourceChainId}</p>
             <p class="text-2xl font-bold text-white mt-2">
-              {payment.sourceAmount} <span class="text-gray-400 text-base">USDT</span>
+              {payment.sourceAmount}
+              <span class="text-gray-400 text-base">USDT</span>
             </p>
           </div>
         </div>
@@ -120,7 +127,8 @@
           <div class="p-4 rounded-lg bg-gray-800">
             <p class="text-white font-medium">{payment.destChainId}</p>
             <p class="text-2xl font-bold text-primary-400 mt-2">
-              {payment.destAmount} <span class="text-gray-400 text-base">USDT</span>
+              {payment.destAmount}
+              <span class="text-gray-400 text-base">USDT</span>
             </p>
           </div>
         </div>
@@ -134,16 +142,16 @@
         </div>
         <div>
           <p class="text-gray-500 text-sm">Bridge</p>
-          <p class="text-white">{payment.bridgeType || 'Direct'}</p>
+          <p class="text-white">{payment.bridgeType || "Direct"}</p>
         </div>
         <div>
           <p class="text-gray-500 text-sm">Receiver</p>
-          <button 
+          <button
             on:click={() => handleCopy(payment.receiverAddress)}
             class="flex items-center gap-2 text-white font-mono text-sm hover:text-primary-400"
           >
             {shortenAddress(payment.receiverAddress)}
-            <Icon name={copied ? 'check' : 'copy'} size={14} />
+            <Icon name={copied ? "check" : "copy"} size={14} />
           </button>
         </div>
         <div>
@@ -158,7 +166,10 @@
           {#if payment.sourceTxHash}
             <div class="flex items-center justify-between">
               <p class="text-gray-500 text-sm">Source Transaction</p>
-              <a href="#" class="flex items-center gap-2 text-primary-400 hover:text-primary-300 font-mono text-sm">
+              <a
+                href="#"
+                class="flex items-center gap-2 text-primary-400 hover:text-primary-300 font-mono text-sm"
+              >
                 {shortenAddress(payment.sourceTxHash)}
                 <Icon name="external-link" size={14} />
               </a>
@@ -167,7 +178,10 @@
           {#if payment.destTxHash}
             <div class="flex items-center justify-between">
               <p class="text-gray-500 text-sm">Destination Transaction</p>
-              <a href="#" class="flex items-center gap-2 text-primary-400 hover:text-primary-300 font-mono text-sm">
+              <a
+                href="#"
+                class="flex items-center gap-2 text-primary-400 hover:text-primary-300 font-mono text-sm"
+              >
                 {shortenAddress(payment.destTxHash)}
                 <Icon name="external-link" size={14} />
               </a>
@@ -180,7 +194,7 @@
     <!-- Event Timeline -->
     <div class="p-6 rounded-xl border border-gray-800 bg-gray-900/50">
       <h2 class="text-lg font-semibold text-white mb-4">Event Timeline</h2>
-      
+
       {#if events.length === 0}
         <p class="text-gray-500">No events recorded yet</p>
       {:else}
@@ -196,7 +210,9 @@
               <div class="flex-1 pb-4">
                 <div class="flex items-center justify-between">
                   <p class="text-white font-medium">{event.eventType}</p>
-                  <p class="text-gray-500 text-sm">{formatDateTime(event.createdAt)}</p>
+                  <p class="text-gray-500 text-sm">
+                    {formatDateTime(event.createdAt)}
+                  </p>
                 </div>
                 {#if event.txHash}
                   <p class="text-gray-400 font-mono text-sm mt-1">
@@ -212,7 +228,7 @@
   {:else}
     <div class="text-center py-12">
       <p class="text-gray-500">Payment not found</p>
-      <Button variant="primary" on:click={() => goto('/payments')}>
+      <Button variant="primary" on:click={() => goto("/payments")}>
         Back to Payments
       </Button>
     </div>
