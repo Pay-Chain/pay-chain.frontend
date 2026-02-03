@@ -1,0 +1,52 @@
+'use client';
+
+import { wagmiAdapter, projectId } from '@/core/config/appkit';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { createAppKit } from '@reown/appkit/react';
+import { mainnet, arbitrum, base, optimism, polygon, sepolia } from '@reown/appkit/networks';
+import React, { type ReactNode } from 'react';
+import { cookieToInitialState, WagmiProvider, type Config } from 'wagmi';
+
+// Set up queryClient
+const queryClient = new QueryClient();
+
+// Validation
+if (!projectId) {
+  console.warn('WalletConnect Project ID is not defined');
+}
+
+// Create the modal
+const metadata = {
+  name: 'Pay-Chain',
+  description: 'Cross-chain Stablecoin Payment Gateway',
+  url: 'https://pay-chain.com',
+  icons: ['https://pay-chain.com/logo.png'],
+};
+
+if (projectId) {
+  createAppKit({
+    adapters: [wagmiAdapter],
+    projectId,
+    networks: [mainnet, arbitrum, base, optimism, polygon, sepolia],
+    metadata,
+    features: {
+      analytics: true,
+    },
+  });
+}
+
+export default function Web3Provider({
+  children,
+  cookies,
+}: {
+  children: ReactNode;
+  cookies: string | null;
+}) {
+  const initialState = cookieToInitialState(wagmiAdapter.wagmiConfig as Config, cookies);
+
+  return (
+    <WagmiProvider config={wagmiAdapter.wagmiConfig as Config} initialState={initialState}>
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    </WagmiProvider>
+  );
+}
