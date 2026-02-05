@@ -40,6 +40,8 @@ async function proxyRequest(
       body,
     });
 
+    console.log(`[Proxy] ${request.method} ${targetPath} -> ${response.status} ${response.statusText}`);
+
     // Get response data
     const contentType = response.headers.get('content-type');
     let data: string | ArrayBuffer;
@@ -48,6 +50,11 @@ async function proxyRequest(
       data = await response.text();
     } else {
       data = await response.arrayBuffer();
+      console.log(`[Proxy] Non-JSON response received: ${contentType}`);
+    }
+
+    if (!response.ok) {
+       console.error(`[Proxy] Backend returned error status ${response.status}: ${data instanceof ArrayBuffer ? 'Binary data' : data}`);
     }
 
     // Create response headers

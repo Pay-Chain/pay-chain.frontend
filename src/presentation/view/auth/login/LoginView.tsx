@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Button, Input } from '@/presentation/components/atoms';
 import { useLogin } from './useLogin';
 import { useTranslation } from '@/presentation/hooks';
+import { Sparkles } from 'lucide-react';
 
 export function LoginView() {
   const {
@@ -18,80 +19,94 @@ export function LoginView() {
   const { t } = useTranslation();
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-12 relative overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute top-1/4 left-1/3 w-64 h-64 bg-blue-600/10 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-1/4 right-1/3 w-48 h-48 bg-purple-500/10 rounded-full blur-3xl"></div>
+    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-12 relative overflow-hidden bg-mesh">
+      {/* Animated background orbs */}
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-accent-purple/20 rounded-full blur-3xl animate-pulse" />
+      <div className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-accent-green/15 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+      <div className="absolute top-1/2 right-1/3 w-48 h-48 bg-accent-blue/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
 
-      <div className="relative w-full max-w-md">
+      <div className="relative w-full max-w-md animate-fade-in-up">
+        {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white">{t('auth.welcome')}</h1>
-          <p className="text-white/50 mt-3">{t('auth.sign_in_subtitle')}</p>
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent-purple/10 border border-accent-purple/20 mb-6">
+            <Sparkles className="w-4 h-4 text-accent-purple" />
+            <span className="text-sm text-accent-purple font-medium">Welcome to Pay-Chain</span>
+          </div>
+          <h1 className="heading-1 text-foreground">{t('auth.welcome')}</h1>
+          <p className="body-lg mt-3">{t('auth.sign_in_subtitle')}</p>
         </div>
 
-        <div className="bg-gray-900/50 backdrop-blur-xl border border-white/10 p-8 rounded-2xl shadow-xl">
+        {/* Form Card */}
+        <div className="card-glass p-8 shadow-glass">
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-red-400 text-sm">
+              <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-red-400 text-sm animate-fade-in">
                 {error}
               </div>
             )}
 
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-white/70 mb-2">
-                {t('auth.email')}
-              </label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
+            <Input
+              label={t('auth.email')}
+              id="email"
+              type="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-white/70 mb-2">
-                {t('auth.password')}
-              </label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
+            <Input
+              label={t('auth.password')}
+              id="password"
+              type="password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
 
             <div className="flex items-center justify-between">
-              <label className="flex items-center gap-2 cursor-pointer">
+              <label className="flex items-center gap-2 cursor-pointer group">
                 <input
                   type="checkbox"
-                  className="w-4 h-4 rounded border-white/20 bg-white/5 text-blue-500 focus:ring-blue-500 focus:ring-offset-0"
+                  className="w-4 h-4 rounded border-white/20 bg-surface text-accent-purple focus:ring-accent-purple focus:ring-offset-0 focus:ring-offset-background"
                 />
-                <span className="text-sm text-white/50">{t('auth.remember_me')}</span>
+                <span className="text-sm text-muted group-hover:text-foreground transition-colors">
+                  {t('auth.remember_me')}
+                </span>
               </label>
               <Link
                 href="/forgot-password"
-                className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
+                className="text-sm text-accent-purple hover:text-accent-purple/80 transition-colors"
               >
                 {t('auth.forgot_password')}
               </Link>
             </div>
 
-            <Button type="submit" loading={isPending} className="w-full">
+            <Button 
+              type="submit" 
+              loading={isPending} 
+              variant="primary"
+              className="w-full"
+              glow
+            >
               {t('auth.sign_in')}
             </Button>
           </form>
 
-          <div className="my-6 border-t border-white/10"></div>
+          <div className="my-8 flex items-center gap-4">
+            <div className="flex-1 h-px bg-white/10" />
+            <span className="text-sm text-muted">or</span>
+            <div className="flex-1 h-px bg-white/10" />
+          </div>
 
           <div className="text-center">
-            <p className="text-sm text-white/50">
+            <p className="text-sm text-muted">
               {t('auth.no_account')}{' '}
-              <Link href="/register" className="text-blue-400 hover:text-blue-300 font-medium transition-colors">
+              <Link 
+                href="/register" 
+                className="text-accent-green hover:text-accent-green/80 font-medium transition-colors"
+              >
                 {t('auth.create_one')}
               </Link>
             </p>

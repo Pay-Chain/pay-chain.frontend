@@ -17,6 +17,8 @@ export function useChainsQuery() {
     queryKey: ['chains'],
     queryFn: async () => {
       const response = await chainRepository.listChains();
+      if (response.error) throw new Error(response.error);
+      if (!response.data) throw new Error('Failed to fetch chains');
       return response.data;
     },
   });
@@ -28,6 +30,8 @@ export function useTokensQuery() {
     queryKey: ['tokens'],
     queryFn: async () => {
       const response = await tokenRepository.listTokens();
+      if (response.error) throw new Error(response.error);
+      if (!response.data) throw new Error('Failed to fetch tokens');
       return response.data;
     },
   });
@@ -38,6 +42,8 @@ export function useStablecoinsQuery() {
     queryKey: ['stablecoins'],
     queryFn: async () => {
       const response = await tokenRepository.listStablecoins();
+      if (response.error) throw new Error(response.error);
+      if (!response.data) throw new Error('Failed to fetch stablecoins');
       return response.data;
     },
   });
@@ -49,6 +55,8 @@ export function useWalletsQuery() {
     queryKey: ['wallets'],
     queryFn: async () => {
       const response = await walletRepository.listWallets();
+      if (response.error) throw new Error(response.error);
+      if (!response.data) throw new Error('Failed to fetch wallets');
       return response.data;
     },
   });
@@ -93,6 +101,11 @@ export function useMerchantStatusQuery() {
     queryKey: ['merchantStatus'],
     queryFn: async () => {
       const response = await merchantRepository.getMerchantStatus();
+      if (response.error) throw new Error(response.error);
+      // Merchant status might be null if not applied, so check accordingly or allow null? 
+      // Assuming 404/error handled by response.error. If data is undefined but no error, maybe it's fine?
+      // But standard is undefined = bad for rq.
+      if (response.data === undefined) throw new Error('Failed to fetch merchant status');
       return response.data;
     },
   });
@@ -115,6 +128,8 @@ export function usePaymentRequestsQuery(page = 1, limit = 10) {
     queryKey: ['paymentRequests', page, limit],
     queryFn: async () => {
       const response = await paymentRequestRepository.listPaymentRequests(page, limit);
+      if (response.error) throw new Error(response.error);
+      if (!response.data) throw new Error('Failed to fetch payment requests');
       return response.data;
     },
   });
@@ -125,6 +140,8 @@ export function usePaymentRequestQuery(id: string) {
     queryKey: ['paymentRequest', id],
     queryFn: async () => {
       const response = await paymentRequestRepository.getPaymentRequest(id);
+      if (response.error) throw new Error(response.error);
+      if (!response.data) throw new Error('Failed to fetch payment request');
       return response.data;
     },
     enabled: !!id,
@@ -136,6 +153,8 @@ export function usePublicPaymentRequestQuery(id: string) {
     queryKey: ['publicPaymentRequest', id],
     queryFn: async () => {
       const response = await paymentRequestRepository.getPublicPaymentRequest(id);
+      if (response.error) throw new Error(response.error);
+      if (!response.data) throw new Error('Failed to fetch payment request');
       return response.data;
     },
     enabled: !!id,

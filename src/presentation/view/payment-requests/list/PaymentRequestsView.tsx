@@ -2,7 +2,7 @@
 
 import { Button } from '@/presentation/components/atoms';
 import { usePaymentRequests } from './usePaymentRequests';
-import { ArrowUpRight, Copy, Check } from 'lucide-react';
+import { ArrowUpRight, Copy, Check, Plus, Link as LinkIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from '@/presentation/hooks';
 
@@ -17,69 +17,102 @@ export function PaymentRequestsView() {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
+  const getStatusStyles = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return 'bg-accent-green/10 text-accent-green border-accent-green/20';
+      case 'pending':
+        return 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+      default:
+        return 'bg-muted/10 text-muted border-white/10';
+    }
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-white">{t('payment_requests.title')}</h1>
-        <Button>{t('payment_requests.create')}</Button>
+    <div className="space-y-8 animate-fade-in">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent-blue/10 border border-accent-blue/20 mb-3">
+            <LinkIcon className="w-4 h-4 text-accent-blue" />
+            <span className="text-xs text-accent-blue font-medium uppercase tracking-wider">
+              Payment Links
+            </span>
+          </div>
+          <h1 className="heading-2 text-foreground">{t('payment_requests.title')}</h1>
+          <p className="body mt-1">{t('payment_requests.subtitle')}</p>
+        </div>
+        <Button variant="primary" glow>
+          <Plus className="w-4 h-4" />
+          {t('payment_requests.create')}
+        </Button>
       </div>
 
-      <div className="text-white/50 mb-4">{t('payment_requests.subtitle')}</div>
-
-      <div className="bg-white/5 border border-white/5 rounded-2xl backdrop-blur-sm overflow-hidden">
+      {/* Content */}
+      <div className="card overflow-hidden">
         {isLoading ? (
-          <div className="p-8 text-center text-white/50">{t('payment_requests.loading')}</div>
+          <div className="p-12 flex flex-col items-center justify-center">
+            <div className="spinner-gradient mb-4" />
+            <p className="text-muted">{t('payment_requests.loading')}</p>
+          </div>
         ) : paymentRequests.length === 0 ? (
           <div className="p-12 text-center">
-            <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
-              <ArrowUpRight className="w-8 h-8 text-white/20" />
+            <div className="w-20 h-20 bg-surface border border-white/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <ArrowUpRight className="w-10 h-10 text-muted" />
             </div>
-            <h3 className="text-lg font-medium text-white mb-2">{t('payment_requests.no_requests_title')}</h3>
-            <p className="text-white/50 mb-6 max-w-sm mx-auto">
+            <h3 className="heading-3 text-foreground mb-2">{t('payment_requests.no_requests_title')}</h3>
+            <p className="body max-w-sm mx-auto mb-6">
               {t('payment_requests.no_requests_desc')}
             </p>
-            <Button>{t('payment_requests.create')}</Button>
+            <Button variant="secondary">
+              <Plus className="w-4 h-4" />
+              {t('payment_requests.create')}
+            </Button>
           </div>
         ) : (
-          <div className="divide-y divide-white/5">
-            {paymentRequests.map((request) => (
-              <div key={request.id} className="p-4 hover:bg-white/5 transition-colors flex items-center justify-between group">
+          <div className="divide-y divide-white/10">
+            {paymentRequests.map((request, index) => (
+              <div 
+                key={request.id} 
+                className="p-5 hover:bg-white/5 transition-all duration-300 flex items-center justify-between group"
+                style={{ animationDelay: `${index * 50}ms` }}
+              >
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center">
-                    <ArrowUpRight className="w-5 h-5" />
+                  <div className="w-12 h-12 rounded-xl bg-accent-blue/10 border border-accent-blue/20 text-accent-blue flex items-center justify-center group-hover:shadow-glow-blue transition-all duration-300">
+                    <ArrowUpRight className="w-6 h-6" />
                   </div>
                   <div>
-                    <div className="flex items-center gap-2">
-                       <h4 className="font-medium text-white">
-                         {request.amount} {request.tokenAddress ? t('payment_requests.token') : t('payment_requests.native')}
-                       </h4>
-                       <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                         request.status === 'pending' ? 'bg-amber-500/20 text-amber-300' :
-                         request.status === 'completed' ? 'bg-emerald-500/20 text-emerald-300' :
-                         'bg-gray-500/20 text-gray-400'
-                       }`}>
-                         {request.status}
-                       </span>
+                    <div className="flex items-center gap-2 mb-1">
+                      <h4 className="font-medium text-foreground text-lg">
+                        {request.amount} {request.tokenAddress ? t('payment_requests.token') : t('payment_requests.native')}
+                      </h4>
+                      <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusStyles(request.status)}`}>
+                        {request.status}
+                      </span>
                     </div>
-                    <p className="text-sm text-white/50">
+                    <p className="text-sm text-muted">
                       {request.description || 'No description'} • {new Date(request.createdAt).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                   <Button 
-                    variant="ghost" 
+                    variant="secondary" 
                     size="sm"
                     onClick={() => copyToClipboard(`${window.location.origin}/pay/${request.id}`, request.id)}
-                    className="text-white/50 hover:text-white"
                   >
                     {copiedId === request.id ? (
-                      <Check className="w-4 h-4 text-emerald-400" />
+                      <>
+                        <Check className="w-4 h-4 text-accent-green" />
+                        {t('payment_requests.copied')}
+                      </>
                     ) : (
-                      <Copy className="w-4 h-4" />
+                      <>
+                        <Copy className="w-4 h-4" />
+                        {t('payment_requests.copy_link')}
+                      </>
                     )}
-                    <span className="ml-2">{copiedId === request.id ? t('payment_requests.copied') : t('payment_requests.copy_link')}</span>
                   </Button>
                 </div>
               </div>
@@ -89,26 +122,31 @@ export function PaymentRequestsView() {
 
         {/* Pagination */}
         {pagination && pagination.totalPages > 1 && (
-          <div className="flex justify-center gap-2 p-4 border-t border-white/5">
-             <Button 
-               variant="ghost" 
-               size="sm" 
-               disabled={page <= 1}
-               onClick={() => setPage(p => Math.max(1, p - 1))}
-             >
-               {t('common.previous')}
-             </Button>
-             <span className="flex items-center text-sm text-white/50">
-               {t('common.page_of')} {page} {t('common.of')} {pagination.totalPages}
-             </span>
-             <Button 
-               variant="ghost" 
-               size="sm" 
-               disabled={page >= pagination.totalPages}
-               onClick={() => setPage(p => Math.min(pagination.totalPages, p + 1))}
-             >
-               {t('common.next')}
-             </Button>
+          <div className="flex items-center justify-between p-4 border-t border-white/10">
+            <p className="text-sm text-muted">
+              Page <span className="text-foreground font-medium">{page}</span> of{' '}
+              <span className="text-foreground font-medium">{pagination.totalPages}</span>
+            </p>
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="secondary" 
+                size="sm" 
+                disabled={page <= 1}
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+              >
+                <ChevronLeft className="w-4 h-4" />
+                {t('common.previous')}
+              </Button>
+              <Button 
+                variant="secondary" 
+                size="sm" 
+                disabled={page >= pagination.totalPages}
+                onClick={() => setPage(p => Math.min(pagination.totalPages, p + 1))}
+              >
+                {t('common.next')}
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         )}
       </div>

@@ -23,6 +23,7 @@ export interface Dictionary {
   dashboard: {
     welcome: string;
     subtitle: string;
+    newPayment: string;
     stats: {
       total_payments: string;
       total_volume: string;
@@ -49,6 +50,11 @@ export interface Dictionary {
       };
     };
     recent_transactions: string;
+  };
+  nav: {
+    more: string;
+    merchant: string;
+    paymentRequests: string;
   };
   payments: {
     title: string;

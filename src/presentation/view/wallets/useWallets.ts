@@ -2,19 +2,20 @@
 
 import { useWalletStore } from '@/presentation/hooks';
 import { useWalletsQuery } from '@/data/usecase';
+import { useAppKit } from '@reown/appkit/react';
 import { useEffect } from 'react';
 
 export function useWallets() {
   const { 
     wallets, 
     primaryWallet, 
-    connectWallet, 
     disconnectWallet, 
     setPrimaryWallet,
     syncWithServer
   } = useWalletStore();
 
   const { data: walletsData, isLoading } = useWalletsQuery();
+  const { open } = useAppKit();
 
   useEffect(() => {
     if (walletsData?.wallets) {
@@ -22,18 +23,16 @@ export function useWallets() {
     }
   }, [walletsData, syncWithServer]);
 
-  const handleConnect = async () => {
-    // This would typically trigger the wallet connection modal/logic
-    // For now, we'll rely on the store's connectWallet which might be a stub or partial impl
-    // Real implementation would use wagmi/appkit
-    console.log('Connect wallet clicked');
+  const connectWallet = () => {
+    // Open AppKit modal for wallet connection
+    open({ view: 'Connect' });
   };
 
   return {
     wallets,
     primaryWallet,
     isLoading,
-    connectWallet: handleConnect,
+    connectWallet,
     disconnectWallet,
     setPrimaryWallet,
   };

@@ -23,6 +23,7 @@ export const en: Dictionary = {
   dashboard: {
     welcome: 'Welcome back',
     subtitle: "Here's what's happening with your payments",
+    newPayment: 'New Payment',
     stats: {
       total_payments: 'Total Payments',
       total_volume: 'Total Volume',
@@ -49,6 +50,11 @@ export const en: Dictionary = {
       },
     },
     recent_transactions: 'Recent Transactions',
+  },
+  nav: {
+    more: 'More',
+    merchant: 'Merchant',
+    paymentRequests: 'Payment Requests',
   },
   payments: {
     title: 'Payments',

@@ -10,6 +10,8 @@ export function usePaymentsQuery(page = 1, limit = 10) {
     queryKey: ['payments', page, limit],
     queryFn: async () => {
       const response = await paymentRepository.listPayments(page, limit);
+      if (response.error) throw new Error(response.error);
+      if (!response.data) throw new Error('Failed to fetch payments');
       return response.data;
     },
   });
@@ -20,6 +22,8 @@ export function usePaymentQuery(id: string) {
     queryKey: ['payment', id],
     queryFn: async () => {
       const response = await paymentRepository.getPayment(id);
+      if (response.error) throw new Error(response.error);
+      if (!response.data) throw new Error('Failed to fetch payment');
       return response.data;
     },
     enabled: !!id,
@@ -31,6 +35,8 @@ export function usePaymentEventsQuery(id: string) {
     queryKey: ['paymentEvents', id],
     queryFn: async () => {
       const response = await paymentRepository.getPaymentEvents(id);
+      if (response.error) throw new Error(response.error);
+      if (!response.data) throw new Error('Failed to fetch payment events');
       return response.data;
     },
     enabled: !!id,

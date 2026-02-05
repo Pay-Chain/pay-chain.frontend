@@ -44,10 +44,21 @@ class HttpClient {
         body: options.body ? JSON.stringify(options.body) : undefined,
       });
 
-      const data = await response.json();
+      const responseText = await response.text();
+      let data: any;
+
+      try {
+        data = responseText ? JSON.parse(responseText) : {};
+      } catch (parseError) {
+        if (!response.ok) {
+          return { error: responseText || `Request failed with status ${response.status}` };
+        }
+        console.error('Failed to parse successful response as JSON:', parseError);
+        return { error: 'Malformed response from server' };
+      }
 
       if (!response.ok) {
-        return { error: data.error || data.message || 'Request failed' };
+        return { error: data.error || data.message || `Request failed with status ${response.status}` };
       }
 
       return { data };

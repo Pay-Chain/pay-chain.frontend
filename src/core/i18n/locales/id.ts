@@ -23,6 +23,7 @@ export const id: Dictionary = {
   dashboard: {
     welcome: 'Selamat datang kembali',
     subtitle: 'Berikut adalah status pembayaran Anda',
+    newPayment: 'Baru Pembayaran',
     stats: {
       total_payments: 'Total Pembayaran',
       total_volume: 'Total Volume',
@@ -49,6 +50,11 @@ export const id: Dictionary = {
       },
     },
     recent_transactions: 'Transaksi Terakhir',
+  },
+  nav: {
+    more: 'Lainnya',
+    merchant: 'Merchant',
+    paymentRequests: 'Permintaan Pembayaran',
   },
   payments: {
     title: 'Pembayaran',
