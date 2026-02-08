@@ -146,4 +146,12 @@ export const id: Dictionary = {
     retry: 'Coba lagi',
     go_home: 'Ke Beranda',
   },
+  admin: {
+    dashboard: 'Panel Admin',
+    users: 'Kelola Pengguna',
+    merchants: 'Kelola Merchant',
+    chains: 'Konfigurasi Chain',
+    contracts: 'Smart Contract',
+    rpcs: 'Node RPC',
+  },
 };

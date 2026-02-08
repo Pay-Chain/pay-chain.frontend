@@ -146,4 +146,12 @@ export interface Dictionary {
     retry: string;
     go_home: string;
   };
+  admin: {
+    dashboard: string;
+    users: string;
+    merchants: string;
+    chains: string;
+    contracts: string;
+    rpcs: string;
+  };
 }

@@ -13,5 +13,6 @@ export interface IAuthRepository {
   refreshToken(input: RefreshTokenRequest): Promise<ApiResponse<RefreshTokenResponse>>;
   getCurrentUser(): User | null;
   getAccessToken(): string | null;
+  setSession(token: string, user?: User): void;
   logout(): void;
 }

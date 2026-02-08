@@ -1,14 +1,10 @@
 'use client';
 
 import { wagmiAdapter, projectId } from '@/core/config/appkit';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createAppKit } from '@reown/appkit/react';
 import { mainnet, arbitrum, base, optimism, polygon, sepolia } from '@reown/appkit/networks';
 import React, { type ReactNode } from 'react';
 import { cookieToInitialState, WagmiProvider, type Config } from 'wagmi';
-
-// Set up queryClient
-const queryClient = new QueryClient();
 
 // Validation
 if (!projectId) {
@@ -46,7 +42,7 @@ export default function Web3Provider({
 
   return (
     <WagmiProvider config={wagmiAdapter.wagmiConfig as Config} initialState={initialState}>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      {children}
     </WagmiProvider>
   );
 }

@@ -34,3 +34,4 @@ export {
   usePublicPaymentRequestQuery,
   useCreatePaymentRequestMutation,
 } from './common_usecase';
+export * from './useAdmin';

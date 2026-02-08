@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { useTranslation } from '@/presentation/hooks';
 
 export function NewPaymentView() {
-  const { formData, loading, error, handleChange, handleSubmit, primaryWallet } = useNewPayment();
+  const { form, loading, error, handleSubmit, primaryWallet } = useNewPayment();
   const { t } = useTranslation();
 
   return (
@@ -44,47 +44,39 @@ export function NewPaymentView() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
                 label={t('payments.source_chain')}
-                name="sourceChainId"
                 placeholder="e.g. 1 (Ethereum)"
-                value={formData.sourceChainId}
-                onChange={handleChange}
-                required
+                {...form.register('sourceChainId')}
+                error={form.formState.errors.sourceChainId?.message}
               />
               <Input
                 label={t('payments.dest_chain')}
-                name="destChainId"
                 placeholder="e.g. 137 (Polygon)"
-                value={formData.destChainId}
-                onChange={handleChange}
-                required
+                {...form.register('destChainId')}
+                error={form.formState.errors.destChainId?.message}
               />
             </div>
 
             <Input
               label={t('payments.receiver')}
-              name="receiverAddress"
               placeholder="0x..."
-              value={formData.receiverAddress}
-              onChange={handleChange}
-              required
+              {...form.register('receiverAddress')}
+              error={form.formState.errors.receiverAddress?.message}
             />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
                 label={t('payments.amount')}
-                name="amount"
                 type="number"
                 placeholder="0.0"
-                value={formData.amount}
-                onChange={handleChange}
-                required
+                step="any"
+                {...form.register('amount')}
+                error={form.formState.errors.amount?.message}
               />
               <Input
                 label={t('payments.token_address')}
-                name="sourceTokenAddress"
                 placeholder="0x... (Leave empty for native)"
-                value={formData.sourceTokenAddress}
-                onChange={handleChange}
+                {...form.register('sourceTokenAddress')}
+                error={form.formState.errors.sourceTokenAddress?.message}
               />
             </div>
           </div>
@@ -92,7 +84,7 @@ export function NewPaymentView() {
           {/* Notices */}
           {!primaryWallet && (
             <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 animate-fade-in">
-              <div className="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center shrink-0">
                 <Wallet className="w-5 h-5 text-amber-400" />
               </div>
               <div>
@@ -104,7 +96,7 @@ export function NewPaymentView() {
 
           {error && (
             <div className="flex items-start gap-3 p-4 rounded-xl bg-red-500/10 border border-red-500/30 animate-fade-in">
-              <div className="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center shrink-0">
                 <AlertTriangle className="w-5 h-5 text-red-400" />
               </div>
               <div>
@@ -112,6 +104,18 @@ export function NewPaymentView() {
                 <p className="text-red-400/80 text-sm mt-1">{error}</p>
               </div>
             </div>
+          )}
+
+          {form.formState.errors.root && (
+             <div className="flex items-start gap-3 p-4 rounded-xl bg-red-500/10 border border-red-500/30 animate-fade-in">
+               <div className="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center shrink-0">
+                 <AlertTriangle className="w-5 h-5 text-red-400" />
+               </div>
+               <div>
+                 <p className="text-red-400 font-medium">Form Error</p>
+                 <p className="text-red-400/80 text-sm mt-1">{form.formState.errors.root.message}</p>
+               </div>
+             </div>
           )}
 
           {/* Actions */}
@@ -123,7 +127,7 @@ export function NewPaymentView() {
               type="submit" 
               variant="primary"
               loading={loading}
-              disabled={!primaryWallet}
+              disabled={!primaryWallet || loading}
               glow
             >
               <Send className="w-4 h-4" />

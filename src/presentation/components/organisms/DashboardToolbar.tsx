@@ -21,7 +21,7 @@ export default function DashboardToolbar({ onMenuClick }: DashboardToolbarProps)
   };
 
   return (
-    <header className="fixed top-0 right-0 left-0 lg:left-[272px] z-30 py-3 px-3 sm:px-4 lg:px-6 mt-2 lg:mt-5">
+    <header className="fixed top-0 right-0 left-0 lg:left-[272px] z-30 py-5 px-5 sm:px-4 lg:px-6 mt-2 lg:mt-5">
       <div className="w-full max-w-7xl mx-auto">
       <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl px-4 py-2.5">
         <div className="flex items-center justify-between gap-4">

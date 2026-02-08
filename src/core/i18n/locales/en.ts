@@ -146,4 +146,12 @@ export const en: Dictionary = {
     retry: 'Try again',
     go_home: 'Go Home',
   },
+  admin: {
+    dashboard: 'Admin Dashboard',
+    users: 'User Management',
+    merchants: 'Merchant Management',
+    chains: 'Chain Configuration',
+    contracts: 'Smart Contracts',
+    rpcs: 'RPC Nodes',
+  },
 };

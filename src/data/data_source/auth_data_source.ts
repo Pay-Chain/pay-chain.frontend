@@ -32,6 +32,10 @@ class AuthDataSource {
   async refreshToken(request: RefreshTokenRequest) {
     return httpClient.post<RefreshTokenResponse>(API_ENDPOINTS.AUTH_REFRESH, request);
   }
+
+  async getMe() {
+    return httpClient.get<AuthResponse>(API_ENDPOINTS.AUTH_ME);
+  }
 }
 
 export const authDataSource = new AuthDataSource();

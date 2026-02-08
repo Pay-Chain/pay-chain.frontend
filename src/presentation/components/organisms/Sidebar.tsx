@@ -14,6 +14,11 @@ import {
   LogOut,
   Globe,
   Plus,
+  Shield,
+  Users,
+  Link as LinkIcon,
+  Code2,
+  Server,
 } from 'lucide-react';
 
 // Navigation items definition
@@ -29,9 +34,18 @@ export const secondaryNavItems = [
   { href: '/settings', labelKey: 'common.settings', icon: Settings },
 ];
 
+export const adminNavItems = [
+  { href: '/admin', labelKey: 'admin.dashboard', icon: Shield },
+  { href: '/admin/users', labelKey: 'admin.users', icon: Users },
+  { href: '/admin/merchants', labelKey: 'admin.merchants', icon: Store },
+  { href: '/admin/chains', labelKey: 'admin.chains', icon: LinkIcon },
+  { href: '/admin/contracts', labelKey: 'admin.contracts', icon: Code2 },
+  { href: '/admin/rpcs', labelKey: 'admin.rpcs', icon: Server },
+];
+
 export default function Sidebar() {
   const pathname = usePathname();
-  const { user, logout } = useAuthStore();
+  const { user, logout, isLoading } = useAuthStore();
   const { t, locale, setLocale } = useTranslation();
 
   const toggleLocale = () => {
@@ -39,8 +53,8 @@ export default function Sidebar() {
   };
 
   const isActive = (href: string) => {
-    if (href === '/dashboard') {
-      return pathname === '/dashboard';
+    if (href === '/dashboard' || href === '/admin') {
+      return pathname === href;
     }
     return pathname.startsWith(href);
   };
@@ -124,6 +138,42 @@ export default function Sidebar() {
             );
           })}
         </div>
+
+        {/* Admin Navigation */}
+        {isLoading ? (
+          <div className="space-y-3 mt-6 px-3">
+             <div className="h-2 w-12 bg-white/5 rounded animate-pulse" />
+             <div className="h-8 w-full bg-white/5 rounded-xl animate-pulse" />
+             <div className="h-8 w-full bg-white/5 rounded-xl animate-pulse" />
+          </div>
+        ) : (user?.role === 'admin' || user?.role === 'sub_admin') && (
+          <>
+            <div className="my-3 h-px bg-white/10" />
+            <div className="space-y-0.5">
+              <span className="px-3 py-1.5 text-[10px] font-medium text-muted uppercase tracking-wider">
+                Admin
+              </span>
+              {adminNavItems.map((item) => {
+                const Icon = item.icon;
+                const active = isActive(item.href);
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 ${
+                      active
+                        ? 'bg-white/10 text-foreground'
+                        : 'text-muted hover:text-foreground hover:bg-white/5'
+                    }`}
+                  >
+                    <Icon className={`w-5 h-5 ${active ? 'text-red-400' : ''}`} />
+                    {t(item.labelKey) !== item.labelKey ? t(item.labelKey) : item.labelKey.split('.').pop()}
+                  </Link>
+                );
+              })}
+            </div>
+          </>
+        )}
       </nav>
 
       {/* Bottom Section */}
@@ -138,23 +188,30 @@ export default function Sidebar() {
         </button>
 
         {/* User Info & Logout */}
-        <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-white/5">
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-foreground truncate">
-              {user?.name || 'User'}
-            </p>
-            <p className="text-xs text-muted truncate">
-              {user?.email}
-            </p>
+        {isLoading ? (
+          <div className="px-3 py-2 rounded-xl bg-white/5 animate-pulse">
+            <div className="h-4 w-24 bg-white/10 rounded mb-1" />
+            <div className="h-3 w-32 bg-white/10 rounded" />
           </div>
-          <button
-            onClick={() => logout()}
-            className="p-2 text-muted hover:text-red-400 transition-colors rounded-lg hover:bg-white/5"
-            title={t('common.logout')}
-          >
-            <LogOut className="w-4 h-4" />
-          </button>
-        </div>
+        ) : (
+          <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-white/5">
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-foreground truncate">
+                {user?.name || 'User'}
+              </p>
+              <p className="text-xs text-muted truncate">
+                {user?.email}
+              </p>
+            </div>
+            <button
+              onClick={() => logout()}
+              className="p-2 text-muted hover:text-red-400 transition-colors rounded-lg hover:bg-white/5"
+              title={t('common.logout')}
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          </div>
+        )}
       </div>
     </aside>
   );

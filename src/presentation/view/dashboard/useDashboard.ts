@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useAuthStore, useWalletStore, usePaymentStore } from '@/presentation/hooks';
-import { usePaymentsQuery, useWalletsQuery } from '@/data/usecase';
+import { usePaymentsQuery, useWalletsQuery, useAdminStats } from '@/data/usecase';
 import type { Payment } from '@/data/model/entity';
 
 export function useDashboard() {
@@ -18,6 +18,7 @@ export function useDashboard() {
 
   const { data: paymentsData, isLoading: paymentsLoading } = usePaymentsQuery(1, 5);
   const { data: walletsData } = useWalletsQuery();
+  const { data: adminStats } = useAdminStats();
 
   useEffect(() => {
     if (paymentsData) {
@@ -26,10 +27,9 @@ export function useDashboard() {
 
       const currentStats = {
         totalPayments: paymentsData.pagination?.total ?? paymentsList.length,
-        totalVolume: paymentsList.reduce(
-          (sum: number, p: Payment) => sum + parseFloat(p.sourceAmount ?? '0'),
-          0
-        ),
+        // useAdminStats provides global volume, replacing client-side calculation
+        // Note: This shows global volume, which might be intended for admin views or demo purposes
+        totalVolume: adminStats ? parseFloat(adminStats.totalVolume || '0') : 0,
         pendingPayments: paymentsList.filter(
           (p: Payment) => p.status === 'pending' || p.status === 'processing'
         ).length,
@@ -43,7 +43,7 @@ export function useDashboard() {
 
       setStats(currentStats);
     }
-  }, [paymentsData, walletsData, setPayments, syncWithServer]);
+  }, [paymentsData, walletsData, adminStats, setPayments, syncWithServer]);
 
   useEffect(() => {
     setLoading(paymentsLoading);

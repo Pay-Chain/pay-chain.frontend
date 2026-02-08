@@ -7,15 +7,7 @@ import { useTranslation } from '@/presentation/hooks';
 import { Sparkles } from 'lucide-react';
 
 export function LoginView() {
-  const {
-    email,
-    setEmail,
-    password,
-    setPassword,
-    error,
-    isPending,
-    handleSubmit
-  } = useLogin();
+  const { form, isPending, onSubmit } = useLogin();
   const { t } = useTranslation();
 
   return (
@@ -38,21 +30,14 @@ export function LoginView() {
 
         {/* Form Card */}
         <div className="card-glass p-8 shadow-glass">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {error && (
-              <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-red-400 text-sm animate-fade-in">
-                {error}
-              </div>
-            )}
-
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <Input
               label={t('auth.email')}
               id="email"
               type="email"
               placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
+              {...form.register('email')}
+              error={form.formState.errors.email?.message}
             />
 
             <Input
@@ -60,10 +45,15 @@ export function LoginView() {
               id="password"
               type="password"
               placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
+              {...form.register('password')}
+              error={form.formState.errors.password?.message}
             />
+
+            {form.formState.errors.root && (
+              <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-red-400 text-sm animate-fade-in">
+                {form.formState.errors.root.message}
+              </div>
+            )}
 
             <div className="flex items-center justify-between">
               <label className="flex items-center gap-2 cursor-pointer group">

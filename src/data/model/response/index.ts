@@ -3,8 +3,8 @@ import type { User, Payment, PaymentEvent, Chain, Token, SupportedToken, Wallet,
 // Auth responses
 export interface AuthResponse {
   user: User;
-  accessToken: string;
-  refreshToken: string;
+  accessToken?: string;
+  refreshToken?: string;
 }
 
 export interface RefreshTokenResponse {

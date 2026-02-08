@@ -11,18 +11,9 @@ export interface RequestOptions extends Omit<RequestInit, 'body'> {
 
 class HttpClient {
   private baseUrl: string;
-  private accessToken: string | null = null;
 
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl;
-  }
-
-  setAccessToken(token: string | null) {
-    this.accessToken = token;
-  }
-
-  getAccessToken(): string | null {
-    return this.accessToken;
   }
 
   async request<T>(endpoint: string, options: RequestOptions = {}): Promise<ApiResponse<T>> {
@@ -31,18 +22,60 @@ class HttpClient {
       ...(options.headers || {}),
     };
 
-    if (this.accessToken) {
-      (headers as Record<string, string>)['Authorization'] = `Bearer ${this.accessToken}`;
-    }
+    // Note: Authorization header is now injected by the Next.js Proxy (route.ts)
+    // using the HTTP-only cookie. Client does not handle tokens.
 
     try {
       const url = endpoint.startsWith('http') ? endpoint : `${this.baseUrl}${endpoint}`;
 
-      const response = await fetch(url, {
-        ...options,
-        headers,
-        body: options.body ? JSON.stringify(options.body) : undefined,
-      });
+      const makeRequest = async () => {
+        return fetch(url, {
+          ...options,
+          headers,
+          credentials: 'include',
+          body: options.body ? JSON.stringify(options.body) : undefined,
+        });
+      };
+
+      let response = await makeRequest();
+
+      // Auto-Refresh Logic for 401
+      if (response.status === 401) {
+        // Prevent infinite loops:
+        // 1. Don't refresh if the failed request was already an Auth request (login, refresh, me, logout)
+        const isAuthRequest = url.includes('/auth/');
+        
+        // 2. Don't refresh if we are already on the login page (client-side check)
+        const isLoginPage = typeof window !== 'undefined' && 
+          (window.location.pathname === '/login' || window.location.pathname === '/register');
+
+        if (isAuthRequest || isLoginPage) {
+             // Just return the error, let the UI/Auth Provider handle it (or do nothing)
+             return { error: 'Unauthorized' };
+        }
+
+        try {
+          // Attempt to refresh token
+          const refreshResponse = await fetch('/api/v1/auth/refresh', {
+            method: 'POST',
+          });
+
+          if (refreshResponse.ok) {
+            // Retry original request
+            response = await makeRequest();
+          } else {
+            // Refresh failed, session is truly expired
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(new Event('auth:session-expired'));
+            }
+          }
+        } catch (error) {
+           console.error('Failed to refresh token:', error);
+           if (typeof window !== 'undefined') {
+              window.dispatchEvent(new Event('auth:session-expired'));
+            }
+        }
+      }
 
       const responseText = await response.text();
       let data: any;

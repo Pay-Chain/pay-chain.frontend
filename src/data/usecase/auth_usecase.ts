@@ -46,8 +46,22 @@ export function useRefreshTokenMutation() {
 export function useCurrentUser() {
   return useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => Promise.resolve(authRepository.getCurrentUser()),
-    staleTime: Infinity,
+    queryFn: async () => {
+      // 1. Check if we already have the user in memory
+      const cachedUser = authRepository.getCurrentUser();
+      if (cachedUser) return cachedUser;
+
+      // 2. If not, try to fetch from server (it uses HttpOnly cookie)
+      try {
+        const response = await authRepository.getMe();
+        return response.data?.user ?? null;
+      } catch (error) {
+        // If 401 or network error, just return null (guest mode)
+        return null;
+      }
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    retry: false,
   });
 }
 

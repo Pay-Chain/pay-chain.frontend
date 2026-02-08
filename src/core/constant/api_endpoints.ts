@@ -5,6 +5,7 @@ export const API_ENDPOINTS = {
   AUTH_LOGIN: '/v1/auth/login',
   AUTH_VERIFY_EMAIL: '/v1/auth/verify-email',
   AUTH_REFRESH: '/v1/auth/refresh',
+  AUTH_ME: '/v1/auth/me',
 
   // Payments
   PAYMENTS: '/v1/payments',
@@ -25,6 +26,14 @@ export const API_ENDPOINTS = {
   // Merchants
   MERCHANT_APPLY: '/v1/merchants/apply',
   MERCHANT_STATUS: '/v1/merchants/status',
+
+  // Admin
+  ADMIN_STATS: '/v1/admin/stats',
+  ADMIN_USERS: '/v1/admin/users',
+  ADMIN_MERCHANTS: '/v1/admin/merchants',
+  ADMIN_MERCHANT_STATUS: (id: string) => `/v1/admin/merchants/${id}/status`,
+  ADMIN_CHAINS: '/v1/admin/chains',
+  ADMIN_CHAIN_BY_ID: (id: number | string) => `/v1/admin/chains/${id}`,
 
   // Chains
   CHAINS: '/v1/chains',

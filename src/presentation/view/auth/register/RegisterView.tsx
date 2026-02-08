@@ -10,9 +10,7 @@ export function RegisterView() {
   const {
     step,
     setStep,
-    formData,
-    setFormData,
-    error,
+    form,
     isPending,
     address,
     isConnected,
@@ -77,9 +75,9 @@ export function RegisterView() {
 
         {/* Form Card */}
         <div className="card-glass p-8 shadow-glass">
-          {error && (
+          {form.formState.errors.root && (
             <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-red-400 text-sm mb-6 animate-fade-in">
-              {error}
+              {form.formState.errors.root.message}
             </div>
           )}
 
@@ -89,36 +87,32 @@ export function RegisterView() {
                 label={t('auth.name')}
                 id="name"
                 placeholder="John Doe"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                required
+                {...form.register('name')}
+                error={form.formState.errors.name?.message}
               />
               <Input
                 label={t('auth.email')}
                 id="email"
                 type="email"
                 placeholder="you@example.com"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                required
+                {...form.register('email')}
+                error={form.formState.errors.email?.message}
               />
               <Input
                 label={t('auth.password')}
                 id="password"
                 type="password"
                 placeholder="••••••••"
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                required
+                {...form.register('password')}
+                error={form.formState.errors.password?.message}
               />
               <Input
                 label={t('auth.confirm_password')}
                 id="confirmPassword"
                 type="password"
                 placeholder="••••••••"
-                value={formData.confirmPassword}
-                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                required
+                {...form.register('confirmPassword')}
+                error={form.formState.errors.confirmPassword?.message}
               />
               <Button type="submit" variant="primary" className="w-full" glow>
                 {t('auth.continue_wallet')}

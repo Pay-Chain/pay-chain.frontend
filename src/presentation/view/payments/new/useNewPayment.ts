@@ -2,57 +2,66 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import type { CreatePaymentRequest } from '@/data/model/request';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { useCreatePaymentMutation } from '@/data/usecase';
 import { useWalletStore } from '@/presentation/hooks';
+import type { CreatePaymentRequest } from '@/data/model/request';
+
+const paymentSchema = z.object({
+  sourceChainId: z.string().min(1, 'Source Chain is required'),
+  destChainId: z.string().min(1, 'Destination Chain is required'),
+  sourceTokenAddress: z.string().min(1, 'Source Token is required'),
+  destTokenAddress: z.string().min(1, 'Destination Token is required'),
+  amount: z.string().regex(/^\d+(\.\d+)?$/, 'Amount must be a positive number'),
+  receiverAddress: z.string().min(1, 'Receiver Address is required'),
+  decimals: z.number(),
+});
 
 export function useNewPayment() {
   const router = useRouter();
   const { primaryWallet } = useWalletStore();
+  const { mutate: createPayment, isPending } = useCreatePaymentMutation();
   
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
-  const [formData, setFormData] = useState<CreatePaymentRequest>({
-    sourceChainId: '',
-    destChainId: '',
-    sourceTokenAddress: '',
-    destTokenAddress: '',
-    amount: '',
-    receiverAddress: '',
-    decimals: 18,
+
+  const form = useForm<CreatePaymentRequest>({
+    resolver: zodResolver(paymentSchema),
+    defaultValues: {
+      sourceChainId: '',
+      destChainId: '',
+      sourceTokenAddress: '',
+      destTokenAddress: '',
+      amount: '',
+      receiverAddress: '',
+      decimals: 18,
+    },
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+  const onSubmit = (data: CreatePaymentRequest) => {
     setError(null);
-
-    try {
-      // TODO: Implement actual payment creation logic using usecase
-      // const response = await createPaymentMutation.mutateAsync(formData);
-      
-      // Simulate success for now
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      router.push('/dashboard');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create payment');
-    } finally {
-      setLoading(false);
+    
+    if (!primaryWallet) {
+      setError('Please connect a wallet first');
+      return;
     }
+
+    createPayment(data, {
+      onSuccess: () => {
+        router.push('/dashboard');
+      },
+      onError: (err) => {
+        setError(err.message || 'Failed to create payment');
+      },
+    });
   };
 
   return {
-    formData,
-    loading,
+    form,
+    loading: isPending,
     error,
-    handleChange,
-    handleSubmit,
+    handleSubmit: form.handleSubmit(onSubmit),
     primaryWallet,
   };
 }
