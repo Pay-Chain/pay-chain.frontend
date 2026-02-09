@@ -52,10 +52,18 @@ export class AdminDataSource {
 
   // Chain Management
   // TODO: Verify if these endpoints are correct on backend. Assuming /v1/chains for now as per api_endpoints.ts
-  async getChains(): Promise<any[]> {
-    const { data, error } = await httpClient.get<{ chains: any[] }>(API_ENDPOINTS.CHAINS);
+  async getChains(page?: number, limit?: number): Promise<{ items: any[], meta?: any }> {
+    const query = new URLSearchParams();
+    if (page) query.append('page', page.toString());
+    if (limit) query.append('limit', limit.toString());
+    
+    const url = query.toString() ? `${API_ENDPOINTS.CHAINS}?${query.toString()}` : API_ENDPOINTS.CHAINS;
+    const { data, error } = await httpClient.get<{ items: any[], meta: any }>(url);
     if (error) throw new Error(error);
-    return data?.chains || [];
+    return {
+      items: data?.items || [],
+      meta: data?.meta
+    };
   }
 
   async createChain(data: any): Promise<void> {
@@ -63,21 +71,29 @@ export class AdminDataSource {
     if (error) throw new Error(error);
   }
 
-  async updateChain(id: number, data: any): Promise<void> {
+  async updateChain(id: string, data: any): Promise<void> {
     const { error } = await httpClient.put(API_ENDPOINTS.ADMIN_CHAIN_BY_ID(id), data);
     if (error) throw new Error(error);
   }
 
-  async deleteChain(id: number): Promise<void> {
+  async deleteChain(id: string): Promise<void> {
     const { error } = await httpClient.delete(API_ENDPOINTS.ADMIN_CHAIN_BY_ID(id));
     if (error) throw new Error(error);
   }
 
   // Contract Management
-  async getContracts(): Promise<any[]> {
-    const { data, error } = await httpClient.get<{ contracts: any[] }>(API_ENDPOINTS.CONTRACTS);
+  async getContracts(page?: number, limit?: number): Promise<{ items: any[], meta?: any }> {
+    const query = new URLSearchParams();
+    if (page) query.append('page', page.toString());
+    if (limit) query.append('limit', limit.toString());
+
+    const url = query.toString() ? `${API_ENDPOINTS.CONTRACTS}?${query.toString()}` : API_ENDPOINTS.CONTRACTS;
+    const { data, error } = await httpClient.get<{ items: any[], meta: any }>(url);
     if (error) throw new Error(error);
-    return data?.contracts || [];
+    return {
+      items: data?.items || [],
+      meta: data?.meta
+    };
   }
 
   async createContract(data: any): Promise<void> {

@@ -23,24 +23,24 @@ export class AdminRepository {
     return this.dataSource.updateMerchantStatus(id, status);
   }
 
-  async getChains(): Promise<any[]> {
-    return this.dataSource.getChains();
+  async getChains(page?: number, limit?: number): Promise<{ items: any[], meta?: any }> {
+    return this.dataSource.getChains(page, limit);
   }
 
   async createChain(data: any): Promise<void> {
     return this.dataSource.createChain(data);
   }
 
-  async updateChain(id: number, data: any): Promise<void> {
+  async updateChain(id: string, data: any): Promise<void> {
     return this.dataSource.updateChain(id, data);
   }
 
-  async deleteChain(id: number): Promise<void> {
+  async deleteChain(id: string): Promise<void> {
     return this.dataSource.deleteChain(id);
   }
 
-  async getContracts(): Promise<any[]> {
-    return this.dataSource.getContracts();
+  async getContracts(page?: number, limit?: number): Promise<{ items: any[], meta?: any }> {
+    return this.dataSource.getContracts(page, limit);
   }
 
   async createContract(data: any): Promise<void> {

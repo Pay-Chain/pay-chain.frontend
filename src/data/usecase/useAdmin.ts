@@ -24,10 +24,10 @@ export const useAdminMerchants = () => {
   });
 };
 
-export const useAdminChains = () => {
+export const useAdminChains = (page?: number, limit?: number) => {
   return useQuery({
-    queryKey: ['chains'],
-    queryFn: () => adminRepository.getChains(),
+    queryKey: ['chains', page, limit],
+    queryFn: () => adminRepository.getChains(page, limit),
   });
 };
 
@@ -55,7 +55,7 @@ export const useCreateChain = () => {
 export const useUpdateChain = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: any }) => adminRepository.updateChain(id, data),
+    mutationFn: ({ id, data }: { id: string; data: any }) => adminRepository.updateChain(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['chains'] });
     },
@@ -65,17 +65,17 @@ export const useUpdateChain = () => {
 export const useDeleteChain = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => adminRepository.deleteChain(id),
+    mutationFn: (id: string) => adminRepository.deleteChain(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['chains'] });
     },
   });
 };
 
-export const useAdminContracts = () => {
+export const useAdminContracts = (page?: number, limit?: number) => {
   return useQuery({
-    queryKey: ['contracts'],
-    queryFn: () => adminRepository.getContracts(),
+    queryKey: ['contracts', page, limit],
+    queryFn: () => adminRepository.getContracts(page, limit),
   });
 };
 

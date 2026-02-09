@@ -9,7 +9,7 @@ export interface RequestOptions extends Omit<RequestInit, 'body'> {
   body?: unknown;
 }
 
-class HttpClient {
+export class HttpClient {
   private baseUrl: string;
 
   constructor(baseUrl: string) {

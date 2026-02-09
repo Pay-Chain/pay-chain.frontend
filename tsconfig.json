@@ -23,6 +23,7 @@
       "@/app/*": ["./src/app/*"],
       "@/core/*": ["./src/core/*"],
       "@/data/*": ["./src/data/*"],
+      "@/domain/*": ["./src/domain/*"],
       "@/presentation/*": ["./src/presentation/*"]
     }
   },

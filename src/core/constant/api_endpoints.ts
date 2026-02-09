@@ -34,6 +34,8 @@ export const API_ENDPOINTS = {
   ADMIN_MERCHANT_STATUS: (id: string) => `/v1/admin/merchants/${id}/status`,
   ADMIN_CHAINS: '/v1/admin/chains',
   ADMIN_CHAIN_BY_ID: (id: number | string) => `/v1/admin/chains/${id}`,
+  ADMIN_RPCS: '/v1/admin/rpcs',
+  ADMIN_TOKENS: '/v1/admin/tokens',
 
   // Chains
   CHAINS: '/v1/chains',

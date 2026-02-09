@@ -19,6 +19,7 @@ import {
   Link as LinkIcon,
   Code2,
   Server,
+  Coins,
 } from 'lucide-react';
 
 // Navigation items definition
@@ -41,6 +42,7 @@ export const adminNavItems = [
   { href: '/admin/chains', labelKey: 'admin.chains', icon: LinkIcon },
   { href: '/admin/contracts', labelKey: 'admin.contracts', icon: Code2 },
   { href: '/admin/rpcs', labelKey: 'admin.rpcs', icon: Server },
+  { href: '/admin/tokens', labelKey: 'admin.tokens', icon: Coins },
 ];
 
 export default function Sidebar() {

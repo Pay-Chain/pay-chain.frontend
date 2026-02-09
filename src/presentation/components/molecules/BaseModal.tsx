@@ -14,6 +14,7 @@ interface BaseModalProps extends Omit<ModalProps, 'children'> {
   onConfirm?: () => void;
   confirmLabel?: string;
   isConfirmLoading?: boolean;
+  isConfirmDisabled?: boolean;
 }
 
 const BaseModal = ({
@@ -27,6 +28,7 @@ const BaseModal = ({
   onConfirm,
   confirmLabel = 'Save Changes',
   isConfirmLoading = false,
+  isConfirmDisabled = false,
 }: BaseModalProps) => {
   return (
     <Modal isOpen={isOpen} onClose={onClose} className={className}>
@@ -61,6 +63,7 @@ const BaseModal = ({
                 variant="primary" 
                 onClick={onConfirm}
                 loading={isConfirmLoading}
+                disabled={isConfirmLoading || isConfirmDisabled}
                 glow
                 className="min-w-[140px] rounded-full py-3 shadow-glow-sm"
               >
