@@ -25,7 +25,7 @@ const sizeStyles: Record<CardSize, string> = {
   lg: 'p-8 rounded-2xl',
 };
 
-export default function Card({
+export function Card({
   children,
   variant = 'default',
   size = 'md',

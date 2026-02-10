@@ -25,6 +25,8 @@ export const useAdminTokens = () => {
     type: 'ERC20',
     chainId: '',
     contractAddress: '',
+    minAmount: '',
+    maxAmount: '',
   });
 
   const debouncedSearch = useDebounce(searchTerm, 500);
@@ -46,21 +48,23 @@ export const useAdminTokens = () => {
 
   const handleOpenAdd = () => {
     setEditingId(null);
-    setFormData({ symbol: '', name: '', decimals: 18, logoUrl: '', type: 'ERC20', chainId: filterChainId || '', contractAddress: '' });
+    setFormData({ symbol: '', name: '', decimals: 18, logoUrl: '', type: 'ERC20', chainId: filterChainId || '', contractAddress: '', minAmount: '', maxAmount: '' });
     setIsModalOpen(true);
   };
 
   const handleOpenEdit = (token: SupportedTokenEntity) => {
-    // We use tokenId because the backend endpoint /admin/tokens/:id updates the Token entity
-    setEditingId(token.tokenId);
+    // We use id because the backend endpoint /admin/tokens/:id updates the Token entity
+    setEditingId(token.id);
     setFormData({
-      symbol: token.token?.symbol || '',
-      name: token.token?.name || '',
-      decimals: token.token?.decimals || 18,
-      logoUrl: token.token?.logoUrl || '',
-      type: (token.token as any)?.type || 'ERC20',
+      symbol: token.symbol || '',
+      name: token.name || '',
+      decimals: token.decimals || 18,
+      logoUrl: token.logoUrl || '',
+      type: token.type || 'ERC20',
       chainId: token.chainId,
       contractAddress: token.contractAddress || '',
+      minAmount: token.minAmount || '',
+      maxAmount: token.maxAmount || '',
     });
     setIsModalOpen(true);
   };
@@ -85,11 +89,7 @@ export const useAdminTokens = () => {
 
   const handleDelete = () => {
     if (deleteId) {
-      // Find the tokenId for the selected supported token
-      const tokenToDelete = tokenData?.items.find(t => t.id === deleteId);
-      const targetId = tokenToDelete?.tokenId || deleteId;
-
-      deleteToken.mutate(targetId, {
+      deleteToken.mutate(deleteId, {
         onSuccess: () => setDeleteId(null),
       });
     }

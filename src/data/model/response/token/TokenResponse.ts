@@ -10,16 +10,23 @@ export interface TokenListResponse {
 export interface SupportedTokenResponse {
   id: string;
   chainId: string;
-  tokenId: string;
+  name: string;
+  symbol: string;
+  decimals: number;
+  logoUrl?: string;
+  type?: string;
+  isStablecoin?: boolean;
+  isNative?: boolean;
   contractAddress: string;
   isActive: boolean;
   minAmount?: string;
+  maxAmount?: string;
   createdAt: string;
-  token?: TokenEntity;
   chain?: {
     id: string;
     name: string;
     symbol: string;
+    imageUrl?: string;
   };
 }
 

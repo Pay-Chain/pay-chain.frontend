@@ -1,21 +1,101 @@
 'use client';
 
-import { Button, Input } from '@/presentation/components/atoms';
+import { Button, Input, Label } from '@/presentation/components/atoms';
 import { useNewPayment } from './useNewPayment';
 import { ArrowLeft, Send, AlertTriangle, Wallet } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslation } from '@/presentation/hooks';
+import { useChainsQuery, useTokensQuery } from '@/data/usecase';
+import { ChainSelector } from '@/presentation/components/organisms/ChainSelector';
+import { TokenSelector } from '@/presentation/components/organisms/TokenSelector';
+import { ChainItemData } from '@/presentation/components/molecules/ChainListItem';
+import { TokenItemData } from '@/presentation/components/molecules/TokenListItem';
+import { useBalance } from 'wagmi';
+import { sanitizeNumber } from '@/core/utils/converters';
+import { formatUnits } from 'viem';
+import { useMemo } from 'react';
+
 
 export function NewPaymentView() {
-  const { form, loading, error, handleSubmit, primaryWallet } = useNewPayment();
+  const { 
+    form, 
+    loading, 
+    error, 
+    handleSubmit, 
+    primaryWallet,
+    handleSourceChainSelect,
+    handleDestChainSelect,
+    handleTokenSelect,
+    sourceChainId,
+    destChainId,
+    sourceTokenAddress,
+    setValue,
+  } = useNewPayment();
   const { t } = useTranslation();
+
+  // Data fetching
+  const { data: chains } = useChainsQuery();
+  const { data: tokens } = useTokensQuery();
+
+  // Map data to selector formats
+  const chainItems: ChainItemData[] = useMemo(() =>
+    chains?.items?.map(c => ({
+      id: c.id.toString(),
+      networkId: c.id.toString(),
+      name: c.name,
+      logoUrl: c.logoUrl,
+    })) || [],
+    [chains]
+  );
+
+  const tokenItems: TokenItemData[] = useMemo(() =>
+    (tokens?.items as any[])?.map((t: any) => ({
+      id: t.id,
+      symbol: t.symbol,
+      name: t.name,
+      logoUrl: t.logoUrl,
+      address: t.contractAddress,
+      isNative: t.isNative,
+      chainId: t.chainId,
+    })) || [],
+    [tokens]
+  );
+
+  const filteredTokens = useMemo(() => {
+    if (!sourceChainId) return [];
+    return tokenItems.filter(t => t.chainId === sourceChainId);
+  }, [tokenItems, sourceChainId]);
+
+  // Wagmi hooks for balance
+  const { data: balanceData } = useBalance({
+    address: primaryWallet?.address as `0x${string}`,
+    // @ts-ignore - useBalance in v2 takes token
+    token: (sourceTokenAddress === '0x0000000000000000000000000000000000000000' || !sourceTokenAddress)
+      ? undefined
+      : sourceTokenAddress as `0x${string}`,
+    query: {
+      enabled: !!primaryWallet?.address && !!sourceChainId,
+    }
+  });
+
+  const formattedBalance = useMemo(() => {
+    if (!balanceData) return '0';
+    return formatUnits(balanceData.value, balanceData.decimals);
+  }, [balanceData]);
+
+  const handleMaxClick = () => {
+    if (formattedBalance) {
+      const sanitized = sanitizeNumber(formattedBalance);
+      setValue('amount', sanitized);
+    }
+  };
 
   return (
     <div className="max-w-2xl mx-auto space-y-6 animate-fade-in">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Link 
-          href="/dashboard" 
+        <Link
+          href="/dashboard"
           className="p-2 -ml-2 rounded-full hover:bg-white/5 transition-all duration-300 group"
         >
           <ArrowLeft className="w-5 h-5 text-muted group-hover:text-foreground transition-colors" />
@@ -40,20 +120,37 @@ export function NewPaymentView() {
               </div>
               {t('payments.details')}
             </h2>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input
-                label={t('payments.source_chain')}
-                placeholder="e.g. 1 (Ethereum)"
-                {...form.register('sourceChainId')}
-                error={form.formState.errors.sourceChainId?.message}
-              />
-              <Input
-                label={t('payments.dest_chain')}
-                placeholder="e.g. 137 (Polygon)"
-                {...form.register('destChainId')}
-                error={form.formState.errors.destChainId?.message}
-              />
+              <div className="space-y-1.5">
+                <ChainSelector
+                  label={t('payments.source_chain')}
+                  chains={chainItems}
+                  selectedChainId={sourceChainId}
+                  onSelect={handleSourceChainSelect}
+                  placeholder="Select Source Chain"
+                />
+                {form.formState.errors.sourceChainId && (
+                  <p className="text-sm font-medium text-destructive animate-in slide-in-from-top-1 fade-in-20">
+                    {form.formState.errors.sourceChainId.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-1.5">
+                <ChainSelector
+                  label={t('payments.dest_chain')}
+                  chains={chainItems}
+                  selectedChainId={destChainId}
+                  onSelect={handleDestChainSelect}
+                  placeholder="Select Destination Chain"
+                />
+                {form.formState.errors.destChainId && (
+                  <p className="text-sm font-medium text-destructive animate-in slide-in-from-top-1 fade-in-20">
+                    {form.formState.errors.destChainId.message}
+                  </p>
+                )}
+              </div>
             </div>
 
             <Input
@@ -63,21 +160,60 @@ export function NewPaymentView() {
               error={form.formState.errors.receiverAddress?.message}
             />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input
-                label={t('payments.amount')}
-                type="number"
-                placeholder="0.0"
-                step="any"
-                {...form.register('amount')}
-                error={form.formState.errors.amount?.message}
-              />
-              <Input
-                label={t('payments.token_address')}
-                placeholder="0x... (Leave empty for native)"
-                {...form.register('sourceTokenAddress')}
-                error={form.formState.errors.sourceTokenAddress?.message}
-              />
+            {/* Token and Amount */}
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-1.5">
+                <TokenSelector
+                  label={t('payments.token_address')}
+                  tokens={filteredTokens}
+                  selectedTokenId={tokenItems.find(t => t.address === sourceTokenAddress || (t.isNative && sourceTokenAddress === '0x0000000000000000000000000000000000000000'))?.id}
+                  onSelect={handleTokenSelect}
+                  disabled={!sourceChainId}
+                  placeholder={sourceChainId ? "Select Token" : "Select Chain First"}
+                />
+                {form.formState.errors.sourceTokenAddress && (
+                  <p className="text-sm font-medium text-destructive animate-in slide-in-from-top-1 fade-in-20">
+                    {form.formState.errors.sourceTokenAddress.message}
+                  </p>
+                )}
+              </div>
+              <div className="space-y-1.5">
+                 <Label className="flex justify-between items-center text-sm font-medium text-foreground/80 ml-1 mb-1.5">
+                    {t('payments.amount')}
+                    {balanceData && (
+                        <span className="text-xs text-muted-foreground">
+                            Max: {formattedBalance} {balanceData.symbol}
+                        </span>
+                    )}
+                 </Label>
+                 <div className="relative">
+                    <Input
+                        type="text"
+                        placeholder="0.0"
+                        {...form.register('amount', {
+                            onChange: (e) => {
+                                const sanitized = sanitizeNumber(e.target.value);
+                                setValue('amount', sanitized);
+                            }
+                        })}
+                        className="pr-16" // Make room for MAX button
+                    />
+                    {balanceData && (
+                        <button
+                            type="button"
+                            onClick={handleMaxClick}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-accent-purple hover:text-accent-purple/80 transition-colors bg-accent-purple/10 hover:bg-accent-purple/20 px-2 py-1 rounded"
+                        >
+                            MAX
+                        </button>
+                    )}
+                 </div>
+                 {form.formState.errors.amount && (
+                    <p className="text-sm font-medium text-destructive animate-in slide-in-from-top-1 fade-in-20">
+                        {form.formState.errors.amount.message}
+                    </p>
+                 )}
+              </div>
             </div>
           </div>
 

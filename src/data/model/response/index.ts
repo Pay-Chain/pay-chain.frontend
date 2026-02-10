@@ -53,11 +53,13 @@ export interface PaymentEventsResponse {
 
 // Chain & Token responses
 export interface ChainsResponse {
-  chains: Chain[];
+  items: Chain[];
+  meta: Pagination;
 }
 
 export interface TokensResponse {
-  tokens: Token[] | SupportedToken[];
+  items: Token[] | SupportedToken[];
+  meta: Pagination;
 }
 
 // Wallet responses

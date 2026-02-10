@@ -3,7 +3,8 @@
 import { useAdminTokens } from './useAdminTokens';
 import { Card, Button, Input } from '@/presentation/components/atoms';
 import { BaseModal, DeleteConfirmationModal, Pagination } from '@/presentation/components/molecules';
-import { Coins, Search, Filter, LayoutGrid, CheckCircle2, Plus, Edit2, Trash2 } from 'lucide-react';
+import { ChainSelector } from '@/presentation/components/organisms';
+import { Coins, Search, LayoutGrid, CheckCircle2, Plus, Edit2, Trash2 } from 'lucide-react';
 
 export const AdminTokensView = () => {
   const { state, actions } = useAdminTokens();
@@ -43,18 +44,13 @@ export const AdminTokensView = () => {
             <Search className="absolute left-3 top-2.5 w-4 h-4 text-muted" />
           </div>
 
-          <div className="relative">
-            <select
-              className="pl-10 pr-8 py-2 bg-white/5 border border-white/10 rounded-full text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 appearance-none min-w-[160px] cursor-pointer"
-              value={filterChainId}
-              onChange={(e) => actions.setFilterChainId(e.target.value)}
-            >
-              <option value="">All Chains</option>
-              {chains?.items?.map((c: any) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
-            <Filter className="absolute left-3 top-2.5 w-4 h-4 text-muted" />
+          <div className="w-[180px]">
+            <ChainSelector
+                chains={chains?.items || []}
+                selectedChainId={filterChainId}
+                onSelect={(chain) => actions.setFilterChainId(chain?.id || '')}
+                placeholder="All Chains"
+            />
           </div>
 
           <Button onClick={actions.handleOpenAdd} size="sm" glow className="rounded-full px-5">
@@ -92,20 +88,20 @@ export const AdminTokensView = () => {
                   <div className="p-5 flex items-start justify-between gap-4">
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center overflow-hidden shrink-0">
-                        {token.token?.logoUrl ? (
-                          <img src={token.token.logoUrl} alt={token.token.symbol} className="w-full h-full object-cover" />
+                        {token.logoUrl ? (
+                          <img src={token.logoUrl} alt={token.symbol} className="w-full h-full object-cover" />
                         ) : (
                           <Coins className="w-6 h-6 text-primary" />
                         )}
                       </div>
                       <div>
-                        <h3 className="font-bold text-foreground">{token.token?.name || 'Unknown Token'}</h3>
+                        <h3 className="font-bold text-foreground">{token.name || 'Unknown Token'}</h3>
                         <div className="flex items-center gap-2 mt-1">
                           <span className="text-xs font-mono bg-primary/10 text-primary px-1.5 py-0.5 rounded border border-primary/20">
-                            {token.token?.symbol || '???'}
+                            {token.symbol || '???'}
                           </span>
                           <span className="text-[10px] text-muted uppercase font-bold tracking-wider">
-                            {token.chain?.name || 'Unknown Chain'}
+                            {token.chain?.name || chains?.items?.find(c => c.id === token.chainId)?.name || 'Unknown Chain'}
                           </span>
                         </div>
                       </div>
@@ -180,18 +176,13 @@ export const AdminTokensView = () => {
         <form onSubmit={actions.handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2 col-span-2">
-              <label className="text-sm font-medium text-muted">Target Blockchain</label>
-              <select
-                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 appearance-none cursor-pointer"
-                value={formData.chainId}
-                onChange={(e) => actions.setFormData({ ...formData, chainId: e.target.value })}
-                required
-              >
-                <option value="">Select a chain...</option>
-                {chains?.items?.map((c: any) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
+              <ChainSelector
+                label="Target Blockchain"
+                chains={chains?.items || []}
+                selectedChainId={formData.chainId}
+                onSelect={(chain) => actions.setFormData({ ...formData, chainId: chain?.id || '' })}
+                placeholder="Select a chain..."
+              />
             </div>
 
             <Input
@@ -221,6 +212,20 @@ export const AdminTokensView = () => {
               value={formData.type}
               onChange={(e) => actions.setFormData({ ...formData, type: e.target.value })}
               required
+            />
+            <Input
+              label="Min Amount"
+              placeholder="0.0"
+              type="number"
+              value={formData.minAmount}
+              onChange={(e) => actions.setFormData({ ...formData, minAmount: e.target.value })}
+            />
+            <Input
+              label="Max Amount"
+              placeholder="0.0"
+              type="number"
+              value={formData.maxAmount}
+              onChange={(e) => actions.setFormData({ ...formData, maxAmount: e.target.value })}
             />
             <div className="col-span-2">
               <Input

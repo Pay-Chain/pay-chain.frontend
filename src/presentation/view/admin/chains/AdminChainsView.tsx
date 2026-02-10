@@ -101,7 +101,15 @@ export const AdminChainsView = () => {
                   <div className="space-y-3 text-sm text-muted">
                     <div className="flex justify-between items-center border-b border-white/5 pb-2">
                       <span>Chain ID</span>
-                      <span className="font-mono text-foreground">{chain.caip2 || chain.id}</span>
+                      <span className="font-mono text-foreground">
+                        {chain.caip2 && chain.caip2.includes(':') 
+                          ? chain.caip2 
+                          : chain.chainType === 'EVM' 
+                            ? `eip155:${chain.networkId || chain.chainId}` 
+                            : chain.chainType === 'SVM' 
+                              ? `solana:${(chain.networkId || chain.chainId || '').substring(0, 8)}...` 
+                              : (chain.networkId || chain.chainId)}
+                      </span>
                     </div>
                     <div className="flex justify-between items-center border-b border-white/5 pb-2">
                       <span>Symbol</span>

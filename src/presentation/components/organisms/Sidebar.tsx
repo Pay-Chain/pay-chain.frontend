@@ -148,7 +148,7 @@ export default function Sidebar() {
              <div className="h-8 w-full bg-white/5 rounded-xl animate-pulse" />
              <div className="h-8 w-full bg-white/5 rounded-xl animate-pulse" />
           </div>
-        ) : (user?.role === 'admin' || user?.role === 'sub_admin') && (
+        ) : (user?.role === 'ADMIN' || user?.role === 'SUB_ADMIN') && (
           <>
             <div className="my-3 h-px bg-white/10" />
             <div className="space-y-0.5">

@@ -43,10 +43,15 @@ export interface PaymentEvent {
 // Chain entity
 export interface Chain {
   id: number;
+  networkId: string;
+  caip2: string;
   namespace: string;
   name: string;
   chainType: string;
+  rpcUrl: string;
   explorerUrl: string;
+  symbol: string;
+  logoUrl?: string;
   isActive: boolean;
 }
 

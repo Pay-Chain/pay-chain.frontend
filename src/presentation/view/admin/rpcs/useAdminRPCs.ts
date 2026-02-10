@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useRpcList } from '@/presentation/hooks/useRpcList/useRpcList';
-import { useAdminChains, useUpdateChain } from '@/data/usecase/useAdmin';
+import { useAdminChains, useUpdateChain, useDeleteChain } from '@/data/usecase/useAdmin';
 import { useDebounce } from '@/presentation/hooks/useDebounce';
 import { toast } from 'sonner';
 
@@ -25,8 +25,10 @@ export const useAdminRPCs = () => {
   // Fetch Chains
   const { data: chains } = useAdminChains();
   const updateChain = useUpdateChain();
+  const deleteChain = useDeleteChain();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [editingChainId, setEditingChainId] = useState<string | null>(null);
   const [selectedChainId, setSelectedChainId] = useState<string>('');
   const [formData, setFormData] = useState({
@@ -45,10 +47,63 @@ export const useAdminRPCs = () => {
     setIsModalOpen(true);
   };
 
-  const handleOpenEdit = (chain: any) => {
-    setEditingChainId(chain.id.toString());
-    setSelectedChainId(chain.id.toString());
+  const handleOpenEdit = (rpc: any) => {
+    // 1. Try to get chain details from relation
+    let chain = rpc.chain;
 
+    // 2. If relation missing, lookup in loaded chains list
+    if (!chain && chains?.items) {
+       chain = chains.items.find((c: any) => c.id === rpc.chainId);
+    }
+    
+    // 3. Fallback to basic info if still not found
+    if (!chain) {
+        chain = {
+            id: rpc.chainId,
+            name: 'Unknown Chain',
+            symbol: '???',
+            chainType: 'EVM', // Default
+            rpcUrl: rpc.url,
+            explorerUrl: '',
+        };
+    }
+
+    setEditingChainId(rpc.id); // RPC ID for update (wait, backend uses ChainID/RPC ID mixed?)
+    // Correction: UpdateChain uses Chain ID, UpdateRPC presumably uses Chain ID or RPC ID. 
+    // The previous code used `chain.id` which was RPC's chain relation ID?
+    // Let's look at `updateChain.mutate({ id: targetId ...`. 
+    // If we are editing RPC config for a chain, we likely need chain ID.
+    // Use `rpc.chainId` as the target ID for the form.
+    
+    setSelectedChainId(rpc.chainId);
+
+    let caip2Id = chain.caip2;
+    if (!caip2Id && chain.networkId) {
+      caip2Id = `${chain.namespace || 'eip155'}:${chain.networkId}`;
+    } else if (!caip2Id) {
+        // If we have no networkId (fallback), just use chainId?
+      caip2Id = `eip155:${chain.id}`;
+    }
+
+    setFormData({
+      name: chain.name || 'Unknown Chain',
+      chainId: caip2Id || '',
+      rpcUrl: rpc.url || '', // Use RPC's URL not Chain's default
+      explorerUrl: chain.explorerUrl || '',
+      symbol: chain.symbol || '',
+      chainType: chain.chainType || 'EVM',
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleChainSelect = (chain: any) => {
+    if (!chain) {
+        setSelectedChainId('');
+        return;
+    }
+
+    setSelectedChainId(chain.id);
+    
     let caip2Id = chain.caip2;
     if (!caip2Id && chain.networkId) {
       caip2Id = `${chain.namespace || 'eip155'}:${chain.networkId}`;
@@ -57,18 +112,17 @@ export const useAdminRPCs = () => {
     }
 
     setFormData({
+      ...formData,
       name: chain.name,
       chainId: caip2Id || '',
-      rpcUrl: chain.rpcUrl || '',
-      explorerUrl: chain.explorerUrl || '',
       symbol: chain.symbol || '',
       chainType: chain.chainType || 'EVM',
     });
-    setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
+    setIsDeleteModalOpen(false);
     setEditingChainId(null);
   };
 
@@ -92,6 +146,27 @@ export const useAdminRPCs = () => {
     });
   };
 
+  const handleOpenDelete = (chain: any) => {
+    setEditingChainId(chain.id.toString());
+    setFormData({ ...formData, name: chain.name }); 
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleDelete = () => {
+     if (!editingChainId) return;
+     
+     deleteChain.mutate(editingChainId, {
+        onSuccess: () => {
+           handleCloseModal();
+           toast.success('Chain removed');
+           refetch();
+        },
+        onError: (err: any) => {
+           toast.error(err.message || 'Failed to remove chain');
+        }
+     });
+  };
+
   const clearFilters = () => {
     setSearchTerm('');
     setFilterChainId('');
@@ -110,10 +185,12 @@ export const useAdminRPCs = () => {
       isRpcLoading,
       chains,
       isModalOpen,
+      isDeleteModalOpen,
       editingChainId,
       selectedChainId,
       formData,
       isUpdatePending: updateChain.isPending,
+      isDeletePending: deleteChain.isPending,
     },
     actions: {
       setSearchTerm: (term: string) => { setSearchTerm(term); setPage(1); },
@@ -122,10 +199,13 @@ export const useAdminRPCs = () => {
       setPage,
       setFormData,
       setSelectedChainId,
+      handleChainSelect,
       handleOpenAdd,
       handleOpenEdit,
+      handleOpenDelete,
       handleCloseModal,
       handleSubmit,
+      handleDelete,
       clearFilters,
     }
   };

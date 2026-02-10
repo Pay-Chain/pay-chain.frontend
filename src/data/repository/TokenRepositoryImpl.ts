@@ -12,12 +12,18 @@ export class TokenRepositoryImpl implements TokenRepository {
     const items = (response.items || response.tokens || []).map(t => ({
       id: t.id,
       chainId: t.chainId,
-      tokenId: t.tokenId,
+      name: t.name,
+      symbol: t.symbol,
+      decimals: t.decimals,
+      logoUrl: t.logoUrl,
+      type: t.type,
       contractAddress: t.contractAddress,
       isActive: t.isActive,
+      isNative: t.isNative,
+      isStablecoin: t.isStablecoin,
       minAmount: t.minAmount,
+      maxAmount: t.maxAmount,
       createdAt: t.createdAt,
-      token: t.token,
       chain: t.chain,
     }));
 

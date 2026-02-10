@@ -3,7 +3,8 @@
 import { useAdminRPCs } from './useAdminRPCs';
 import { Card, Button, Input } from '@/presentation/components/atoms';
 import { BaseModal, Pagination } from '@/presentation/components/molecules';
-import { Server, Globe, Search, Edit2, Activity, Plus, Filter, LayoutGrid, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { ChainSelector } from '@/presentation/components/organisms';
+import { Server, Globe, Search, Edit2, Activity, Plus, Filter, LayoutGrid, CheckCircle2, AlertTriangle, Trash2 } from 'lucide-react';
 
 export const AdminRPCsView = () => {
   const { state, actions } = useAdminRPCs();
@@ -19,6 +20,8 @@ export const AdminRPCsView = () => {
     selectedChainId,
     formData,
     isUpdatePending,
+    isDeleteModalOpen,
+    isDeletePending,
   } = state;
 
   return (
@@ -44,18 +47,13 @@ export const AdminRPCsView = () => {
             <Search className="absolute left-3 top-2.5 w-4 h-4 text-muted" />
           </div>
 
-          <div className="relative">
-            <select
-              className="pl-10 pr-8 py-2 bg-white/5 border border-white/10 rounded-full text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 appearance-none min-w-[140px] cursor-pointer"
-              value={filterChainId}
-              onChange={(e) => actions.setFilterChainId(e.target.value)}
-            >
-              <option value="">All Chains</option>
-              {chains?.items?.map((c: any) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
-            <Filter className="absolute left-3 top-2.5 w-4 h-4 text-muted" />
+          <div className="w-[160px]">
+             <ChainSelector
+                chains={chains?.items || []}
+                selectedChainId={filterChainId}
+                onSelect={(chain) => actions.setFilterChainId(chain?.id || '')}
+                placeholder="All Chains"
+            />
           </div>
 
           <div className="relative">
@@ -100,73 +98,88 @@ export const AdminRPCsView = () => {
           </div>
         ) : (
           <>
-            {rpcData.items.map((rpc) => (
-              <Card key={rpc.id} className="p-0 bg-white/5 border-white/10 overflow-hidden shadow-xl hover:shadow-primary/5 hover:border-primary/20 transition-all group backdrop-blur-md rounded-2xl">
-                <div className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                  <div className="flex items-center gap-4 min-w-[200px]">
-                    <div className={`p-4 rounded-2xl border transition-all ${rpc.isActive ? 'bg-blue-500/10 border-blue-500/20 text-blue-400' : 'bg-red-500/10 border-red-500/20 text-red-400'
-                      }`}>
-                      <Server className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-lg flex items-center gap-2">
-                        {rpc.chain?.name || `Chain ${rpc.chainId}`}
-                        {rpc.priority === 0 && (
-                          <span className="text-[9px] px-2 py-0.5 rounded-full bg-primary/20 text-primary border border-primary/20 font-bold uppercase tracking-wider">Primary</span>
-                        )}
-                      </h3>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-xs text-muted font-mono bg-black/20 px-1.5 py-0.5 rounded border border-white/5">
-                          Chain ID: {rpc.chainId}
-                        </span>
-                        {rpc.chain?.symbol && (
-                          <span className="text-[10px] text-primary/80 font-bold uppercase">{rpc.chain.symbol}</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+            {rpcData.items.map((rpc) => {
+              const effectiveChain = chains?.items?.find(c => c.id === rpc.chainId);
+              const chainName = rpc.chain?.name || effectiveChain?.name || `Chain ${rpc.chainId.substring(0, 8)}...`;
+              const chainSymbol = rpc.chain?.symbol || effectiveChain?.symbol;
+              const displayId = effectiveChain?.networkId || effectiveChain?.caip2 || rpc.chainId;
 
-                  <div className="flex-1 max-w-xl">
-                    <div className="flex items-center gap-2 text-sm text-foreground/80 mb-2 group-hover:text-foreground transition-colors overflow-hidden">
-                      <div className="p-1 rounded bg-accent-green/10 text-accent-green shrink-0">
-                        <Globe className="w-3.5 h-3.5" />
-                      </div>
-                      <span className="font-mono truncate select-all" title={rpc.url}>{rpc.url}</span>
-                    </div>
-                    <div className="flex items-center gap-3 flex-wrap">
-                      <div className={`flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full border uppercase tracking-wide ${rpc.isActive ? 'text-accent-green bg-accent-green/10 border-accent-green/20' : 'text-red-400 bg-red-400/10 border-red-400/20'
+              return (
+                <Card key={rpc.id} className="p-0 bg-white/5 border-white/10 overflow-hidden shadow-xl hover:shadow-primary/5 hover:border-primary/20 transition-all group backdrop-blur-md rounded-2xl">
+                  <div className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div className="flex items-center gap-4 min-w-[200px]">
+                      <div className={`p-4 rounded-2xl border transition-all ${rpc.isActive ? 'bg-blue-500/10 border-blue-500/20 text-blue-400' : 'bg-red-500/10 border-red-500/20 text-red-400'
                         }`}>
-                        <Activity className="w-3 h-3" />
-                        Status: {rpc.isActive ? 'Active' : 'Inactive'}
+                        <Server className="w-6 h-6" />
                       </div>
-
-                      {(rpc.errorCount ?? 0) > 0 && (
-                        <div className="flex items-center gap-1.5 text-[10px] text-orange-400 font-bold px-2.5 py-1 rounded-full bg-orange-400/10 border border-orange-400/20 uppercase tracking-wide">
-                          <AlertTriangle className="w-3 h-3" />
-                          Errors: {rpc.errorCount}
+                      <div>
+                        <h3 className="font-bold text-lg flex items-center gap-2">
+                          {chainName}
+                          {rpc.priority === 0 && (
+                            <span className="text-[9px] px-2 py-0.5 rounded-full bg-primary/20 text-primary border border-primary/20 font-bold uppercase tracking-wider">Primary</span>
+                          )}
+                        </h3>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-xs text-muted font-mono bg-black/20 px-1.5 py-0.5 rounded border border-white/5">
+                            Chain ID: {displayId}
+                          </span>
+                          {chainSymbol && (
+                            <span className="text-[10px] text-primary/80 font-bold uppercase">{chainSymbol}</span>
+                          )}
                         </div>
-                      )}
+                      </div>
+                    </div>
 
-                      {rpc.lastErrorAt && (
-                        <span className="text-[10px] text-muted">Last Error: {new Date(rpc.lastErrorAt).toLocaleString()}</span>
-                      )}
+                    <div className="flex-1 max-w-xl">
+                      <div className="flex items-center gap-2 text-sm text-foreground/80 mb-2 group-hover:text-foreground transition-colors overflow-hidden">
+                        <div className="p-1 rounded bg-accent-green/10 text-accent-green shrink-0">
+                          <Globe className="w-3.5 h-3.5" />
+                        </div>
+                        <span className="font-mono truncate select-all" title={rpc.url}>{rpc.url}</span>
+                      </div>
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <div className={`flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full border uppercase tracking-wide ${rpc.isActive ? 'text-accent-green bg-accent-green/10 border-accent-green/20' : 'text-red-400 bg-red-400/10 border-red-400/20'
+                          }`}>
+                          <Activity className="w-3 h-3" />
+                          Status: {rpc.isActive ? 'Active' : 'Inactive'}
+                        </div>
+
+                        {(rpc.errorCount ?? 0) > 0 && (
+                          <div className="flex items-center gap-1.5 text-[10px] text-orange-400 font-bold px-2.5 py-1 rounded-full bg-orange-400/10 border border-orange-400/20 uppercase tracking-wide">
+                            <AlertTriangle className="w-3 h-3" />
+                            Errors: {rpc.errorCount}
+                          </div>
+                        )}
+
+                        {rpc.lastErrorAt && (
+                          <span className="text-[10px] text-muted">Last Error: {new Date(rpc.lastErrorAt).toLocaleString()}</span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => actions.handleOpenEdit(rpc)}
+                        className="opacity-0 group-hover:opacity-100 transition-all hover:bg-primary/10 hover:text-primary rounded-xl"
+                      >
+                        <Edit2 className="w-4 h-4 mr-2" />
+                        Configure Chain
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => actions.handleOpenDelete(rpc)} 
+                        className="opacity-0 group-hover:opacity-100 transition-all hover:bg-red-500/10 hover:text-red-500 rounded-xl"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </div>
                   </div>
-
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => rpc.chain && actions.handleOpenEdit({ ...rpc.chain, rpcUrl: rpc.url })}
-                      className="opacity-0 group-hover:opacity-100 transition-all hover:bg-primary/10 hover:text-primary rounded-xl"
-                    >
-                      <Edit2 className="w-4 h-4 mr-2" />
-                      Configure Chain
-                    </Button>
-                  </div>
-                </div>
-              </Card>
-            ))}
+                </Card>
+              );
+            })}
 
             {rpcData.meta && (
               <Pagination
@@ -193,23 +206,13 @@ export const AdminRPCsView = () => {
         <form onSubmit={actions.handleSubmit} className="space-y-4">
           {!editingChainId && (
             <div className="space-y-2">
-              <label className="text-sm font-medium text-muted">Select Target Chain</label>
-              <div className="relative">
-                <select
-                  className="w-full pl-4 pr-10 py-3 bg-white/5 border border-white/10 rounded-xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 appearance-none cursor-pointer"
-                  value={selectedChainId}
-                  onChange={(e) => actions.setSelectedChainId(e.target.value)}
-                  required
-                >
-                  <option value="">Choose a blockchain...</option>
-                  {chains?.items?.map((c: any) => (
-                    <option key={c.id} value={c.id.toString()}>{c.name}</option>
-                  ))}
-                </select>
-                <div className="absolute right-4 top-4 pointer-events-none text-muted">
-                  <Filter className="w-4 h-4" />
-                </div>
-              </div>
+              <ChainSelector
+                label="Select Target Chain"
+                chains={chains?.items || []}
+                selectedChainId={selectedChainId}
+                onSelect={actions.handleChainSelect}
+                placeholder="Choose a blockchain..."
+              />
             </div>
           )}
 
@@ -261,6 +264,27 @@ export const AdminRPCsView = () => {
           </p>
           <button type="submit" className="hidden" />
         </form>
+      </BaseModal>
+
+      <BaseModal
+        isOpen={isDeleteModalOpen}
+        onClose={actions.handleCloseModal}
+        title={`Remove Chain - ${formData.name}`}
+        description="Are you sure you want to remove this chain? This action cannot be undone and will remove the chain configuration."
+        onConfirm={actions.handleDelete}
+        confirmLabel="Remove Chain"
+        isConfirmLoading={isDeletePending}
+        isConfirmDisabled={false}
+      >
+        <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+            <div className="space-y-1">
+                <h4 className="text-sm font-bold text-red-500">Warning</h4>
+                <p className="text-xs text-red-400/90">
+                    Removing this chain will verify delete it from the system. Ensure no active contracts or services rely on this chain before proceeding.
+                </p>
+            </div>
+        </div>
       </BaseModal>
     </div>
   );

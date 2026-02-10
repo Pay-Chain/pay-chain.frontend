@@ -42,7 +42,7 @@ export const useAdminChains = () => {
     let caip2Id = chain.caip2;
     if (!caip2Id) {
       const namespace = chain.chainType === 'EVM' ? 'eip155' : 'solana';
-      caip2Id = `${namespace}:${chain.id}`;
+      caip2Id = `${namespace}:${chain.networkId || chain.chainId}`; // Use legacy chainId/networkId
     }
 
     setFormData({

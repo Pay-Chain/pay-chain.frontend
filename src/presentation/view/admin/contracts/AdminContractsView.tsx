@@ -3,7 +3,8 @@
 import { useAdminContracts } from './useAdminContracts';
 import { Card, Button, Input } from '@/presentation/components/atoms';
 import { BaseModal, DeleteConfirmationModal, Pagination } from '@/presentation/components/molecules';
-import { Plus, Trash2, Code, ShieldCheck, ArrowRightLeft, Search, Filter, Edit2, LayoutGrid } from 'lucide-react';
+import { ChainSelector } from '@/presentation/components/organisms';
+import { Plus, Trash2, Code, ShieldCheck, ArrowRightLeft, Search, Edit2, LayoutGrid } from 'lucide-react';
 
 export const AdminContractsView = () => {
   const { state, actions } = useAdminContracts();
@@ -50,20 +51,13 @@ export const AdminContractsView = () => {
             <Search className="absolute left-3 top-2.5 w-4 h-4 text-muted" />
           </div>
 
-          <div className="relative">
-            <select
-              className="pl-10 pr-8 py-2 bg-white/5 border border-white/10 rounded-full text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 appearance-none min-w-[160px] cursor-pointer text-sm"
-              value={filterChain}
-              onChange={(e) => actions.setFilterChain(e.target.value)}
-            >
-              <option value="">All Chains</option>
-              {chains?.items?.map((chain: any) => (
-                <option key={chain.id} value={chain.id}>
-                  {chain.name}
-                </option>
-              ))}
-            </select>
-            <Filter className="absolute left-3 top-2.5 w-4 h-4 text-muted" />
+          <div className="w-[200px]">
+            <ChainSelector
+                chains={chains?.items || []}
+                selectedChainId={filterChain}
+                onSelect={(chain) => actions.setFilterChain(chain?.id || '')}
+                placeholder="All Chains" 
+            />
           </div>
 
           <Button onClick={actions.handleOpenAdd} size="sm" glow className="rounded-full px-5">
@@ -196,18 +190,13 @@ export const AdminContractsView = () => {
               required
             />
             <div className="space-y-2">
-              <label className="text-sm font-medium text-muted">Chain</label>
-              <select
-                className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 appearance-none text-sm h-11"
-                value={formData.chainId}
-                onChange={(e) => actions.setFormData({ ...formData, chainId: e.target.value })}
-                required
-              >
-                <option value="" disabled>Select Chain</option>
-                {chains?.items?.map((c: any) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
+                <ChainSelector
+                    label="Chain"
+                    chains={chains?.items || []}
+                    selectedChainId={formData.chainId}
+                    onSelect={(chain) => actions.setFormData({ ...formData, chainId: chain?.id || '' })}
+                    placeholder="Select Chain"
+                />
             </div>
           </div>
           
