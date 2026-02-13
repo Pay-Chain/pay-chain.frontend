@@ -30,6 +30,7 @@ export default function Navbar() {
 
   const publicNav = [
     { href: '/', label: 'Home' },
+    { href: '/app', label: 'App' },
     { href: '/about', label: 'About' },
     { href: '/team', label: 'Team' },
   ];
@@ -168,7 +169,7 @@ export default function Navbar() {
             
             <div className="pt-6 border-t border-white/10">
               <div className="flex items-center justify-between mb-6 px-2">
-                 <span className="text-muted text-sm">Language</span>
+                 <span className="text-muted text-sm">{t('common.language')}</span>
                  <button
                     onClick={toggleLocale}
                     className="flex items-center gap-2 text-sm text-foreground bg-white/5 px-3 py-1.5 rounded-lg"

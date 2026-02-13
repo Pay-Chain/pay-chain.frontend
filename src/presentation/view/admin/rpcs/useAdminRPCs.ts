@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { useRpcList } from '@/presentation/hooks/useRpcList/useRpcList';
 import { useAdminChains, useUpdateChain, useDeleteChain } from '@/data/usecase/useAdmin';
 import { useDebounce } from '@/presentation/hooks/useDebounce';
+import { useTranslation } from '@/presentation/hooks';
 import { toast } from 'sonner';
 
 export const useAdminRPCs = () => {
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterChainId, setFilterChainId] = useState<string>('');
   const [filterActive, setFilterActive] = useState<string>(''); // "true", "false", ""
@@ -60,7 +62,7 @@ export const useAdminRPCs = () => {
     if (!chain) {
         chain = {
             id: rpc.chainId,
-            name: 'Unknown Chain',
+            name: `${t('admin.rpcs_view.chain_fallback_prefix')} ${rpc.chainId.substring(0, 8)}...`,
             symbol: '???',
             chainType: 'EVM', // Default
             rpcUrl: rpc.url,
@@ -86,7 +88,7 @@ export const useAdminRPCs = () => {
     }
 
     setFormData({
-      name: chain.name || 'Unknown Chain',
+      name: chain.name || `${t('admin.rpcs_view.chain_fallback_prefix')} ${rpc.chainId.substring(0, 8)}...`,
       chainId: caip2Id || '',
       rpcUrl: rpc.url || '', // Use RPC's URL not Chain's default
       explorerUrl: chain.explorerUrl || '',
@@ -130,18 +132,18 @@ export const useAdminRPCs = () => {
     e?.preventDefault();
     const targetId = editingChainId || selectedChainId;
     if (!targetId) {
-      toast.error('Please select a chain first');
+      toast.error(t('admin.rpcs_view.toasts.select_chain_first'));
       return;
     }
 
     updateChain.mutate({ id: targetId, data: { ...formData, id: targetId } }, {
       onSuccess: () => {
         handleCloseModal();
-        toast.success(`RPC connection updated for ${formData.name}`);
+        toast.success(`${t('admin.rpcs_view.toasts.update_success')} ${formData.name}`);
         refetch();
       },
       onError: (err: any) => {
-        toast.error(err.message || 'Failed to update connection');
+        toast.error(err.message || t('admin.rpcs_view.toasts.update_failed'));
       }
     });
   };
@@ -158,11 +160,11 @@ export const useAdminRPCs = () => {
      deleteChain.mutate(editingChainId, {
         onSuccess: () => {
            handleCloseModal();
-           toast.success('Chain removed');
+           toast.success(t('admin.rpcs_view.toasts.remove_success'));
            refetch();
         },
         onError: (err: any) => {
-           toast.error(err.message || 'Failed to remove chain');
+           toast.error(err.message || t('admin.rpcs_view.toasts.remove_failed'));
         }
      });
   };

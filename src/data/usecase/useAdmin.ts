@@ -72,10 +72,10 @@ export const useDeleteChain = () => {
   });
 };
 
-export const useAdminContracts = (page?: number, limit?: number) => {
+export const useAdminContracts = (page?: number, limit?: number, chainId?: string, type?: string) => {
   return useQuery({
-    queryKey: ['contracts', page, limit],
-    queryFn: () => adminRepository.getContracts(page, limit),
+    queryKey: ['contracts', page, limit, chainId, type],
+    queryFn: () => adminRepository.getContracts(page, limit, chainId, type),
   });
 };
 
@@ -105,6 +105,53 @@ export const useDeleteContract = () => {
     mutationFn: (id: string) => adminRepository.deleteContract(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contracts'] });
+    },
+  });
+};
+
+export const usePublicTeams = () => {
+  return useQuery({
+    queryKey: ['teams', 'public'],
+    queryFn: () => adminRepository.getPublicTeams(),
+  });
+};
+
+export const useAdminTeams = (search?: string) => {
+  return useQuery({
+    queryKey: ['admin', 'teams', search],
+    queryFn: () => adminRepository.getAdminTeams(search),
+  });
+};
+
+export const useCreateTeam = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: any) => adminRepository.createTeam(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'teams'] });
+      queryClient.invalidateQueries({ queryKey: ['teams', 'public'] });
+    },
+  });
+};
+
+export const useUpdateTeam = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) => adminRepository.updateTeam(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'teams'] });
+      queryClient.invalidateQueries({ queryKey: ['teams', 'public'] });
+    },
+  });
+};
+
+export const useDeleteTeam = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => adminRepository.deleteTeam(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'teams'] });
+      queryClient.invalidateQueries({ queryKey: ['teams', 'public'] });
     },
   });
 };

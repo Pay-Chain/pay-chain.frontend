@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useCreatePaymentMutation, useWalletsQuery } from '@/data/usecase';
 import { useWalletStore } from '@/presentation/hooks/useWalletStore';
@@ -29,7 +28,7 @@ export function useNewPayment() {
   const [error, setError] = useState<string | null>(null);
 
   const form = useForm<PaymentFormValues>({
-    resolver: zodResolver(paymentSchema),
+    mode: 'onChange',
     defaultValues: {
       sourceChainId: '',
       destChainId: '',
@@ -59,15 +58,27 @@ export function useNewPayment() {
   };
 
   const handleTokenSelect = (token: any) => {
-    setValue('sourceTokenAddress', token?.contractAddress || (token?.isNative ? '0x0000000000000000000000000000000000000000' : ''));
+    setValue('sourceTokenAddress', token?.address || (token?.isNative ? '0x0000000000000000000000000000000000000000' : ''));
     if (token?.decimals) {
       setValue('decimals', token.decimals);
     }
+    // Reset amount when token changes (decimals may differ)
+    setValue('amount', '');
     trigger('sourceTokenAddress');
   };
 
   const onSubmit = (data: z.infer<typeof paymentSchema>) => {
     setError(null);
+    const parsed = paymentSchema.safeParse(data);
+    if (!parsed.success) {
+      for (const issue of parsed.error.issues) {
+        const key = issue.path[0] as keyof PaymentFormValues | undefined;
+        if (key) {
+          form.setError(key, { message: issue.message });
+        }
+      }
+      return;
+    }
     
     if (!primaryWallet) {
       setError('Please connect a wallet first');
@@ -76,7 +87,7 @@ export function useNewPayment() {
 
     // Ensure decimals is present, default to 18 if not
     const requestData: CreatePaymentRequest = {
-      ...data,
+      ...parsed.data,
       decimals: data.decimals || 18,
     };
 

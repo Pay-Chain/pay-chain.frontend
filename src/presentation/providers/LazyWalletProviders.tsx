@@ -2,6 +2,8 @@
 
 import dynamic from 'next/dynamic';
 import { ReactNode } from 'react';
+import { WalletConnectModalHost } from '@/presentation/components/organisms';
+import { UnifiedWalletProvider } from '@/presentation/providers/UnifiedWalletProvider';
 
 const Web3Provider = dynamic(
   () => import('@/presentation/providers/Web3Provider'),
@@ -22,7 +24,10 @@ export default function LazyWalletProviders({
   return (
     <Web3Provider cookies={cookies}>
       <SolanaProvider>
-        {children}
+        <UnifiedWalletProvider>
+          {children}
+          <WalletConnectModalHost />
+        </UnifiedWalletProvider>
       </SolanaProvider>
     </Web3Provider>
   );

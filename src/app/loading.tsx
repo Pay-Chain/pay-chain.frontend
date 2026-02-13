@@ -1,4 +1,10 @@
+'use client';
+
+import { useTranslation } from '@/presentation/hooks';
+
 export default function Loading() {
+  const { t } = useTranslation();
+
   return (
     <div className="flex min-h-[70vh] w-full flex-col items-center justify-center animate-fade-in">
       {/* Gradient Spinner */}
@@ -8,7 +14,7 @@ export default function Loading() {
       </div>
       
       {/* Loading Text */}
-      <p className="text-muted mt-6 animate-pulse">Loading...</p>
+      <p className="text-muted mt-6 animate-pulse">{t('common.loading')}</p>
     </div>
   );
 }

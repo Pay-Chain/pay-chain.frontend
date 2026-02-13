@@ -19,7 +19,7 @@ export function PaymentsView() {
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent-purple/10 border border-accent-purple/20 mb-3">
             <CreditCard className="w-4 h-4 text-accent-purple" />
             <span className="text-xs text-accent-purple font-medium uppercase tracking-wider">
-              Transactions
+              {t('payments.badge')}
             </span>
           </div>
           <h1 className="heading-2 text-foreground">{t('payments.title')}</h1>
@@ -37,7 +37,7 @@ export function PaymentsView() {
         {isLoading ? (
           <div className="p-12 flex flex-col items-center justify-center">
             <div className="spinner-gradient mb-4" />
-            <p className="text-muted">Loading transactions...</p>
+            <p className="text-muted">{t('payments.loading_transactions')}</p>
           </div>
         ) : (
           <>
@@ -47,7 +47,7 @@ export function PaymentsView() {
             {pagination && pagination.totalPages > 1 && (
               <div className="flex items-center justify-between p-4 border-t border-white/10">
                 <p className="text-sm text-muted">
-                  Page <span className="text-foreground font-medium">{page}</span> of{' '}
+                  {t('common.page_of')} <span className="text-foreground font-medium">{page}</span> {t('common.of')}{' '}
                   <span className="text-foreground font-medium">{pagination.totalPages}</span>
                 </p>
                 <div className="flex items-center gap-2">

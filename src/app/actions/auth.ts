@@ -1,9 +1,10 @@
 'use server';
 
-import { decryptToken } from '@/core/security/token';
-import { validateSession } from '@/core/auth/auth_guard';
-
 import { cookies } from 'next/headers';
+import { ENV } from '@/core/config/env';
+
+const BACKEND_URL = ENV.BACKEND_URL;
+const INTERNAL_PROXY_SECRET = ENV.INTERNAL_PROXY_SECRET;
 
 /**
  * Server Action to get session expiry from the current 'token' cookie.
@@ -11,21 +12,22 @@ import { cookies } from 'next/headers';
  */
 export async function getSessionExpiry() {
   const cookieStore = await cookies();
-  const encryptedToken = cookieStore.get('token')?.value;
+  const sessionId = cookieStore.get('session_id')?.value;
 
-  if (!encryptedToken) return null;
+  if (!sessionId) return null;
 
   try {
-    // 1. Decrypt the outer JWE token
-    const token = await decryptToken(encryptedToken);
-    if (!token) return null;
-
-    // 2. Validate/Decode the inner JWT
-    const session = await validateSession(token);
-    if (!session || !session.exp) return null;
-
-    // Return expiration timestamp in seconds
-    return session.exp;
+    const response = await fetch(`${BACKEND_URL}/api/v1/auth/session-expiry`, {
+      method: 'GET',
+      headers: {
+        'X-Session-Id': sessionId,
+        ...(INTERNAL_PROXY_SECRET ? { 'X-Internal-Proxy-Secret': INTERNAL_PROXY_SECRET } : {}),
+      },
+      cache: 'no-store',
+    });
+    if (!response.ok) return null;
+    const payload = await response.json();
+    return payload?.data?.exp ?? payload?.exp ?? null;
   } catch (error) {
     console.error('[Action] Failed to get session expiry:', error);
     return null;

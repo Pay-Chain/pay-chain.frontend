@@ -10,10 +10,12 @@ import { ChainSelector } from '@/presentation/components/organisms/ChainSelector
 import { TokenSelector } from '@/presentation/components/organisms/TokenSelector';
 import { ChainItemData } from '@/presentation/components/molecules/ChainListItem';
 import { TokenItemData } from '@/presentation/components/molecules/TokenListItem';
+import { WalletConnectButton } from '@/presentation/components/molecules';
 import { useBalance } from 'wagmi';
 import { sanitizeNumber } from '@/core/utils/converters';
+import { validateAddress, sanitizeNumberWithDecimals, formatMoneyDisplay, stripMoneyFormat } from '@/core/utils/validators';
 import { formatUnits } from 'viem';
-import { useMemo } from 'react';
+import { useMemo, useCallback, useState, useEffect } from 'react';
 
 
 export function NewPaymentView() {
@@ -37,13 +39,14 @@ export function NewPaymentView() {
   const { data: chains } = useChainsQuery();
   const { data: tokens } = useTokensQuery();
 
-  // Map data to selector formats
+  // Map data to selector formats (include chainType for address validation)
   const chainItems: ChainItemData[] = useMemo(() =>
     chains?.items?.map(c => ({
       id: c.id.toString(),
       networkId: c.id.toString(),
       name: c.name,
       logoUrl: c.logoUrl,
+      chainType: c.chainType,
     })) || [],
     [chains]
   );
@@ -57,6 +60,7 @@ export function NewPaymentView() {
       address: t.contractAddress,
       isNative: t.isNative,
       chainId: t.chainId,
+      decimals: t.decimals,
     })) || [],
     [tokens]
   );
@@ -65,6 +69,25 @@ export function NewPaymentView() {
     if (!sourceChainId) return [];
     return tokenItems.filter(t => t.chainId === sourceChainId);
   }, [tokenItems, sourceChainId]);
+
+  // Derive dest chain type for address validation
+  const destChainType = useMemo(() => {
+    if (!destChainId) return '';
+    const chain = chainItems.find(c => c.id === destChainId);
+    return (chain as any)?.chainType || '';
+  }, [chainItems, destChainId]);
+
+  // Derive selected token info for money formatter
+  const selectedToken = useMemo(() => {
+    if (!sourceTokenAddress) return null;
+    return tokenItems.find(
+      t => t.address === sourceTokenAddress || 
+           (t.isNative && sourceTokenAddress === '0x0000000000000000000000000000000000000000')
+    ) || null;
+  }, [tokenItems, sourceTokenAddress]);
+
+  const selectedTokenDecimals = selectedToken?.decimals ?? 18;
+  const selectedTokenSymbol = selectedToken?.symbol ?? '';
 
   // Wagmi hooks for balance
   const { data: balanceData } = useBalance({
@@ -83,12 +106,45 @@ export function NewPaymentView() {
     return formatUnits(balanceData.value, balanceData.decimals);
   }, [balanceData]);
 
+  // Controlled display state for money formatting
+  const [displayAmount, setDisplayAmount] = useState('');
+
+  // Reset display when token changes
+  useEffect(() => {
+    setDisplayAmount('');
+  }, [sourceTokenAddress]);
+
   const handleMaxClick = () => {
     if (formattedBalance) {
       const sanitized = sanitizeNumber(formattedBalance);
-      setValue('amount', sanitized);
+      setValue('amount', sanitized, { shouldValidate: true });
+      setDisplayAmount(formatMoneyDisplay(sanitized));
     }
   };
+
+  // Amount onChange: strip formatting → sanitize decimals → store raw in form → format for display
+  const handleAmountChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = stripMoneyFormat(e.target.value);
+    const sanitized = sanitizeNumberWithDecimals(raw, selectedTokenDecimals);
+    setValue('amount', sanitized, { shouldValidate: true });
+    setDisplayAmount(formatMoneyDisplay(sanitized));
+  }, [selectedTokenDecimals, setValue]);
+
+  // Real-time address validation — uses independent state (form.setError gets overridden by zodResolver)
+  const receiverAddress = form.watch('receiverAddress');
+  const [addressError, setAddressError] = useState<string | undefined>(undefined);
+  useEffect(() => {
+    if (!receiverAddress || !destChainType) {
+      setAddressError(undefined);
+      return;
+    }
+    const result = validateAddress(receiverAddress, destChainType);
+    if (result !== true) {
+      setAddressError(result as string);
+    } else {
+      setAddressError(undefined);
+    }
+  }, [receiverAddress, destChainType]);
 
   return (
     <div className="max-w-2xl mx-auto space-y-6 animate-fade-in">
@@ -103,7 +159,7 @@ export function NewPaymentView() {
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-purple/10 border border-accent-purple/20 mb-2">
             <Send className="w-3 h-3 text-accent-purple" />
-            <span className="text-xs text-accent-purple font-medium">New Transfer</span>
+            <span className="text-xs text-accent-purple font-medium">{t('payments.new_transfer_badge')}</span>
           </div>
           <h1 className="heading-2 text-foreground">{t('payments.new_payment')}</h1>
         </div>
@@ -128,7 +184,7 @@ export function NewPaymentView() {
                   chains={chainItems}
                   selectedChainId={sourceChainId}
                   onSelect={handleSourceChainSelect}
-                  placeholder="Select Source Chain"
+                  placeholder={t('payments.select_source_chain')}
                 />
                 {form.formState.errors.sourceChainId && (
                   <p className="text-sm font-medium text-destructive animate-in slide-in-from-top-1 fade-in-20">
@@ -143,7 +199,7 @@ export function NewPaymentView() {
                   chains={chainItems}
                   selectedChainId={destChainId}
                   onSelect={handleDestChainSelect}
-                  placeholder="Select Destination Chain"
+                  placeholder={t('payments.select_destination_chain')}
                 />
                 {form.formState.errors.destChainId && (
                   <p className="text-sm font-medium text-destructive animate-in slide-in-from-top-1 fade-in-20">
@@ -153,11 +209,13 @@ export function NewPaymentView() {
               </div>
             </div>
 
+            {/* Receiver Address — disabled until dest chain selected */}
             <Input
               label={t('payments.receiver')}
-              placeholder="0x..."
+              placeholder={destChainId ? '0x...' : t('payments.select_destination_chain_first')}
+              disabled={!destChainId}
               {...form.register('receiverAddress')}
-              error={form.formState.errors.receiverAddress?.message}
+              error={addressError || form.formState.errors.receiverAddress?.message}
             />
 
             {/* Token and Amount */}
@@ -169,7 +227,7 @@ export function NewPaymentView() {
                   selectedTokenId={tokenItems.find(t => t.address === sourceTokenAddress || (t.isNative && sourceTokenAddress === '0x0000000000000000000000000000000000000000'))?.id}
                   onSelect={handleTokenSelect}
                   disabled={!sourceChainId}
-                  placeholder={sourceChainId ? "Select Token" : "Select Chain First"}
+                  placeholder={sourceChainId ? t('payments.select_token') : t('payments.select_chain_first')}
                 />
                 {form.formState.errors.sourceTokenAddress && (
                   <p className="text-sm font-medium text-destructive animate-in slide-in-from-top-1 fade-in-20">
@@ -189,24 +247,28 @@ export function NewPaymentView() {
                  <div className="relative">
                     <Input
                         type="text"
-                        placeholder="0.0"
-                        {...form.register('amount', {
-                            onChange: (e) => {
-                                const sanitized = sanitizeNumber(e.target.value);
-                                setValue('amount', sanitized);
-                            }
-                        })}
-                        className="pr-16" // Make room for MAX button
+                        placeholder={sourceTokenAddress ? '0' : t('payments.select_token_first')}
+                        disabled={!sourceTokenAddress}
+                        value={displayAmount}
+                        onChange={handleAmountChange}
+                        className="pr-24"
                     />
-                    {balanceData && (
-                        <button
-                            type="button"
-                            onClick={handleMaxClick}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-accent-purple hover:text-accent-purple/80 transition-colors bg-accent-purple/10 hover:bg-accent-purple/20 px-2 py-1 rounded"
-                        >
-                            MAX
-                        </button>
-                    )}
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                      {selectedTokenSymbol && (
+                        <span className="text-xs font-medium text-muted-foreground select-none">
+                          {selectedTokenSymbol}
+                        </span>
+                      )}
+                      {balanceData && (
+                          <button
+                              type="button"
+                              onClick={handleMaxClick}
+                              className="text-xs font-bold text-accent-purple hover:text-accent-purple/80 transition-colors bg-accent-purple/10 hover:bg-accent-purple/20 px-2 py-1 rounded"
+                          >
+                              MAX
+                          </button>
+                      )}
+                    </div>
                  </div>
                  {form.formState.errors.amount && (
                     <p className="text-sm font-medium text-destructive animate-in slide-in-from-top-1 fade-in-20">
@@ -225,7 +287,10 @@ export function NewPaymentView() {
               </div>
               <div>
                 <p className="text-amber-200 font-medium">{t('payments.connect_wallet_notice')}</p>
-                <p className="text-amber-200/60 text-sm mt-1">Connect your wallet to continue with the payment.</p>
+                <p className="text-amber-200/60 text-sm mt-1">{t('payments.connect_wallet_continue_notice')}</p>
+                <div className="mt-3">
+                  <WalletConnectButton size="sm" connectLabel={t('common.connect')} />
+                </div>
               </div>
             </div>
           )}
@@ -236,7 +301,7 @@ export function NewPaymentView() {
                 <AlertTriangle className="w-5 h-5 text-red-400" />
               </div>
               <div>
-                <p className="text-red-400 font-medium">Error</p>
+                <p className="text-red-400 font-medium">{t('payments.error_label')}</p>
                 <p className="text-red-400/80 text-sm mt-1">{error}</p>
               </div>
             </div>
@@ -248,7 +313,7 @@ export function NewPaymentView() {
                  <AlertTriangle className="w-5 h-5 text-red-400" />
                </div>
                <div>
-                 <p className="text-red-400 font-medium">Form Error</p>
+                 <p className="text-red-400 font-medium">{t('payments.form_error_label')}</p>
                  <p className="text-red-400/80 text-sm mt-1">{form.formState.errors.root.message}</p>
                </div>
              </div>

@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { cn } from '@/core/utils';
+import { useTranslation } from '@/presentation/hooks';
 import { Search, X } from 'lucide-react';
 
 export interface ChainSearchInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -10,6 +11,7 @@ export interface ChainSearchInputProps extends React.InputHTMLAttributes<HTMLInp
 
 const ChainSearchInput = React.forwardRef<HTMLInputElement, ChainSearchInputProps>(
   ({ className, value, onChange, onClear, ...props }, ref) => {
+    const { t } = useTranslation();
     return (
       <div className="relative top-0 z-10 px-2 py-2 bg-background/95 backdrop-blur-sm border-b border-white/5">
         <Search 
@@ -28,7 +30,7 @@ const ChainSearchInput = React.forwardRef<HTMLInputElement, ChainSearchInputProp
             'transition-all duration-200',
             className
           )}
-          placeholder="Search chains..."
+          placeholder={t('common.search_chains')}
           {...props}
         />
         

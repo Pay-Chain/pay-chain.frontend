@@ -5,4 +5,6 @@ export { Pagination } from './Pagination/Pagination';
 export * from './SessionTimeoutModal';
 export * from './ChainListItem';
 export * from './ChainSearchInput';
-export type { WalletConnectButtonProps, ChainType } from './WalletConnectButton';
+export * from './WalletConnectActions';
+export * from './WalletNetworkOptionCard';
+export type { WalletConnectButtonProps } from './WalletConnectButton';

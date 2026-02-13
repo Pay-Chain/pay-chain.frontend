@@ -15,23 +15,22 @@ export const metadata: Metadata = {
   title: 'Pay-Chain | Cross-Chain Stablecoin Payments',
   description: 'The fastest way to send and receive cross-chain stablecoin payments. Built for the future of decentralized finance.',
   keywords: ['crypto', 'payments', 'stablecoin', 'cross-chain', 'defi', 'solana', 'ethereum'],
+  icons: {
+    icon: '/favicon.png',
+    shortcut: '/favicon.png',
+    apple: '/favicon.png',
+  },
   openGraph: {
     title: 'Pay-Chain | Cross-Chain Stablecoin Payments',
     description: 'The fastest way to send and receive cross-chain stablecoin payments.',
     type: 'website',
   },
 };
-
-import { cookies } from 'next/headers';
-
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('token')?.value;
-
   return (
     <html lang="en" className="dark">
       <head>
@@ -57,7 +56,7 @@ export default async function RootLayout({
         <div className="relative z-10">
           <I18nProvider>
             <QueryProvider>
-              <AuthProvider initialToken={token}>
+              <AuthProvider>
                 {children}
                 <Toaster position="top-center" richColors />
               </AuthProvider>

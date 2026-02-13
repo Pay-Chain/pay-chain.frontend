@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { useAdminMerchants as useAdminMerchantsQuery, useUpdateMerchantStatus } from '@/data/usecase/useAdmin';
 import { useDebounce } from '@/presentation/hooks/useDebounce';
 import { toast } from 'sonner';
+import { useTranslation } from '@/presentation/hooks';
 
 export const useAdminMerchants = () => {
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
@@ -20,13 +22,13 @@ export const useAdminMerchants = () => {
   ) || [];
 
   const handleStatusUpdate = (id: string, status: string) => {
-    if (confirm(`Are you sure you want to mark this merchant as ${status}?`)) {
+    if (confirm(t('admin.merchants_view.toasts.confirm_status_change'))) {
       updateStatus({ id, status }, {
         onSuccess: () => {
-          toast.success(`Merchant ${status} successfully`);
+          toast.success(t('admin.merchants_view.toasts.update_success'));
           refetch();
         },
-        onError: (err: any) => toast.error(err.message || 'Failed to update status'),
+        onError: (err: any) => toast.error(err.message || t('admin.merchants_view.toasts.update_failed')),
       });
     }
   };

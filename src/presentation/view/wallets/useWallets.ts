@@ -2,7 +2,6 @@
 
 import { useWalletStore } from '@/presentation/hooks';
 import { useWalletsQuery } from '@/data/usecase';
-import { useAppKit } from '@reown/appkit/react';
 import { useEffect } from 'react';
 
 export function useWallets() {
@@ -15,7 +14,6 @@ export function useWallets() {
   } = useWalletStore();
 
   const { data: walletsData, isLoading } = useWalletsQuery();
-  const { open } = useAppKit();
 
   useEffect(() => {
     if (walletsData?.wallets) {
@@ -23,16 +21,10 @@ export function useWallets() {
     }
   }, [walletsData, syncWithServer]);
 
-  const connectWallet = () => {
-    // Open AppKit modal for wallet connection
-    open({ view: 'Connect' });
-  };
-
   return {
     wallets,
     primaryWallet,
     isLoading,
-    connectWallet,
     disconnectWallet,
     setPrimaryWallet,
   };

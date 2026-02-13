@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { Button, Input } from '@/presentation/components/atoms';
+import { WalletConnectButton } from '@/presentation/components/molecules';
 import { useRegister } from './useRegister';
 import { useTranslation } from '@/presentation/hooks';
 import { Rocket, Wallet, Check, ArrowLeft } from 'lucide-react';
@@ -14,7 +15,6 @@ export function RegisterView() {
     isPending,
     address,
     isConnected,
-    open,
     handleAccountSubmit,
     handleFinalSubmit
   } = useRegister();
@@ -34,7 +34,7 @@ export function RegisterView() {
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent-green/10 border border-accent-green/20 mb-6">
             <Rocket className="w-4 h-4 text-accent-green" />
-            <span className="text-sm text-accent-green font-medium">Get Started Today</span>
+            <span className="text-sm text-accent-green font-medium">{t('auth.register_badge')}</span>
           </div>
           <h1 className="heading-1 text-foreground">{t('auth.create_account')}</h1>
           <p className="body-lg mt-3">{t('auth.create_account_subtitle')}</p>
@@ -86,7 +86,7 @@ export function RegisterView() {
               <Input
                 label={t('auth.name')}
                 id="name"
-                placeholder="John Doe"
+                placeholder={t('auth.name_placeholder')}
                 {...form.register('name')}
                 error={form.formState.errors.name?.message}
               />
@@ -94,7 +94,7 @@ export function RegisterView() {
                 label={t('auth.email')}
                 id="email"
                 type="email"
-                placeholder="you@example.com"
+                placeholder={t('auth.email_placeholder')}
                 {...form.register('email')}
                 error={form.formState.errors.email?.message}
               />
@@ -102,7 +102,7 @@ export function RegisterView() {
                 label={t('auth.password')}
                 id="password"
                 type="password"
-                placeholder="••••••••"
+                placeholder={t('auth.password_placeholder')}
                 {...form.register('password')}
                 error={form.formState.errors.password?.message}
               />
@@ -110,7 +110,7 @@ export function RegisterView() {
                 label={t('auth.confirm_password')}
                 id="confirmPassword"
                 type="password"
-                placeholder="••••••••"
+                placeholder={t('auth.confirm_password_placeholder')}
                 {...form.register('confirmPassword')}
                 error={form.formState.errors.confirmPassword?.message}
               />
@@ -148,9 +148,7 @@ export function RegisterView() {
                   </div>
                 </div>
               ) : (
-                <Button onClick={() => open()} variant="secondary" className="w-full py-4">
-                  {t('wallets.connect')}
-                </Button>
+                <WalletConnectButton size="default" className="w-full py-4" connectLabel={t('wallets.connect')} />
               )}
 
               <Button
@@ -168,7 +166,7 @@ export function RegisterView() {
 
           <div className="my-8 flex items-center gap-4">
             <div className="flex-1 h-px bg-white/10" />
-            <span className="text-sm text-muted">or</span>
+            <span className="text-sm text-muted">{t('common.or')}</span>
             <div className="flex-1 h-px bg-white/10" />
           </div>
 

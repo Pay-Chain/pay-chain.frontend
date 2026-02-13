@@ -4,6 +4,7 @@ import * as React from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { Modal } from '../atoms/Modal';
 import { Button } from '../atoms/Button';
+import { useTranslation } from '@/presentation/hooks';
 
 interface DeleteConfirmationModalProps {
   isOpen: boolean;
@@ -22,6 +23,8 @@ const DeleteConfirmationModal = ({
   description = 'This action cannot be undone. This will permanently delete the item.',
   isLoading = false,
 }: DeleteConfirmationModalProps) => {
+  const { t } = useTranslation();
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} className="max-w-md shadow-red-500/20 shadow-2xl border-red-500/20">
       <div className="p-6 text-center relative z-10">
@@ -40,14 +43,14 @@ const DeleteConfirmationModal = ({
             className="w-full shadow-red-500/20 hover:shadow-red-500/40"
             glow
           >
-            Delete Item
+            {t('common.delete')}
           </Button>
           <Button 
             variant="ghost" 
             onClick={onClose}
             className="w-full text-muted hover:text-foreground"
           >
-            Cancel
+            {t('common.cancel')}
           </Button>
         </div>
       </div>

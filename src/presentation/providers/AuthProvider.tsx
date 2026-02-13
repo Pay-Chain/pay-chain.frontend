@@ -1,21 +1,21 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { useCurrentUser, useRefreshTokenMutation, logout as performLogout } from '@/data/usecase';
+import { useRefreshTokenMutation, logout as performLogout } from '@/data/usecase';
 import { getSessionExpiry } from '@/app/actions/auth';
 import { SessionTimeoutModal } from '@/presentation/components/molecules';
+import { useTranslation } from '@/presentation/hooks';
 import { toast } from 'sonner';
 
 interface AuthProviderProps {
   children: React.ReactNode;
-  initialToken?: string;
 }
 
 const CHECK_INTERVAL = 1000 * 60 * 1; // Check every 1 minute
 const TIMEOUT_THRESHOLD = 5 * 60; // 5 minutes before expiry
 
-export default function AuthProvider({ children, initialToken }: AuthProviderProps) {
-  const { isLoading: isUserLoading, refetch: refetchUser } = useCurrentUser();
+export default function AuthProvider({ children }: AuthProviderProps) {
+  const { t } = useTranslation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const refreshTokenMutation = useRefreshTokenMutation();
   
@@ -68,7 +68,7 @@ export default function AuthProvider({ children, initialToken }: AuthProviderPro
       }
 
       console.log('[AuthProvider] Received session expired event');
-      toast.error('Session expired. Please log in again.');
+      toast.error(t('toasts.auth.session_expired'));
       performLogout();
     };
 
@@ -92,11 +92,14 @@ export default function AuthProvider({ children, initialToken }: AuthProviderPro
       // For now, let's assume we need to pass the token if we have it, or just empty string.
       await refreshTokenMutation.mutateAsync({ refreshToken: '' });
       setIsModalOpen(false);
-      toast.success('Session extended successfully');
+      lastWarnedExp.current = null;
+      toast.success(t('toasts.auth.session_extended'));
+      // Re-check to capture updated token/session expiry state.
+      checkSession();
       
       // For now, let's assume the refresh was successful.
     } catch (error) {
-      toast.error('Failed to extend session. Please log in again.');
+      toast.error(t('toasts.auth.session_extend_failed'));
       performLogout();
     }
   };

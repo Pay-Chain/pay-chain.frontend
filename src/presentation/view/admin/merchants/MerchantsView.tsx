@@ -3,8 +3,10 @@
 import { useAdminMerchants } from './useAdminMerchants';
 import { Card, Button } from '@/presentation/components/atoms';
 import { CheckCircle, XCircle, Store, AlertCircle, Search, Loader2, LayoutGrid } from 'lucide-react';
+import { useTranslation } from '@/presentation/hooks';
 
 export function MerchantsView() {
+  const { t } = useTranslation();
   const { state, actions } = useAdminMerchants();
   const {
     searchTerm,
@@ -14,11 +16,21 @@ export function MerchantsView() {
     isSearching
   } = state;
 
+  const getStatusLabel = (status: string) => {
+    const normalized = status.toLowerCase();
+    if (normalized === 'pending') return t('admin.merchants_view.status.pending');
+    if (normalized === 'verified') return t('admin.merchants_view.status.verified');
+    if (normalized === 'active') return t('admin.merchants_view.status.active');
+    if (normalized === 'rejected') return t('admin.merchants_view.status.rejected');
+    if (normalized === 'suspended') return t('admin.merchants_view.status.suspended');
+    return status;
+  };
+
   if (isLoading && (!filteredMerchants || filteredMerchants.length === 0)) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
         <Loader2 className="w-10 h-10 animate-spin text-primary" />
-        <p className="text-muted text-sm">Loading merchants...</p>
+        <p className="text-muted text-sm">{t('admin.merchants_view.loading')}</p>
       </div>
     );
   }
@@ -27,13 +39,13 @@ export function MerchantsView() {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Merchant Management</h1>
-          <p className="text-sm text-muted">Review and manage merchant applications</p>
+          <h1 className="text-2xl font-bold text-foreground">{t('admin.merchants_view.title')}</h1>
+          <p className="text-sm text-muted">{t('admin.merchants_view.subtitle')}</p>
         </div>
         <div className="relative">
           <input
             type="text"
-            placeholder="Search merchants..."
+            placeholder={t('admin.merchants_view.search_placeholder')}
             className="pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-full text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 w-full md:w-64 transition-all text-sm"
             value={searchTerm}
             onChange={(e) => actions.setSearchTerm(e.target.value)}
@@ -54,8 +66,8 @@ export function MerchantsView() {
             <div className="bg-white/5 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-white/10 shadow-glow-sm">
               <LayoutGrid className="w-8 h-8 text-muted/50" />
             </div>
-            <h3 className="text-lg font-bold text-foreground">No merchants found</h3>
-            <p className="text-muted text-sm max-w-xs mx-auto mt-1">Adjust your search to find what you're looking for.</p>
+            <h3 className="text-lg font-bold text-foreground">{t('admin.merchants_view.empty_title')}</h3>
+            <p className="text-muted text-sm max-w-xs mx-auto mt-1">{t('admin.merchants_view.empty_desc')}</p>
           </div>
         ) : (
           filteredMerchants.map((merchant: any) => (
@@ -70,15 +82,15 @@ export function MerchantsView() {
                     <div className="text-xs text-muted space-y-1.5 mt-2">
                        <div className="flex items-center gap-2">
                          <span className="w-1 h-1 rounded-full bg-primary/40"></span>
-                         <span>Email: <span className="text-foreground/80">{merchant.businessEmail}</span></span>
+                         <span>{t('admin.merchants_view.email_label')}: <span className="text-foreground/80">{merchant.businessEmail}</span></span>
                        </div>
                        <div className="flex items-center gap-2">
                          <span className="w-1 h-1 rounded-full bg-primary/40"></span>
-                         <span>Type: <span className="text-foreground/80 capitalize">{merchant.merchantType}</span></span>
+                         <span>{t('admin.merchants_view.type_label')}: <span className="text-foreground/80 capitalize">{merchant.merchantType}</span></span>
                        </div>
                        {merchant.taxId && (
                          <div className="flex items-center gap-2 text-[11px] font-mono mt-1 opacity-70">
-                            TRN: {merchant.taxId}
+                            {t('admin.merchants_view.trn_label')}: {merchant.taxId}
                          </div>
                        )}
                     </div>
@@ -94,7 +106,7 @@ export function MerchantsView() {
                     {merchant.status === 'verified' || merchant.status === 'active' ? <CheckCircle className="w-3 h-3" /> :
                      merchant.status === 'rejected' || merchant.status === 'suspended' ? <XCircle className="w-3 h-3" /> :
                      <AlertCircle className="w-3 h-3" />}
-                    <span className="uppercase">{merchant.status}</span>
+                    <span className="uppercase">{getStatusLabel(merchant.status)}</span>
                   </div>
 
                   {merchant.status === 'pending' && (
@@ -105,7 +117,7 @@ export function MerchantsView() {
                         onClick={() => actions.handleStatusUpdate(merchant.id, 'verified')}
                         disabled={isUpdating}
                         className="p-2 h-10 w-10 text-accent-green hover:bg-accent-green/10 rounded-xl border border-white/5"
-                        title="Approve"
+                        title={t('admin.merchants_view.approve')}
                       >
                         <CheckCircle className="w-5 h-5" />
                       </Button>
@@ -115,7 +127,7 @@ export function MerchantsView() {
                         onClick={() => actions.handleStatusUpdate(merchant.id, 'rejected')}
                         disabled={isUpdating}
                         className="p-2 h-10 w-10 text-red-400 hover:bg-red-500/10 rounded-xl border border-white/5"
-                        title="Reject"
+                        title={t('admin.merchants_view.reject')}
                       >
                         <XCircle className="w-5 h-5" />
                       </Button>

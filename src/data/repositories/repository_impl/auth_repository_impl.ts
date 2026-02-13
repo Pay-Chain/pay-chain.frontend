@@ -4,7 +4,7 @@
  */
 import { authDataSource } from '../../data_source';
 import type { IAuthRepository } from '../repository/auth_repository';
-import type { LoginRequest, RegisterRequest, VerifyEmailRequest, RefreshTokenRequest } from '../../model/request';
+import type { LoginRequest, RegisterRequest, VerifyEmailRequest, RefreshTokenRequest, ChangePasswordRequest } from '../../model/request';
 import type { User } from '../../model/entity';
 
 
@@ -38,6 +38,10 @@ class AuthRepositoryImpl implements IAuthRepository {
 
   async refreshToken(input: RefreshTokenRequest) {
     return authDataSource.refreshToken(input);
+  }
+
+  async changePassword(input: ChangePasswordRequest) {
+    return authDataSource.changePassword(input);
   }
 
   getCurrentUser() {

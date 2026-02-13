@@ -6,6 +6,7 @@ export const API_ENDPOINTS = {
   AUTH_VERIFY_EMAIL: '/v1/auth/verify-email',
   AUTH_REFRESH: '/v1/auth/refresh',
   AUTH_ME: '/v1/auth/me',
+  AUTH_CHANGE_PASSWORD: '/v1/auth/change-password',
 
   // Payments
   PAYMENTS: '/v1/payments',
@@ -36,6 +37,8 @@ export const API_ENDPOINTS = {
   ADMIN_CHAIN_BY_ID: (id: number | string) => `/v1/admin/chains/${id}`,
   ADMIN_RPCS: '/v1/admin/rpcs',
   ADMIN_TOKENS: '/v1/admin/tokens',
+  ADMIN_TEAMS: '/v1/admin/teams',
+  ADMIN_TEAM_BY_ID: (id: string) => `/v1/admin/teams/${id}`,
 
   // Chains
   CHAINS: '/v1/chains',
@@ -44,6 +47,9 @@ export const API_ENDPOINTS = {
   TOKENS: '/v1/tokens',
   TOKENS_STABLECOINS: '/v1/tokens/stablecoins',
 
+  // Teams
+  TEAMS: '/v1/teams',
+
   // Smart Contracts
   CONTRACTS: '/v1/contracts',
   CONTRACT_BY_ID: (id: string) => `/v1/contracts/${id}`,
@@ -51,4 +57,11 @@ export const API_ENDPOINTS = {
 
   // Webhooks (internal)
   WEBHOOK_INDEXER: '/v1/webhooks/indexer',
+
+  // API Keys
+  API_KEYS: '/v1/api-keys',
+  API_KEY_BY_ID: (id: string) => `/v1/api-keys/${id}`,
+
+  // Payment App (Public)
+  PAYMENT_APP: '/v1/payment-app',
 } as const;

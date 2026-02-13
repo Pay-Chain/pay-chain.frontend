@@ -3,9 +3,11 @@
 import { useHome } from './useHome';
 import { Button } from '@/presentation/components/atoms';
 import { RefreshCw, ArrowRight, AlertTriangle, CreditCard } from 'lucide-react';
+import { useTranslation } from '@/presentation/hooks';
 
 export function HomeView() {
   const { payments, isLoading, error, handleRefresh } = useHome();
+  const { t } = useTranslation();
 
   const getStatusStyles = (status: string) => {
     switch (status) {
@@ -18,11 +20,20 @@ export function HomeView() {
     }
   };
 
+  const getStatusLabel = (status: string) => {
+    const normalized = status.toLowerCase();
+    if (normalized === 'completed') return t('home.status.completed');
+    if (normalized === 'pending') return t('home.status.pending');
+    if (normalized === 'failed') return t('home.status.failed');
+    if (normalized === 'expired') return t('home.status.expired');
+    return status;
+  };
+
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center p-16 animate-fade-in">
         <div className="spinner-gradient mb-4" />
-        <p className="text-muted">Loading payments...</p>
+        <p className="text-muted">{t('home.loading_payments')}</p>
       </div>
     );
   }
@@ -34,12 +45,12 @@ export function HomeView() {
           <AlertTriangle className="w-10 h-10 text-red-400" />
         </div>
         <div className="text-center">
-          <h3 className="heading-3 text-foreground mb-2">Something went wrong</h3>
+          <h3 className="heading-3 text-foreground mb-2">{t('home.error_title')}</h3>
           <p className="text-red-400">{error}</p>
         </div>
         <Button onClick={handleRefresh} variant="secondary">
           <RefreshCw className="w-4 h-4" />
-          Try Again
+          {t('home.try_again')}
         </Button>
       </div>
     );
@@ -53,14 +64,14 @@ export function HomeView() {
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent-purple/10 border border-accent-purple/20 mb-3">
             <CreditCard className="w-4 h-4 text-accent-purple" />
             <span className="text-xs text-accent-purple font-medium uppercase tracking-wider">
-              Overview
+              {t('home.badge')}
             </span>
           </div>
-          <h1 className="heading-2 text-foreground">Payments</h1>
+          <h1 className="heading-2 text-foreground">{t('home.title')}</h1>
         </div>
         <Button onClick={handleRefresh} variant="secondary">
           <RefreshCw className="w-4 h-4" />
-          Refresh
+          {t('home.refresh')}
         </Button>
       </div>
 
@@ -70,9 +81,9 @@ export function HomeView() {
           <div className="w-20 h-20 bg-surface border border-white/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
             <CreditCard className="w-10 h-10 text-muted" />
           </div>
-          <h3 className="heading-3 text-foreground mb-2">No payments found</h3>
+          <h3 className="heading-3 text-foreground mb-2">{t('home.no_payments_title')}</h3>
           <p className="body max-w-sm mx-auto">
-            Your payment history will appear here once you make your first transaction.
+            {t('home.no_payments_desc')}
           </p>
         </div>
       ) : (
@@ -100,7 +111,7 @@ export function HomeView() {
                   </div>
                 </div>
                 <span className={`px-3 py-1 text-xs font-medium rounded-full border ${getStatusStyles(payment.status)}`}>
-                  {payment.status}
+                  {getStatusLabel(payment.status)}
                 </span>
               </div>
             </div>

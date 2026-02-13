@@ -1,6 +1,7 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/presentation/components/atoms';
+import { useTranslation } from '@/presentation/hooks';
 
 interface PaginationProps {
   currentPage: number;
@@ -15,6 +16,7 @@ export const Pagination: React.FC<PaginationProps> = ({
   onPageChange,
   isLoading
 }) => {
+  const { t } = useTranslation();
   if (totalPages <= 1) return null;
 
   const getPages = () => {
@@ -45,7 +47,7 @@ export const Pagination: React.FC<PaginationProps> = ({
           variant="secondary"
           size="sm"
         >
-          Previous
+          {t('common.previous')}
         </Button>
         <Button
           onClick={() => onPageChange(currentPage + 1)}
@@ -53,18 +55,18 @@ export const Pagination: React.FC<PaginationProps> = ({
           variant="secondary"
           size="sm"
         >
-          Next
+          {t('common.next')}
         </Button>
       </div>
       <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-center">
-        <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+        <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label={t('common.pagination')}>
           <Button
             onClick={() => onPageChange(currentPage - 1)}
             disabled={currentPage === 1 || isLoading}
             variant="ghost"
             className="rounded-l-md px-2"
           >
-            <span className="sr-only">Previous</span>
+            <span className="sr-only">{t('common.previous')}</span>
             <ChevronLeft className="h-5 w-5" />
           </Button>
           
@@ -93,7 +95,7 @@ export const Pagination: React.FC<PaginationProps> = ({
             variant="ghost"
             className="rounded-r-md px-2"
           >
-            <span className="sr-only">Next</span>
+            <span className="sr-only">{t('common.next')}</span>
             <ChevronRight className="h-5 w-5" />
           </Button>
         </nav>

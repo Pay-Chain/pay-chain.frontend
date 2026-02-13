@@ -106,9 +106,23 @@ export interface PaymentRequest {
   amount: string;
   decimals: number;
   description?: string;
-  status: 'pending' | 'completed' | 'expired' | 'cancelled';
+  status: 'PENDING' | 'COMPLETED' | 'EXPIRED' | 'CANCELLED';
   expiresAt: string;
   txHash?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// API Key entity
+export interface ApiKey {
+  id: string;
+  name: string;
+  keyHash: string;
+  secretMasked: string;
+  permissions: string[];
+  isActive: boolean;
+  lastUsedAt?: string;
+  expiresAt?: string;
   createdAt: string;
   updatedAt: string;
 }

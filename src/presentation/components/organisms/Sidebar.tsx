@@ -38,6 +38,7 @@ export const secondaryNavItems = [
 export const adminNavItems = [
   { href: '/admin', labelKey: 'admin.dashboard', icon: Shield },
   { href: '/admin/users', labelKey: 'admin.users', icon: Users },
+  { href: '/admin/teams', labelKey: 'admin.teams', icon: Users },
   { href: '/admin/merchants', labelKey: 'admin.merchants', icon: Store },
   { href: '/admin/chains', labelKey: 'admin.chains', icon: LinkIcon },
   { href: '/admin/contracts', labelKey: 'admin.contracts', icon: Code2 },
@@ -49,6 +50,7 @@ export default function Sidebar() {
   const pathname = usePathname();
   const { user, logout, isLoading } = useAuthStore();
   const { t, locale, setLocale } = useTranslation();
+  const canSeeAdminNav = pathname.startsWith('/admin') || user?.role === 'ADMIN' || user?.role === 'SUB_ADMIN';
 
   const toggleLocale = () => {
     setLocale(locale === 'en' ? 'id' : 'en');
@@ -142,13 +144,13 @@ export default function Sidebar() {
         </div>
 
         {/* Admin Navigation */}
-        {isLoading ? (
+        {isLoading && !canSeeAdminNav ? (
           <div className="space-y-3 mt-6 px-3">
              <div className="h-2 w-12 bg-white/5 rounded animate-pulse" />
              <div className="h-8 w-full bg-white/5 rounded-xl animate-pulse" />
              <div className="h-8 w-full bg-white/5 rounded-xl animate-pulse" />
           </div>
-        ) : (user?.role === 'ADMIN' || user?.role === 'SUB_ADMIN') && (
+        ) : canSeeAdminNav && (
           <>
             <div className="my-3 h-px bg-white/10" />
             <div className="space-y-0.5">

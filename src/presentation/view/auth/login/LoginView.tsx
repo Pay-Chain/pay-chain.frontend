@@ -22,7 +22,7 @@ export function LoginView() {
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent-purple/10 border border-accent-purple/20 mb-6">
             <Sparkles className="w-4 h-4 text-accent-purple" />
-            <span className="text-sm text-accent-purple font-medium">Welcome to Pay-Chain</span>
+            <span className="text-sm text-accent-purple font-medium">{t('auth.login_badge')}</span>
           </div>
           <h1 className="heading-1 text-foreground">{t('auth.welcome')}</h1>
           <p className="body-lg mt-3">{t('auth.sign_in_subtitle')}</p>
@@ -35,7 +35,7 @@ export function LoginView() {
               label={t('auth.email')}
               id="email"
               type="email"
-              placeholder="you@example.com"
+              placeholder={t('auth.email_placeholder')}
               {...form.register('email')}
               error={form.formState.errors.email?.message}
             />
@@ -44,7 +44,7 @@ export function LoginView() {
               label={t('auth.password')}
               id="password"
               type="password"
-              placeholder="••••••••"
+              placeholder={t('auth.password_placeholder')}
               {...form.register('password')}
               error={form.formState.errors.password?.message}
             />
@@ -86,7 +86,7 @@ export function LoginView() {
 
           <div className="my-8 flex items-center gap-4">
             <div className="flex-1 h-px bg-white/10" />
-            <span className="text-sm text-muted">or</span>
+            <span className="text-sm text-muted">{t('common.or')}</span>
             <div className="flex-1 h-px bg-white/10" />
           </div>
 

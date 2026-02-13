@@ -12,6 +12,18 @@ export interface AdminMerchantUpdateInput {
   status: string;
 }
 
+export interface TeamMemberPayload {
+  name: string;
+  role: string;
+  bio: string;
+  imageUrl: string;
+  githubUrl?: string;
+  twitterUrl?: string;
+  linkedinUrl?: string;
+  displayOrder: number;
+  isActive: boolean;
+}
+
 export class AdminDataSource {
   private static instance: AdminDataSource;
 
@@ -82,10 +94,12 @@ export class AdminDataSource {
   }
 
   // Contract Management
-  async getContracts(page?: number, limit?: number): Promise<{ items: any[], meta?: any }> {
+  async getContracts(page?: number, limit?: number, chainId?: string, type?: string): Promise<{ items: any[], meta?: any }> {
     const query = new URLSearchParams();
     if (page) query.append('page', page.toString());
     if (limit) query.append('limit', limit.toString());
+    if (chainId) query.append('chainId', chainId);
+    if (type) query.append('type', type);
 
     const url = query.toString() ? `${API_ENDPOINTS.CONTRACTS}?${query.toString()}` : API_ENDPOINTS.CONTRACTS;
     const { data, error } = await httpClient.get<{ items: any[], meta: any }>(url);
@@ -108,6 +122,37 @@ export class AdminDataSource {
 
   async deleteContract(id: string): Promise<void> {
     const { error } = await httpClient.delete(API_ENDPOINTS.CONTRACT_BY_ID(id));
+    if (error) throw new Error(error);
+  }
+
+  // Team Management
+  async getPublicTeams(): Promise<any[]> {
+    const { data, error } = await httpClient.get<{ items: any[] }>(API_ENDPOINTS.TEAMS);
+    if (error) throw new Error(error);
+    return data?.items || [];
+  }
+
+  async getAdminTeams(search?: string): Promise<any[]> {
+    const url = search?.trim()
+      ? `${API_ENDPOINTS.ADMIN_TEAMS}?search=${encodeURIComponent(search.trim())}`
+      : API_ENDPOINTS.ADMIN_TEAMS;
+    const { data, error } = await httpClient.get<{ items: any[] }>(url);
+    if (error) throw new Error(error);
+    return data?.items || [];
+  }
+
+  async createTeam(data: TeamMemberPayload): Promise<void> {
+    const { error } = await httpClient.post(API_ENDPOINTS.ADMIN_TEAMS, data);
+    if (error) throw new Error(error);
+  }
+
+  async updateTeam(id: string, data: TeamMemberPayload): Promise<void> {
+    const { error } = await httpClient.put(API_ENDPOINTS.ADMIN_TEAM_BY_ID(id), data);
+    if (error) throw new Error(error);
+  }
+
+  async deleteTeam(id: string): Promise<void> {
+    const { error } = await httpClient.delete(API_ENDPOINTS.ADMIN_TEAM_BY_ID(id));
     if (error) throw new Error(error);
   }
 }

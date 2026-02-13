@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useAdminChains as useAdminChainsQuery, useCreateChain, useUpdateChain, useDeleteChain } from '@/data/usecase/useAdmin';
 import { useDebounce } from '@/presentation/hooks/useDebounce';
+import { useTranslation } from '@/presentation/hooks';
 import { toast } from 'sonner';
 
 export const useAdminChains = () => {
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
@@ -67,7 +69,7 @@ export const useAdminChains = () => {
 
     const [namespace, reference] = formData.chainId.split(':');
     if (!namespace || !reference) {
-      toast.error('Invalid Chain ID format. Use format: eip155:1 or solana:5');
+      toast.error(t('admin.chains_view.toasts.invalid_chain_id'));
       return;
     }
 
@@ -86,22 +88,22 @@ export const useAdminChains = () => {
       updateChain.mutate({ id: editingId, data: payload } as any, {
         onSuccess: () => {
           handleCloseModal();
-          toast.success('Chain updated successfully');
+          toast.success(t('admin.chains_view.toasts.update_success'));
           refetch();
         },
         onError: (err: any) => {
-          toast.error(err.message || 'Failed to update chain');
+          toast.error(err.message || t('admin.chains_view.toasts.update_failed'));
         }
       });
     } else {
       createChain.mutate(payload, {
         onSuccess: () => {
           handleCloseModal();
-          toast.success('Chain created successfully');
+          toast.success(t('admin.chains_view.toasts.create_success'));
           refetch();
         },
         onError: (err: any) => {
-          toast.error(err.message || 'Failed to create chain');
+          toast.error(err.message || t('admin.chains_view.toasts.create_failed'));
         }
       });
     }
@@ -112,11 +114,11 @@ export const useAdminChains = () => {
       deleteChain.mutate(deleteId as any, {
         onSuccess: () => {
           setDeleteId(null);
-          toast.success('Chain deleted successfully');
+          toast.success(t('admin.chains_view.toasts.delete_success'));
           refetch();
         },
         onError: (err: any) => {
-          toast.error(err.message || 'Failed to delete chain');
+          toast.error(err.message || t('admin.chains_view.toasts.delete_failed'));
         }
       });
     }

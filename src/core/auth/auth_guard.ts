@@ -1,7 +1,8 @@
 import { jwtVerify } from 'jose';
 import { UserRole } from '@/core/constants/roles';
+import { ENV } from '@/core/config/env';
 
-const SECRET_KEY = process.env.JWT_SECRET || 'your-secret-key';
+const SECRET_KEY = ENV.JWT_SECRET;
 const key = new TextEncoder().encode(SECRET_KEY);
 
 export interface SessionPayload {

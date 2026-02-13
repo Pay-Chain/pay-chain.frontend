@@ -1,7 +1,8 @@
 
 import { EncryptJWT, jwtDecrypt } from 'jose';
+import { ENV } from '@/core/config/env';
 
-const SECRET_KEY = process.env.ENCRYPT_KEY || 'default-secret-key-must-be-32-chars';
+const SECRET_KEY = ENV.ENCRYPT_KEY;
 
 // Ensure key is exactly 32 bytes for A256GCM
 const ensure32Bytes = (str: string): Uint8Array => {
@@ -31,4 +32,15 @@ export async function decryptToken(jwe: string): Promise<string | null> {
   } catch (error) {
     return null;
   }
+}
+
+import { SignJWT } from 'jose';
+
+export async function signSessionToken(payload: any): Promise<string> {
+  const secret = new TextEncoder().encode(ENV.JWT_SECRET);
+  return new SignJWT(payload)
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime('24h')
+    .sign(secret);
 }

@@ -21,6 +21,11 @@ export interface VerifyEmailRequest {
   token: string;
 }
 
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
 // Payment requests
 export interface CreatePaymentRequest {
   sourceChainId: string;
@@ -55,4 +60,23 @@ export interface ApplyMerchantRequest {
   merchantType: string;
   taxId?: string;
   businessAddress?: string;
+}
+
+// API Key requests
+export interface CreateApiKeyRequest {
+  name: string;
+  permissions: string[];
+  expiresAt?: string;
+}
+
+// Payment App requests
+export interface CreatePaymentAppRequest {
+  senderWalletAddress: string;
+  sourceChainId: string;
+  destChainId: string;
+  sourceTokenAddress: string;
+  destTokenAddress: string;
+  amount: string;
+  decimals: number;
+  receiverAddress: string;
 }

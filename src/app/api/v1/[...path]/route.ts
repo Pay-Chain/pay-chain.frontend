@@ -1,13 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { encryptToken, decryptToken } from '@/core/security/token';
+import { createHash, createHmac } from 'crypto';
+import { ENV } from '@/core/config/env';
 
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8080';
+const BACKEND_URL = ENV.BACKEND_URL;
+const INTERNAL_PROXY_SECRET = ENV.INTERNAL_PROXY_SECRET;
+const ADMIN_API_KEY = ENV.ADMIN_API_KEY;
+const ADMIN_SECRET_KEY = ENV.ADMIN_SECRET_KEY;
 
 /**
  * Proxy API Route Handler
  * Forwards all /api/v1/* requests to the backend server
- * Handles encryption/decryption of auth tokens in cookies
+ * Handles encryption/decryption of auth tokens/sessions in cookies
  */
 async function proxyRequest(
   request: NextRequest,
@@ -21,50 +25,68 @@ async function proxyRequest(
   const searchParams = request.nextUrl.searchParams.toString();
   const fullUrl = searchParams ? `${targetUrl}?${searchParams}` : targetUrl;
 
-  // 1. Decrypt Cookies & Inject Headers/Cookies
+  // 1. Decrypt Cookies & Inject Headers
   const cookieStore = await cookies();
-  const encryptedToken = cookieStore.get('token')?.value;
-  const encryptedRefreshToken = cookieStore.get('refresh_token')?.value;
+  const sessionId = cookieStore.get('session_id')?.value;
   
   const headers = new Headers();
   request.headers.forEach((value, key) => {
-    // Forward headers except host and cookie (we handle auth manually)
+    // Forward headers except host and cookie
     if (key.toLowerCase() !== 'host' && key.toLowerCase() !== 'cookie') {
       headers.set(key, value);
     }
   });
-
-  // Inject Authorization Header
-  if (encryptedToken) {
-    const rawToken = await decryptToken(encryptedToken);
-    if (rawToken) {
-      headers.set('Authorization', `Bearer ${rawToken}`);
-      console.log(`[Proxy] Injected Auth Header for ${targetPath}`);
-    }
+  if (INTERNAL_PROXY_SECRET) {
+    headers.set('X-Internal-Proxy-Secret', INTERNAL_PROXY_SECRET);
   }
 
-  // Inject Refresh Token Cookie for Backend
-  if (encryptedRefreshToken) {
-    const rawRefreshToken = await decryptToken(encryptedRefreshToken);
-    if (rawRefreshToken) {
-      // Backend expects the refresh token in a cookie named 'refresh_token'
-      headers.set('Cookie', `refresh_token=${rawRefreshToken}`);
-      console.log(`[Proxy] Injected Refresh Token Cookie for ${targetPath}`);
-    }
+  // Inject Session ID if available (Priority)
+  if (sessionId) {
+    headers.set('X-Session-Id', sessionId);
+     console.log(`[Proxy] Injected Session Header for ${targetPath}`);
   }
 
   try {
     // Get request body for non-GET requests
-    let body: string | undefined;
+    let body = '';
     if (request.method !== 'GET' && request.method !== 'HEAD') {
       body = await request.text();
+    }
+
+    // Forward API Key Headers (explicitly ensure they are passed if present)
+    const incomingApiKey = request.headers.get('X-Api-Key');
+    if (incomingApiKey) {
+      headers.set('X-Api-Key', incomingApiKey);
+      const timestamp = request.headers.get('X-Timestamp');
+      const signature = request.headers.get('X-Signature');
+      if (timestamp) headers.set('X-Timestamp', timestamp);
+      if (signature) headers.set('X-Signature', signature);
+      console.log(`[Proxy] Forwarding API Key headers for ${targetPath}`);
+    }
+
+    // Fallback for public app payment flow:
+    // if user is not logged in and no API key headers are provided,
+    // sign /v1/payment-app using admin API credentials from env.
+    const hasForwardedApiHeaders = headers.has('X-Api-Key') && headers.has('X-Timestamp') && headers.has('X-Signature');
+    const isPaymentAppEndpoint = targetPath === '/api/v1/payment-app';
+    if (!sessionId && !hasForwardedApiHeaders && isPaymentAppEndpoint && ADMIN_API_KEY && ADMIN_SECRET_KEY) {
+      const timestamp = Math.floor(Date.now() / 1000).toString();
+      const pathForSigning = searchParams ? `${targetPath}?${searchParams}` : targetPath;
+      const bodyHash = createHash('sha256').update(body).digest('hex');
+      const payload = `${timestamp}${request.method.toUpperCase()}${pathForSigning}${bodyHash}`;
+      const signature = createHmac('sha256', ADMIN_SECRET_KEY).update(payload).digest('hex');
+
+      headers.set('X-Api-Key', ADMIN_API_KEY);
+      headers.set('X-Timestamp', timestamp);
+      headers.set('X-Signature', signature);
+      console.log(`[Proxy] Injected ADMIN_API_KEY signature for ${targetPath}`);
     }
 
     // Forward the request to backend
     const response = await fetch(fullUrl, {
       method: request.method,
       headers,
-      body,
+      body: body || undefined,
     });
 
     console.log(`[Proxy] ${request.method} ${targetPath} -> ${response.status} ${response.statusText}`);
@@ -92,39 +114,29 @@ async function proxyRequest(
     
     if ((isLoginRegister || isRefresh) && response.ok && data) {
       const resultData = data.data || data;
-      const accessToken = resultData.accessToken;
-      const refreshToken = resultData.refreshToken;
+      const responseSessionId = resultData.sessionId;
 
-      if (accessToken || refreshToken) {
-        // Prepare response without raw tokens
-        const { accessToken: _, refreshToken: __, ...rest } = resultData;
+      if (responseSessionId) {
+        // Prepare response without sensitive tokens/session in body
+        const { accessToken: _, refreshToken: __, sessionId: ___, ...rest } = resultData;
         const responseBody = data.data ? { ...data, data: rest } : rest;
 
         const nextResp = NextResponse.json(responseBody, { status: 200 });
 
-        // Set Access Token Cookie
-        if (accessToken) {
-          const encryptedAT = await encryptToken(accessToken);
-          nextResp.cookies.set('token', encryptedAT, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
-            path: '/',
-            maxAge: 60 * 60 * 24 // 24h
-          });
+        // Set Session ID Cookie (HttpOnly)
+        if (responseSessionId) {
+             nextResp.cookies.set('session_id', responseSessionId, {
+                httpOnly: true,
+                secure: ENV.IS_PRODUCTION,
+                sameSite: 'lax',
+                path: '/',
+                maxAge: 60 * 60 * 24 // 24h
+             });
         }
 
-        // Set Refresh Token Cookie
-        if (refreshToken) {
-          const encryptedRT = await encryptToken(refreshToken);
-          nextResp.cookies.set('refresh_token', encryptedRT, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
-            path: '/',
-            maxAge: 60 * 60 * 24 * 7 // 7 days
-          });
-        }
+        // Strict session-first mode: do not expose access/refresh tokens to client cookies.
+        nextResp.cookies.delete('token');
+        nextResp.cookies.delete('refresh_token');
 
         return nextResp;
       }

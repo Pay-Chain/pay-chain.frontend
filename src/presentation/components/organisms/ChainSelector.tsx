@@ -10,6 +10,7 @@ import {
 } from '@/presentation/components/molecules/ChainListItem';
 import { ChainSearchInput } from '@/presentation/components/molecules/ChainSearchInput';
 import { ChainIcon } from '@/presentation/components/atoms/ChainIcon';
+import { useTranslation } from '@/presentation/hooks';
 
 export interface ChainSelectorProps {
   chains: ChainItemData[];
@@ -22,7 +23,8 @@ export interface ChainSelectorProps {
 }
 
 const ChainSelector = React.forwardRef<HTMLDivElement, ChainSelectorProps>(
-  ({ chains, selectedChainId, onSelect, placeholder = 'Select Chain', label, className, disabled }, ref) => {
+  ({ chains, selectedChainId, onSelect, placeholder, label, className, disabled }, ref) => {
+    const { t } = useTranslation();
     const [isOpen, setIsOpen] = React.useState(false);
     const [searchQuery, setSearchQuery] = React.useState('');
     const [dropdownStyles, setDropdownStyles] = React.useState<React.CSSProperties>({});
@@ -34,6 +36,7 @@ const ChainSelector = React.forwardRef<HTMLDivElement, ChainSelectorProps>(
     const selectedChain = React.useMemo(() => 
       chains.find(c => c.id === selectedChainId), 
     [chains, selectedChainId]);
+    const resolvedPlaceholder = placeholder ?? t('payments.select_chain');
 
     const filteredChains = React.useMemo(() => {
       if (!searchQuery) return chains;
@@ -142,7 +145,7 @@ const ChainSelector = React.forwardRef<HTMLDivElement, ChainSelectorProps>(
               </span>
             </div>
           ) : (
-            <span className="text-muted-foreground text-sm">{placeholder}</span>
+            <span className="text-muted-foreground text-sm">{resolvedPlaceholder}</span>
           )}
           
           <ChevronDown 
@@ -186,7 +189,7 @@ const ChainSelector = React.forwardRef<HTMLDivElement, ChainSelectorProps>(
                     }
                   }}
                   type="text"
-                  placeholder="Search chains..."
+                  placeholder={t('common.search_chains')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full bg-white/5 border border-white/10 rounded-lg pl-9 pr-8 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 focus:bg-white/10 transition-all font-sans"
@@ -219,7 +222,7 @@ const ChainSelector = React.forwardRef<HTMLDivElement, ChainSelectorProps>(
               ) : (
                 <div className="py-8 text-center flex flex-col items-center justify-center text-muted-foreground">
                   <Search className="w-8 h-8 opacity-20 mb-2" />
-                  <span className="text-xs">No chains found</span>
+                  <span className="text-xs">{t('common.no_chains_found')}</span>
                 </div>
               )}
             </div>

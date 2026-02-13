@@ -1,40 +1,42 @@
-'use client';
-
 import Navbar from '@/presentation/components/organisms/Navbar';
 import { Card } from '@/presentation/components/atoms';
+import { getServerDictionary } from '@/core/i18n/server';
+import { translate } from '@/core/i18n/translate';
 import { Shield, Zap, Globe, Cpu, Lock, Network, Code2, Layers } from 'lucide-react';
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const dictionary = await getServerDictionary();
+  const t = (key: string) => translate(dictionary, key);
   const techStack = [
-    { name: 'Frontend', text: 'Next.js 16 (Turbopack), React 19, TailwindCSS, Zustand' },
-    { name: 'Backend', text: 'Go (Gin), GORM, PostgreSQL, Redis' },
-    { name: 'Smart Contracts', text: 'Solidity (Foundry), Rust (Anchor)' },
-    { name: 'Indexer', text: 'Ponder (TypeScript), Helius (Solana)' },
+    { name: t('public_about.tech_stack.frontend.name'), text: t('public_about.tech_stack.frontend.text') },
+    { name: t('public_about.tech_stack.backend.name'), text: t('public_about.tech_stack.backend.text') },
+    { name: t('public_about.tech_stack.smart_contracts.name'), text: t('public_about.tech_stack.smart_contracts.text') },
+    { name: t('public_about.tech_stack.indexer.name'), text: t('public_about.tech_stack.indexer.text') },
   ];
 
   const bridges = [
     { 
-      name: 'Chainlink CCIP', 
-      desc: 'Standard for EVM ↔ EVM and EVM ↔ Solana state transitions.',
-      type: 'Security-first'
+      name: t('public_about.bridges.ccip.name'), 
+      desc: t('public_about.bridges.ccip.desc'),
+      type: t('public_about.bridges.ccip.type')
     },
     { 
-      name: 'Hyperbridge', 
-      desc: 'High-performance bridging for Polkadot and Cosmos interoperability.',
-      type: 'Speed-first'
+      name: t('public_about.bridges.hyperbridge.name'), 
+      desc: t('public_about.bridges.hyperbridge.desc'),
+      type: t('public_about.bridges.hyperbridge.type')
     },
     { 
-      name: 'Wormhole', 
-      desc: 'Legacy support for specific non-EVM chains.',
-      type: 'General-purpose'
+      name: t('public_about.bridges.wormhole.name'), 
+      desc: t('public_about.bridges.wormhole.desc'),
+      type: t('public_about.bridges.wormhole.type')
     },
   ];
 
   const contracts = [
-    { name: 'PayChainGateway.sol', desc: 'Main entry point for all cross-chain payment requests.' },
-    { name: 'TokenSwapper.sol', desc: 'Integrated with Uniswap V4 hooks for just-in-time liquidity.' },
-    { name: 'CCIPSender.sol', desc: 'Adapter for Chainlink Cross-Chain Interoperability Protocol.' },
-    { name: 'HyperbridgeSender.sol', desc: 'Adapter for Hyperbridge message passing.' },
+    { name: t('public_about.contracts.gateway.name'), desc: t('public_about.contracts.gateway.desc') },
+    { name: t('public_about.contracts.swapper.name'), desc: t('public_about.contracts.swapper.desc') },
+    { name: t('public_about.contracts.ccip.name'), desc: t('public_about.contracts.ccip.desc') },
+    { name: t('public_about.contracts.hyperbridge.name'), desc: t('public_about.contracts.hyperbridge.desc') },
   ];
 
   return (
@@ -46,11 +48,10 @@ export default function AboutPage() {
         <section className="container-app relative z-10">
           <div className="max-w-4xl mx-auto text-center mb-20 animate-fade-in-up">
             <h1 className="heading-1 mb-6">
-              Protocol <span className="text-gradient">Architecture</span>
+              {t('public_about.hero.prefix')} <span className="text-gradient">{t('public_about.hero.highlight')}</span>
             </h1>
             <p className="body-lg text-muted max-w-2xl mx-auto">
-              Pay-Chain is a non-custodial, decentralized payment gateway designed to unify 
-              liquidity across EVM and SVM blockchains.
+              {t('public_about.hero.subtitle')}
             </p>
           </div>
         </section>
@@ -61,25 +62,24 @@ export default function AboutPage() {
             <div className="absolute top-0 right-0 w-96 h-96 bg-accent-blue/10 rounded-full blur-[100px] -mr-32 -mt-32" />
             <div className="flex items-center gap-3 mb-8">
               <Layers className="w-6 h-6 text-accent-blue" />
-              <h2 className="heading-3">System Design</h2>
+              <h2 className="heading-3">{t('public_about.system_design.title')}</h2>
             </div>
             
             <div className="grid md:grid-cols-2 gap-12">
               <div className="space-y-6">
                 <p className="text-muted leading-relaxed">
-                  Our architecture follows a hub-and-spoke model where the <strong>PayChainGateway</strong> acts as the central router. 
-                  Users interact with the Gateway to initiate payments, which then:
+                  {t('public_about.system_design.description')}
                 </p>
                 <ol className="list-decimal list-inside space-y-4 text-muted/80 ml-4">
-                  <li><strong className="text-foreground">Validates</strong> the payment request and recipient whitelisting.</li>
-                  <li><strong className="text-foreground">Quotes</strong> the best output token swap rate via local DEXs.</li>
-                  <li><strong className="text-foreground">Selects</strong> the optimal bridge (CCIP/Hyperbridge) based on fees and finality.</li>
-                  <li><strong className="text-foreground">Executes</strong> the cross-chain message.</li>
+                  <li>{t('public_about.system_design.steps.step_1')}</li>
+                  <li>{t('public_about.system_design.steps.step_2')}</li>
+                  <li>{t('public_about.system_design.steps.step_3')}</li>
+                  <li>{t('public_about.system_design.steps.step_4')}</li>
                 </ol>
               </div>
               
               <div className="bg-black/40 rounded-xl p-6 border border-white/5 font-mono text-sm leading-relaxed overflow-x-auto custom-scrollbar">
-                <div className="text-accent-purple mb-2">// Tech Stack Overview</div>
+                <div className="text-accent-purple mb-2">{t('public_about.system_design.tech_overview')}</div>
                 {techStack.map((item) => (
                   <div key={item.name} className="flex flex-col mb-3 last:mb-0">
                     <span className="text-accent-blue font-bold">{item.name}:</span>
@@ -99,7 +99,7 @@ export default function AboutPage() {
               <div className="card-glass p-8 h-full">
                 <div className="flex items-center gap-3 mb-6">
                   <Network className="w-6 h-6 text-accent-purple" />
-                  <h2 className="className heading-3">Bridge Infrastructure</h2>
+                  <h2 className="className heading-3">{t('public_about.bridge_infrastructure.title')}</h2>
                 </div>
                 <div className="space-y-4">
                   {bridges.map((bridge) => (
@@ -122,7 +122,7 @@ export default function AboutPage() {
               <div className="card-glass p-8 h-full">
                 <div className="flex items-center gap-3 mb-6">
                   <Code2 className="w-6 h-6 text-accent-green" />
-                  <h2 className="heading-3">Smart Contracts</h2>
+                  <h2 className="heading-3">{t('public_about.smart_contracts.title')}</h2>
                 </div>
                 <div className="space-y-4">
                    {contracts.map((contract) => (
@@ -149,19 +149,18 @@ export default function AboutPage() {
                <div className="flex-1">
                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent-green/10 border border-accent-green/20 mb-6">
                     <Lock className="w-4 h-4 text-accent-green" />
-                    <span className="text-xs text-accent-green font-medium uppercase">Security Guarantee</span>
+                    <span className="text-xs text-accent-green font-medium uppercase">{t('public_about.security.badge')}</span>
                  </div>
-                 <h2 className="heading-2 mb-6">100% Refund Assurance</h2>
+                 <h2 className="heading-2 mb-6">{t('public_about.security.title')}</h2>
                  <p className="body-lg text-muted mb-6">
-                   In the rare event of a bridge failure or cross-chain message drop, 
-                   our <strong>Safety Module</strong> automatically triggers a fallback mechanism.
+                   {t('public_about.security.description')}
                  </p>
                  <ul className="space-y-4">
                    {[
-                     'Original funds returned to sender (minus gas)',
-                     'Atomic swaps ensure no funds stuck in transit',
-                     'Merchant verification process (KYB/KYC)',
-                     'Real-time automated circuit breakers'
+                     t('public_about.security.items.item_1'),
+                     t('public_about.security.items.item_2'),
+                     t('public_about.security.items.item_3'),
+                     t('public_about.security.items.item_4'),
                    ].map((item, i) => (
                      <li key={i} className="flex items-center gap-3 text-muted">
                         <div className="w-1.5 h-1.5 rounded-full bg-accent-green" />
@@ -177,8 +176,8 @@ export default function AboutPage() {
                     <Shield className="w-32 h-32 text-accent-green/20 animate-pulse" />
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="text-center">
-                        <div className="text-4xl font-bold text-white mb-2">Audited</div>
-                        <div className="text-sm text-accent-green">By Top Firmware Firms</div>
+                        <div className="text-4xl font-bold text-white mb-2">{t('public_about.security.audited_title')}</div>
+                        <div className="text-sm text-accent-green">{t('public_about.security.audited_subtitle')}</div>
                       </div>
                     </div>
                  </div>

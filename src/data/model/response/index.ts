@@ -1,4 +1,4 @@
-import type { User, Payment, PaymentEvent, Chain, Token, SupportedToken, Wallet, PaymentRequest } from '../entity';
+import type { User, Payment, PaymentEvent, Chain, Token, SupportedToken, Wallet, PaymentRequest, ApiKey } from '../entity';
 
 // Auth responses
 export interface AuthResponse {
@@ -84,6 +84,7 @@ export interface PaymentRequestResponse {
   requestId: string;
   txData: {
     hex?: string;
+    base58?: string;
     base64?: string;
     to?: string;
     programId?: string;
@@ -92,6 +93,7 @@ export interface PaymentRequestResponse {
   amount: string;
   decimals: number;
   chainId: string;
+  walletAddress?: string;
   expiresAt: string;
 }
 
@@ -106,4 +108,37 @@ export interface Pagination {
   limit: number;
   total: number;
   totalPages: number;
+}
+
+// API Key responses
+export interface CreateApiKeyResponse {
+  id: string;
+  name: string;
+  apiKey: string;
+  secretKey: string;
+  createdAt: string;
+}
+
+export type ApiKeyResponse = ApiKey;
+
+export interface ApiKeysResponse {
+  items: ApiKey[];
+}
+
+// Payment App responses
+export interface CreatePaymentAppResponse {
+  paymentId: string;
+  status: string;
+  sourceChainId?: string;
+  destChainId?: string;
+  feeBreakdown?: {
+    platformFee: string;
+    bridgeFee: string;
+    totalFee: string;
+  };
+  signatureData?: {
+    to?: string;
+    data?: string;
+    programId?: string;
+  };
 }

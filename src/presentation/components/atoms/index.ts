@@ -6,3 +6,5 @@ export * from './Input';
 export * from './Modal';
 export * from './TokenIcon';
 export * from './Label';
+export * from './PayChainLogo';
+export * from './WalletNetworkIcon';

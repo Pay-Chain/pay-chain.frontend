@@ -12,6 +12,7 @@ export interface Dictionary {
     success: string;
     new: string;
     create: string;
+    delete: string;
     cancel: string;
     save: string;
     back: string;
@@ -19,6 +20,17 @@ export interface Dictionary {
     next: string;
     page_of: string;
     of: string;
+    or: string;
+    connect: string;
+    disconnect: string;
+    retry: string;
+    language: string;
+    brand: string;
+    pagination: string;
+    search_chains: string;
+    search_tokens: string;
+    no_chains_found: string;
+    no_tokens_found: string;
   };
   dashboard: {
     welcome: string;
@@ -59,18 +71,35 @@ export interface Dictionary {
   payments: {
     title: string;
     new_payment: string;
+    badge: string;
+    new_transfer_badge: string;
+    loading_transactions: string;
     history: string;
     send_to: string;
     amount: string;
     select_token: string;
     select_chain: string;
+    select_source_chain: string;
+    select_destination_chain: string;
+    select_destination_chain_first: string;
+    select_token_first: string;
+    select_chain_first: string;
     details: string;
     source_chain: string;
     dest_chain: string;
     receiver: string;
     token_address: string;
+    error_label: string;
+    form_error_label: string;
+    connect_wallet_continue_notice: string;
     connect_wallet_notice: string;
     confirm: string;
+    status: {
+      pending: string;
+      completed: string;
+      failed: string;
+      expired: string;
+    };
   };
   wallets: {
     title: string;
@@ -79,8 +108,57 @@ export interface Dictionary {
     disconnect: string;
     loading: string;
     no_wallets: string;
+    badge: string;
+    no_wallets_title: string;
+    connect_first_wallet: string;
     primary: string;
     set_primary: string;
+    copy_address: string;
+    view_explorer: string;
+    wallet_label: string;
+    native_label: string;
+    active_label: string;
+    network: {
+      evm: string;
+      base: string;
+      arbitrum: string;
+      solana: string;
+    };
+    modal: {
+      title: string;
+      description: string;
+      evm_title: string;
+      evm_subtitle: string;
+      svm_title: string;
+      svm_subtitle: string;
+      connected_badge: string;
+    };
+    errors: {
+      connect_evm_failed: string;
+      connect_svm_failed: string;
+    };
+  };
+  app_view: {
+    badge: string;
+    title: string;
+    source_chain: string;
+    destination_chain: string;
+    select_source_chain: string;
+    select_destination_chain: string;
+    token: string;
+    select_token: string;
+    select_source_first: string;
+    amount: string;
+    decimals: string;
+    receiver_address: string;
+    payment_sent: string;
+    transaction_hash: string;
+    view_explorer: string;
+    payment_error_title: string;
+    connect_wallet_title: string;
+    connect_wallet_subtitle: string;
+    pay_now: string;
+    complete_fields_error: string;
   };
   auth: {
     login: string;
@@ -99,6 +177,8 @@ export interface Dictionary {
     create_one: string;
     create_account: string;
     create_account_subtitle: string;
+    login_badge: string;
+    register_badge: string;
     steps: {
       account: string;
       wallet: string;
@@ -107,10 +187,26 @@ export interface Dictionary {
     continue_wallet: string;
     wallet_required: string;
     create_account_action: string;
+    email_placeholder: string;
+    name_placeholder: string;
+    password_placeholder: string;
+    confirm_password_placeholder: string;
+    wallet_required_error: string;
+    sign_wallet_message_prefix: string;
+    sign_wallet_message_wallet: string;
+    sign_wallet_message_timestamp: string;
+    validation: {
+      email_invalid: string;
+      password_min_login: string;
+      name_min: string;
+      password_min_register: string;
+      password_mismatch: string;
+    };
   };
   payment_requests: {
     title: string;
     create: string;
+    badge: string;
     subtitle: string;
     loading: string;
     no_requests_title: string;
@@ -118,8 +214,217 @@ export interface Dictionary {
     token: string;
     native: string;
     status: string;
+    no_description: string;
     copy_link: string;
     copied: string;
+  };
+  home: {
+    loading_payments: string;
+    error_title: string;
+    try_again: string;
+    badge: string;
+    title: string;
+    refresh: string;
+    no_payments_title: string;
+    no_payments_desc: string;
+    status: {
+      pending: string;
+      completed: string;
+      failed: string;
+      expired: string;
+    };
+  };
+  settings: {
+    title: string;
+    subtitle: string;
+    api_keys_card: {
+      badge: string;
+      title: string;
+      description: string;
+      open: string;
+    };
+    password_card: {
+      badge: string;
+      title: string;
+      current_password: string;
+      new_password: string;
+      confirm_new_password: string;
+      update_password: string;
+    };
+    toasts: {
+      fill_all_password_fields: string;
+      new_password_min_8: string;
+      confirmation_not_match: string;
+      password_updated: string;
+      update_password_failed: string;
+    };
+    api_keys: {
+      title: string;
+      subtitle: string;
+      loading: string;
+      error_loading: string;
+      create_new_key: string;
+      create_failed: string;
+      confirm_revoke: string;
+      revoke_failed: string;
+      table: {
+        name: string;
+        key_id: string;
+        created: string;
+        status: string;
+        actions: string;
+        untitled: string;
+      };
+      status: {
+        active: string;
+        revoked: string;
+      };
+      revoke: string;
+      no_keys_found: string;
+      modal: {
+        created_title: string;
+        create_title: string;
+        created_description: string;
+        create_description: string;
+        copied_confirm: string;
+        create_confirm: string;
+        warning_copy_secret: string;
+        copied: string;
+        copy_secret: string;
+        key_name_label: string;
+        key_name_placeholder: string;
+      };
+    };
+  };
+  transaction_list: {
+    default_title: string;
+    empty_title: string;
+    empty_description: string;
+  };
+  session_modal: {
+    title: string;
+    description: string;
+    logout: string;
+    extend: string;
+    body: string;
+  };
+  public_home: {
+    payment_request_example: string;
+    fee_formula_example: string;
+    hero: { mainnet_badge: string; subtitle: string };
+    quick_cards: {
+      payment_requests: { title: string; description: string };
+      bridge_swap: { title: string; description: string };
+      refund_policy: { title: string; description: string };
+    };
+    supported_chains: { base: string; arbitrum: string; solana: string };
+    supported_networks: { label: string; caption: string };
+    features_section: { badge: string; title: string; subtitle: string };
+    features: {
+      multi_chain: { title: string; description: string };
+      auto_swap: { title: string; description: string };
+      payment_requests: { title: string; description: string };
+      realtime_tracking: { title: string; description: string };
+      rpc_failover: { title: string; description: string };
+      refund_guarantee: { title: string; description: string };
+      verified_merchants: { title: string; description: string };
+      wallet_security: { title: string; description: string };
+    };
+    how_it_works: { badge: string; title: string; footer: string };
+    steps: {
+      connect_wallet: { title: string; description: string };
+      create_request: { title: string; description: string };
+      sign_pay: { title: string; description: string };
+      track_settle: { title: string; description: string };
+    };
+    requests_section: {
+      badge: string;
+      title: string;
+      subtitle: string;
+      what_you_get_title: string;
+      items: { item_1: string; item_2: string; item_3: string; item_4: string };
+      expiration_title: string;
+      expiration_description: string;
+      response_title: string;
+      tip: string;
+    };
+    fees_section: {
+      badge: string;
+      title: string;
+      subtitle: string;
+      formula_title: string;
+      formula_note: string;
+      cards: {
+        request_ttl_title: string;
+        request_ttl_description: string;
+        settlement_title: string;
+        settlement_description: string;
+        success_title: string;
+        success_description: string;
+        refund_title: string;
+        refund_description: string;
+      };
+    };
+    cta: {
+      badge: string;
+      title: string;
+      subtitle: string;
+      start_accepting: string;
+      contact_sales: string;
+    };
+    footer: {
+      rights: string;
+      about_protocol: string;
+      team: string;
+      documentation: string;
+      privacy_policy: string;
+    };
+  };
+  public_team: {
+    hero: { prefix: string; highlight: string; subtitle: string };
+    cta: { title: string; subtitle: string; button: string };
+    members: {
+      alex: { name: string; role: string; bio: string };
+      sarah: { name: string; role: string; bio: string };
+      david: { name: string; role: string; bio: string };
+      elena: { name: string; role: string; bio: string };
+    };
+  };
+  public_about: {
+    hero: { prefix: string; highlight: string; subtitle: string };
+    system_design: {
+      title: string;
+      description: string;
+      tech_overview: string;
+      steps: { step_1: string; step_2: string; step_3: string; step_4: string };
+    };
+    bridge_infrastructure: { title: string };
+    smart_contracts: { title: string };
+    tech_stack: {
+      frontend: { name: string; text: string };
+      backend: { name: string; text: string };
+      smart_contracts: { name: string; text: string };
+      indexer: { name: string; text: string };
+    };
+    bridges: {
+      ccip: { name: string; desc: string; type: string };
+      hyperbridge: { name: string; desc: string; type: string };
+      wormhole: { name: string; desc: string; type: string };
+    };
+    contracts: {
+      gateway: { name: string; desc: string };
+      swapper: { name: string; desc: string };
+      ccip: { name: string; desc: string };
+      hyperbridge: { name: string; desc: string };
+    };
+    security: {
+      badge: string;
+      title: string;
+      description: string;
+      audited_title: string;
+      audited_subtitle: string;
+      items: { item_1: string; item_2: string; item_3: string; item_4: string };
+    };
   };
   pay_page: {
     loading: string;
@@ -139,6 +444,30 @@ export interface Dictionary {
     connect_wallet: string;
     switch_chain: string;
     insufficient_balance: string;
+    error_title: string;
+    connect_solana: string;
+    contract_address: string;
+    transaction_data: string;
+    chain_id: string;
+    decimals: string;
+    how_to_pay: string;
+    step_1: string;
+    step_2: string;
+    pay_now: string;
+    powered_by: string;
+    tx_data_copy: string;
+    tx_data_copy_success: string;
+    load_failed: string;
+    process_failed: string;
+    chain_names: {
+      ethereum: string;
+      polygon: string;
+      arbitrum: string;
+      base: string;
+      base_sepolia: string;
+      solana: string;
+      solana_devnet: string;
+    };
   };
   error_page: {
     title: string;
@@ -153,5 +482,341 @@ export interface Dictionary {
     chains: string;
     contracts: string;
     rpcs: string;
+    teams: string;
+    merchants_view: {
+      loading: string;
+      title: string;
+      subtitle: string;
+      search_placeholder: string;
+      empty_title: string;
+      empty_desc: string;
+      email_label: string;
+      type_label: string;
+      trn_label: string;
+      status: {
+        pending: string;
+        verified: string;
+        active: string;
+        rejected: string;
+        suspended: string;
+      };
+      approve: string;
+      reject: string;
+      toasts: {
+        confirm_status_change: string;
+        update_success: string;
+        update_failed: string;
+      };
+    };
+    rpcs_view: {
+      title: string;
+      subtitle: string;
+      search_placeholder: string;
+      all_chains: string;
+      all_status: string;
+      active: string;
+      inactive: string;
+      configure_node: string;
+      loading: string;
+      empty_title: string;
+      empty_desc: string;
+      clear_filters: string;
+      chain_fallback_prefix: string;
+      primary: string;
+      chain_id: string;
+      status_label: string;
+      errors_label: string;
+      last_error_label: string;
+      configure_chain: string;
+      edit_connection_title: string;
+      configure_new_title: string;
+      edit_connection_desc: string;
+      configure_new_desc: string;
+      save_changes: string;
+      enable_connection: string;
+      select_target_chain: string;
+      choose_blockchain: string;
+      metadata_from_db: string;
+      metadata_chain_id: string;
+      metadata_symbol: string;
+      primary_rpc_url: string;
+      primary_rpc_url_placeholder: string;
+      explorer_url: string;
+      explorer_url_placeholder: string;
+      note_primary_rpc: string;
+      remove_chain_title: string;
+      remove_chain_desc: string;
+      remove_chain_confirm: string;
+      warning_title: string;
+      warning_desc: string;
+      toasts: {
+        select_chain_first: string;
+        update_success: string;
+        update_failed: string;
+        remove_success: string;
+        remove_failed: string;
+      };
+    };
+    users_view: {
+      title: string;
+      subtitle: string;
+      search_placeholder: string;
+      table: {
+        user: string;
+        role: string;
+        kyc_status: string;
+        actions: string;
+      };
+      loading: string;
+      empty: string;
+      view_details: string;
+    };
+    teams_view: {
+      title: string;
+      subtitle: string;
+      search_placeholder: string;
+      add_team: string;
+      loading: string;
+      empty_title: string;
+      empty_desc: string;
+      edit_team: string;
+      delete_team: string;
+      order_label: string;
+      active: string;
+      inactive: string;
+      modal: {
+        add_title: string;
+        edit_title: string;
+        add_desc: string;
+        edit_desc: string;
+        create_confirm: string;
+        update_confirm: string;
+        name: string;
+        role: string;
+        bio: string;
+        image_url: string;
+        github_url: string;
+        twitter_url: string;
+        linkedin_url: string;
+        display_order: string;
+        is_active: string;
+        name_placeholder: string;
+        role_placeholder: string;
+        bio_placeholder: string;
+        image_url_placeholder: string;
+        github_url_placeholder: string;
+        twitter_url_placeholder: string;
+        linkedin_url_placeholder: string;
+      };
+      delete_modal: {
+        title: string;
+        description: string;
+      };
+      toasts: {
+        required_fields: string;
+        create_success: string;
+        create_failed: string;
+        update_success: string;
+        update_failed: string;
+        delete_success: string;
+        delete_failed: string;
+      };
+    };
+    chains_view: {
+      title: string;
+      subtitle: string;
+      search_placeholder: string;
+      add_chain: string;
+      loading: string;
+      empty_title: string;
+      empty_desc: string;
+      edit_chain: string;
+      delete_chain: string;
+      chain_id: string;
+      symbol: string;
+      open_explorer: string;
+      modal: {
+        edit_title: string;
+        add_title: string;
+        edit_desc: string;
+        add_desc: string;
+        update_confirm: string;
+        save_confirm: string;
+        chain_name: string;
+        chain_name_placeholder: string;
+        chain_id_label: string;
+        chain_id_placeholder: string;
+        chain_id_description: string;
+        rpc_url: string;
+        rpc_url_placeholder: string;
+        explorer_url: string;
+        explorer_url_placeholder: string;
+        symbol_label: string;
+        symbol_placeholder: string;
+        logo_url: string;
+        logo_url_placeholder: string;
+      };
+      delete_modal: {
+        title: string;
+        description: string;
+      };
+      toasts: {
+        invalid_chain_id: string;
+        update_success: string;
+        update_failed: string;
+        create_success: string;
+        create_failed: string;
+        delete_success: string;
+        delete_failed: string;
+      };
+    };
+    tokens_view: {
+      title: string;
+      subtitle: string;
+      search_placeholder: string;
+      all_chains: string;
+      add_token: string;
+      loading: string;
+      empty_title: string;
+      empty_desc: string;
+      clear_filters: string;
+      unknown_token: string;
+      unknown_chain: string;
+      contract_address: string;
+      native: string;
+      min_amount: string;
+      active: string;
+      inactive: string;
+      modal: {
+        edit_title: string;
+        add_title: string;
+        edit_desc: string;
+        add_desc: string;
+        target_blockchain: string;
+        target_blockchain_placeholder: string;
+        token_name: string;
+        token_name_placeholder: string;
+        symbol: string;
+        symbol_placeholder: string;
+        decimals: string;
+        token_type: string;
+        token_type_placeholder: string;
+        min_amount: string;
+        max_amount: string;
+        amount_placeholder: string;
+        contract_address: string;
+        contract_address_placeholder: string;
+        logo_url: string;
+        logo_url_placeholder: string;
+      };
+      delete_modal: {
+        title: string;
+        description: string;
+      };
+      toasts: {
+        create_success: string;
+        create_failed: string;
+        update_success: string;
+        update_failed: string;
+        delete_success: string;
+        delete_failed: string;
+      };
+    };
+    contracts_view: {
+      title: string;
+      subtitle: string;
+      search_placeholder: string;
+      all_chains: string;
+      all_types: string;
+      add_contract: string;
+      loading: string;
+      empty_title: string;
+      empty_desc: string;
+      edit_contract: string;
+      delete_contract: string;
+      copy_address: string;
+      token_pair_fallback_0: string;
+      token_pair_fallback_1: string;
+      modal: {
+        edit_title: string;
+        add_title: string;
+        edit_desc: string;
+        add_desc: string;
+        update_confirm: string;
+        register_confirm: string;
+        contract_type: string;
+        contract_name: string;
+        contract_name_placeholder: string;
+        chain: string;
+        chain_placeholder: string;
+        version: string;
+        start_block: string;
+        status: string;
+        status_active: string;
+        status_inactive: string;
+        contract_address: string;
+        deployer_address_optional: string;
+        token0_address: string;
+        token1_address: string;
+        fee_tier: string;
+        hook_address_optional: string;
+        abi_json: string;
+        abi_placeholder: string;
+        metadata_json_optional: string;
+      };
+      delete_modal: {
+        title: string;
+        description: string;
+      };
+      contract_types: {
+        gateway: string;
+        router: string;
+        token_registry: string;
+        token_swapper: string;
+        adapter_ccip: string;
+        adapter_hyperbridge: string;
+        pool: string;
+        vault: string;
+        mock: string;
+      };
+      toasts: {
+        invalid_abi_json: string;
+        invalid_metadata_json: string;
+        pool_tokens_required: string;
+        fee_tier_invalid: string;
+        update_success: string;
+        update_failed: string;
+        create_success: string;
+        create_failed: string;
+        delete_success: string;
+        delete_failed: string;
+      };
+    };
+  };
+  admin_dashboard_view: {
+    loading: string;
+    title: string;
+    subtitle: string;
+    cards: {
+      total_users: string;
+      total_merchants: string;
+      total_volume: string;
+      active_chains: string;
+    };
+  };
+  merchant_dashboard_view: {
+    title: string;
+    subtitle: string;
+  };
+  toasts: {
+    auth: {
+      login_success: string;
+      login_failed: string;
+      register_success: string;
+      register_failed: string;
+      session_expired: string;
+      session_extended: string;
+      session_extend_failed: string;
+    };
   };
 }

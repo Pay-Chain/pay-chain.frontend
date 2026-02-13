@@ -28,6 +28,15 @@ export function PaymentRequestsView() {
     }
   };
 
+  const getStatusLabel = (status: string) => {
+    const normalized = status.toLowerCase();
+    if (normalized === 'completed') return t('payments.status.completed');
+    if (normalized === 'pending') return t('payments.status.pending');
+    if (normalized === 'failed') return t('payments.status.failed');
+    if (normalized === 'expired') return t('payments.status.expired');
+    return status;
+  };
+
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Header */}
@@ -36,7 +45,7 @@ export function PaymentRequestsView() {
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent-blue/10 border border-accent-blue/20 mb-3">
             <LinkIcon className="w-4 h-4 text-accent-blue" />
             <span className="text-xs text-accent-blue font-medium uppercase tracking-wider">
-              Payment Links
+              {t('payment_requests.badge')}
             </span>
           </div>
           <h1 className="heading-2 text-foreground">{t('payment_requests.title')}</h1>
@@ -87,11 +96,11 @@ export function PaymentRequestsView() {
                         {request.amount} {request.tokenAddress ? t('payment_requests.token') : t('payment_requests.native')}
                       </h4>
                       <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusStyles(request.status)}`}>
-                        {request.status}
+                        {getStatusLabel(request.status)}
                       </span>
                     </div>
                     <p className="text-sm text-muted">
-                      {request.description || 'No description'} • {new Date(request.createdAt).toLocaleDateString()}
+                      {request.description || t('payment_requests.no_description')} • {new Date(request.createdAt).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
@@ -124,7 +133,7 @@ export function PaymentRequestsView() {
         {pagination && pagination.totalPages > 1 && (
           <div className="flex items-center justify-between p-4 border-t border-white/10">
             <p className="text-sm text-muted">
-              Page <span className="text-foreground font-medium">{page}</span> of{' '}
+              {t('common.page_of')} <span className="text-foreground font-medium">{page}</span> {t('common.of')}{' '}
               <span className="text-foreground font-medium">{pagination.totalPages}</span>
             </p>
             <div className="flex items-center gap-2">

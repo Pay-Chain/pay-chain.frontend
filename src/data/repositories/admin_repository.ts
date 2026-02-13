@@ -1,4 +1,4 @@
-import { AdminDataSource, AdminStats } from '../data_source/admin_data_source';
+import { AdminDataSource, AdminStats, TeamMemberPayload } from '../data_source/admin_data_source';
 
 export class AdminRepository {
   private dataSource: AdminDataSource;
@@ -39,8 +39,8 @@ export class AdminRepository {
     return this.dataSource.deleteChain(id);
   }
 
-  async getContracts(page?: number, limit?: number): Promise<{ items: any[], meta?: any }> {
-    return this.dataSource.getContracts(page, limit);
+  async getContracts(page?: number, limit?: number, chainId?: string, type?: string): Promise<{ items: any[], meta?: any }> {
+    return this.dataSource.getContracts(page, limit, chainId, type);
   }
 
   async createContract(data: any): Promise<void> {
@@ -53,5 +53,25 @@ export class AdminRepository {
 
   async deleteContract(id: string): Promise<void> {
     return this.dataSource.deleteContract(id);
+  }
+
+  async getPublicTeams(): Promise<any[]> {
+    return this.dataSource.getPublicTeams();
+  }
+
+  async getAdminTeams(search?: string): Promise<any[]> {
+    return this.dataSource.getAdminTeams(search);
+  }
+
+  async createTeam(data: TeamMemberPayload): Promise<void> {
+    return this.dataSource.createTeam(data);
+  }
+
+  async updateTeam(id: string, data: TeamMemberPayload): Promise<void> {
+    return this.dataSource.updateTeam(id, data);
+  }
+
+  async deleteTeam(id: string): Promise<void> {
+    return this.dataSource.deleteTeam(id);
   }
 }

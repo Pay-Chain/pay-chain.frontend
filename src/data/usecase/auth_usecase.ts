@@ -3,7 +3,7 @@
  */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { authRepository } from '../repositories/repository_impl';
-import type { LoginRequest, RegisterRequest, RefreshTokenRequest, VerifyEmailRequest } from '../model/request';
+import type { LoginRequest, RegisterRequest, RefreshTokenRequest, VerifyEmailRequest, ChangePasswordRequest } from '../model/request';
 
 export function useLoginMutation() {
   const queryClient = useQueryClient();
@@ -40,6 +40,12 @@ export function useVerifyEmailMutation() {
 export function useRefreshTokenMutation() {
   return useMutation({
     mutationFn: (input: RefreshTokenRequest) => authRepository.refreshToken(input),
+  });
+}
+
+export function useChangePasswordMutation() {
+  return useMutation({
+    mutationFn: (input: ChangePasswordRequest) => authRepository.changePassword(input),
   });
 }
 

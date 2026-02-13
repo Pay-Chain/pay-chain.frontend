@@ -9,6 +9,7 @@ import type {
   RegisterRequest,
   RefreshTokenRequest,
   VerifyEmailRequest,
+  ChangePasswordRequest,
 } from '../model/request';
 import type {
   AuthResponse,
@@ -35,6 +36,10 @@ class AuthDataSource {
 
   async getMe() {
     return httpClient.get<AuthResponse>(API_ENDPOINTS.AUTH_ME);
+  }
+
+  async changePassword(request: ChangePasswordRequest) {
+    return httpClient.post<MessageResponse>(API_ENDPOINTS.AUTH_CHANGE_PASSWORD, request);
   }
 }
 

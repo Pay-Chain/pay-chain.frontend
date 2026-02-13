@@ -1,14 +1,15 @@
 'use client';
 
 import { Button } from '@/presentation/components/atoms';
+import { WalletConnectButton } from '@/presentation/components/molecules';
 import { useWallets } from './useWallets';
-import { Wallet, LogOut, Plus, Star, ExternalLink, Copy, Check } from 'lucide-react';
+import { Wallet, LogOut, Star, ExternalLink, Copy, Check } from 'lucide-react';
 import { shortenAddress } from '@/core/utils';
 import { useTranslation } from '@/presentation/hooks';
 import { useState } from 'react';
 
 export function WalletsView() {
-  const { wallets, primaryWallet, isLoading, connectWallet, disconnectWallet, setPrimaryWallet } = useWallets();
+  const { wallets, primaryWallet, isLoading, disconnectWallet, setPrimaryWallet } = useWallets();
   const { t } = useTranslation();
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
 
@@ -26,15 +27,12 @@ export function WalletsView() {
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent-green/10 border border-accent-green/20 mb-3">
             <Wallet className="w-4 h-4 text-accent-green" />
             <span className="text-xs text-accent-green font-medium uppercase tracking-wider">
-              Connected Wallets
+              {t('wallets.badge')}
             </span>
           </div>
           <h1 className="heading-2 text-foreground">{t('wallets.title')}</h1>
         </div>
-        <Button onClick={connectWallet} variant="primary" glow>
-          <Plus className="w-4 h-4" />
-          {t('wallets.connect')}
-        </Button>
+        <WalletConnectButton size="default" />
       </div>
 
       {/* Wallets Grid */}
@@ -49,12 +47,13 @@ export function WalletsView() {
             <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-surface border border-white/10 flex items-center justify-center">
               <Wallet className="w-10 h-10 text-muted" />
             </div>
-            <h3 className="heading-3 text-foreground mb-2">No wallets connected</h3>
+            <h3 className="heading-3 text-foreground mb-2">{t('wallets.no_wallets_title')}</h3>
             <p className="text-muted mb-6">{t('wallets.no_wallets')}</p>
-            <Button onClick={connectWallet} variant="secondary">
-              <Plus className="w-4 h-4" />
-              Connect your first wallet
-            </Button>
+            <WalletConnectButton
+              size="sm"
+              className="mx-auto"
+              connectLabel={t('wallets.connect_first_wallet')}
+            />
           </div>
         ) : (
           wallets.map((wallet, index) => {
@@ -106,7 +105,7 @@ export function WalletsView() {
                     <button
                       onClick={() => copyToClipboard(wallet.address)}
                       className="p-2 rounded-lg hover:bg-white/5 text-muted hover:text-foreground transition-all"
-                      title="Copy address"
+                      title={t('wallets.copy_address')}
                     >
                       {isCopied ? (
                         <Check className="w-4 h-4 text-accent-green" />
@@ -119,7 +118,7 @@ export function WalletsView() {
                       target="_blank"
                       rel="noopener noreferrer"
                       className="p-2 rounded-lg hover:bg-white/5 text-muted hover:text-foreground transition-all"
-                      title="View on explorer"
+                      title={t('wallets.view_explorer')}
                     >
                       <ExternalLink className="w-4 h-4" />
                     </a>

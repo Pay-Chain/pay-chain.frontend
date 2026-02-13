@@ -2,6 +2,7 @@
 
 import { formatCurrency, formatDate } from '@/core/utils';
 import type { Payment } from '@/data/model/entity';
+import { useTranslation } from '@/presentation/hooks';
 import { ArrowRight, Clock, CheckCircle, XCircle, Loader2 } from 'lucide-react';
 
 interface TransactionListProps {
@@ -13,9 +14,11 @@ interface TransactionListProps {
 export default function TransactionList({ 
   payments, 
   showAll = false,
-  title = 'Recent Transactions' 
+  title
 }: TransactionListProps) {
+  const { t } = useTranslation();
   const displayPayments = showAll ? payments : payments.slice(0, 5);
+  const resolvedTitle = title ?? t('transaction_list.default_title');
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -47,15 +50,15 @@ export default function TransactionList({
         <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-surface border border-white/10 flex items-center justify-center">
           <Clock className="w-8 h-8 text-muted" />
         </div>
-        <p className="text-muted text-lg">No transactions yet</p>
-        <p className="text-muted/60 text-sm mt-1">Your payment history will appear here</p>
+        <p className="text-muted text-lg">{t('transaction_list.empty_title')}</p>
+        <p className="text-muted/60 text-sm mt-1">{t('transaction_list.empty_description')}</p>
       </div>
     );
   }
 
   return (
     <div className="space-y-4 animate-fade-in">
-      <h2 className="heading-3 text-foreground">{title}</h2>
+      <h2 className="heading-3 text-foreground">{resolvedTitle}</h2>
       <div className="space-y-3">
         {displayPayments.map((payment, index) => (
           <div

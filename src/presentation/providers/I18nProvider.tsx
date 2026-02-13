@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Locale, Dictionary } from '@/core/i18n/types';
 import { en } from '@/core/i18n/locales/en';
 import { id } from '@/core/i18n/locales/id';
@@ -23,19 +24,33 @@ const I18nContext = createContext<I18nContextType | undefined>(undefined);
 
 // Provider
 export function I18nProvider({ children }: { children: ReactNode }) {
+  const router = useRouter();
   const [locale, setLocale] = useState<Locale>('en');
 
   // Persist locale preference
   useEffect(() => {
+    const cookieLocale = document.cookie
+      .split('; ')
+      .find((value) => value.startsWith('locale='))
+      ?.split('=')[1] as Locale | undefined;
+    if (cookieLocale === 'en' || cookieLocale === 'id') {
+      setLocale(cookieLocale);
+      return;
+    }
+
     const saved = localStorage.getItem('locale') as Locale;
     if (saved && (saved === 'en' || saved === 'id')) {
       setLocale(saved);
+      document.cookie = `locale=${saved}; path=/; max-age=31536000; samesite=lax`;
     }
   }, []);
 
   const handleSetLocale = (newLocale: Locale) => {
     setLocale(newLocale);
     localStorage.setItem('locale', newLocale);
+    document.cookie = `locale=${newLocale}; path=/; max-age=31536000; samesite=lax`;
+    // Re-fetch server components that render translated text from server dictionary.
+    router.refresh();
   };
 
   const dictionary = dictionaries[locale];

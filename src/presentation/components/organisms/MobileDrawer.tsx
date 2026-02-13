@@ -26,11 +26,23 @@ const drawerNavItems = [
   { href: '/settings', labelKey: 'common.settings', icon: Settings },
 ];
 
+const adminDrawerNavItems = [
+  { href: '/admin', labelKey: 'admin.dashboard', icon: Settings },
+  { href: '/admin/users', labelKey: 'admin.users', icon: Settings },
+  { href: '/admin/teams', labelKey: 'admin.teams', icon: Settings },
+  { href: '/admin/merchants', labelKey: 'admin.merchants', icon: Store },
+  { href: '/admin/chains', labelKey: 'admin.chains', icon: Settings },
+  { href: '/admin/contracts', labelKey: 'admin.contracts', icon: Settings },
+  { href: '/admin/rpcs', labelKey: 'admin.rpcs', icon: Settings },
+  { href: '/admin/tokens', labelKey: 'admin.tokens', icon: Settings },
+];
+
 export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
   const pathname = usePathname();
   const { user, logout } = useAuthStore();
   const { t, locale, setLocale } = useTranslation();
   const prevPathname = useRef(pathname);
+  const canSeeAdminNav = pathname.startsWith('/admin') || user?.role === 'ADMIN' || user?.role === 'SUB_ADMIN';
 
   const toggleLocale = () => {
     setLocale(locale === 'en' ? 'id' : 'en');
@@ -78,7 +90,7 @@ export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
               alt="Pay-Chain Logo"
               className="h-8 w-8 object-contain"
             />
-            <span className="text-foreground font-bold text-lg">Pay-Chain</span>
+            <span className="text-foreground font-bold text-lg">{t('common.brand')}</span>
           </div>
           <button
             onClick={onClose}
@@ -129,15 +141,40 @@ export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
               </Link>
             );
           })}
+          {canSeeAdminNav && (
+            <>
+              <span className="px-3 py-2 text-xs font-medium text-muted uppercase tracking-wider block mt-3">
+                Admin
+              </span>
+              {adminDrawerNavItems.map((item) => {
+                const Icon = item.icon;
+                const active = isActive(item.href);
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 ${
+                      active
+                        ? 'bg-white/10 text-foreground'
+                        : 'text-muted hover:text-foreground hover:bg-white/5'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Icon className={`w-5 h-5 ${active ? 'text-accent-green' : ''}`} />
+                      {t(item.labelKey) !== item.labelKey ? t(item.labelKey) : item.labelKey.split('.').pop()}
+                    </div>
+                    <ChevronRight className="w-4 h-4 opacity-50" />
+                  </Link>
+                );
+              })}
+            </>
+          )}
         </nav>
 
         {/* Bottom Section */}
         <div className="p-4 border-t border-white/10 space-y-3">
-          {/* Wallet Connect Buttons */}
-          <div className="space-y-2">
-            <WalletConnectButton chainType="evm" size="sm" className="w-full" />
-            <WalletConnectButton chainType="svm" size="sm" className="w-full" />
-          </div>
+          {/* Wallet Connect */}
+          <WalletConnectButton size="sm" className="w-full" compact dropdownAlign="left" />
 
           {/* Language Switcher */}
           <button
@@ -145,7 +182,7 @@ export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
             className="w-full flex items-center gap-3 px-4 py-3 text-sm text-muted hover:text-foreground transition-colors rounded-xl hover:bg-white/5"
           >
             <Globe className="w-5 h-5" />
-            <span>Language</span>
+            <span>{t('common.language')}</span>
             <span className="ml-auto uppercase font-medium text-foreground">{locale}</span>
           </button>
 

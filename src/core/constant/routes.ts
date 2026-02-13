@@ -3,6 +3,8 @@ export const ROUTES = {
   // Public
   HOME: '/',
   PAY: (id: string) => `/pay/${id}`,
+  APP: '/app',
+  API_KEYS: '/settings/api-keys',
 
   // Auth
   LOGIN: '/login',

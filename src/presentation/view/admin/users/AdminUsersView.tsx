@@ -2,9 +2,11 @@
 
 import { useAdminUsers } from './useAdminUsers';
 import { Card, Button } from '@/presentation/components/atoms';
+import { useTranslation } from '@/presentation/hooks';
 import { Search, Loader2, LayoutGrid } from 'lucide-react';
 
 export const AdminUsersView = () => {
+  const { t } = useTranslation();
   const { state, actions } = useAdminUsers();
   const { 
     users, 
@@ -17,13 +19,13 @@ export const AdminUsersView = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">User Management</h1>
-          <p className="text-muted">Manage all registered users</p>
+          <h1 className="text-2xl font-bold text-foreground">{t('admin.users_view.title')}</h1>
+          <p className="text-muted">{t('admin.users_view.subtitle')}</p>
         </div>
         <div className="relative">
           <input
             type="text"
-            placeholder="Search users..."
+            placeholder={t('admin.users_view.search_placeholder')}
             className="pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 w-64 transition-all text-sm"
             value={searchTerm}
             onChange={(e) => actions.setSearchTerm(e.target.value)}
@@ -43,10 +45,10 @@ export const AdminUsersView = () => {
           <table className="w-full text-left">
             <thead className="bg-white/5 text-muted text-[10px] uppercase font-bold tracking-wider">
               <tr>
-                <th className="px-6 py-4">User</th>
-                <th className="px-6 py-4">Role</th>
-                <th className="px-6 py-4">KYC Status</th>
-                <th className="px-6 py-4">Actions</th>
+                <th className="px-6 py-4">{t('admin.users_view.table.user')}</th>
+                <th className="px-6 py-4">{t('admin.users_view.table.role')}</th>
+                <th className="px-6 py-4">{t('admin.users_view.table.kyc_status')}</th>
+                <th className="px-6 py-4">{t('admin.users_view.table.actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
@@ -54,7 +56,7 @@ export const AdminUsersView = () => {
                 <tr>
                   <td colSpan={4} className="px-6 py-12 text-center text-muted text-sm">
                     <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-primary" />
-                    Loading users...
+                    {t('admin.users_view.loading')}
                   </td>
                 </tr>
               ) : (!users || users.length === 0) ? (
@@ -62,7 +64,7 @@ export const AdminUsersView = () => {
                   <td colSpan={4} className="px-6 py-12 text-center text-muted">
                     <div className="flex flex-col items-center gap-2">
                        <LayoutGrid className="w-8 h-8 opacity-20" />
-                       <span className="text-sm">No users found</span>
+                       <span className="text-sm">{t('admin.users_view.empty')}</span>
                     </div>
                   </td>
                 </tr>
@@ -95,7 +97,7 @@ export const AdminUsersView = () => {
                     </td>
                     <td className="px-6 py-4">
                       <Button variant="ghost" size="sm" className="hover:bg-white/10 rounded-lg h-8 px-3 text-xs">
-                        View Details
+                        {t('admin.users_view.view_details')}
                       </Button>
                     </td>
                   </tr>

@@ -9,6 +9,7 @@ import {
   TokenItemData 
 } from '@/presentation/components/molecules/TokenListItem';
 import { TokenIcon } from '@/presentation/components/atoms/TokenIcon';
+import { useTranslation } from '@/presentation/hooks';
 
 export interface TokenSelectorProps {
   tokens: TokenItemData[];
@@ -21,7 +22,8 @@ export interface TokenSelectorProps {
 }
 
 const TokenSelector = React.forwardRef<HTMLDivElement, TokenSelectorProps>(
-  ({ tokens, selectedTokenId, onSelect, placeholder = 'Select Token', label, className, disabled }, ref) => {
+  ({ tokens, selectedTokenId, onSelect, placeholder, label, className, disabled }, ref) => {
+    const { t } = useTranslation();
     const [isOpen, setIsOpen] = React.useState(false);
     const [searchQuery, setSearchQuery] = React.useState('');
     const [dropdownStyles, setDropdownStyles] = React.useState<React.CSSProperties>({});
@@ -33,6 +35,7 @@ const TokenSelector = React.forwardRef<HTMLDivElement, TokenSelectorProps>(
     const selectedToken = React.useMemo(() => 
       tokens.find(t => t.id === selectedTokenId), 
     [tokens, selectedTokenId]);
+    const resolvedPlaceholder = placeholder ?? t('payments.select_token');
 
     const filteredTokens = React.useMemo(() => {
       if (!searchQuery) return tokens;
@@ -141,7 +144,7 @@ const TokenSelector = React.forwardRef<HTMLDivElement, TokenSelectorProps>(
               </span>
             </div>
           ) : (
-            <span className="text-muted-foreground text-sm">{placeholder}</span>
+            <span className="text-muted-foreground text-sm">{resolvedPlaceholder}</span>
           )}
           
           <ChevronDown 
@@ -185,7 +188,7 @@ const TokenSelector = React.forwardRef<HTMLDivElement, TokenSelectorProps>(
                     }
                   }}
                   type="text"
-                  placeholder="Search tokens..."
+                  placeholder={t('common.search_tokens')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full bg-white/5 border border-white/10 rounded-lg pl-9 pr-8 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 focus:bg-white/10 transition-all font-sans"
@@ -218,7 +221,7 @@ const TokenSelector = React.forwardRef<HTMLDivElement, TokenSelectorProps>(
               ) : (
                 <div className="py-8 text-center flex flex-col items-center justify-center text-muted-foreground">
                   <Search className="w-8 h-8 opacity-20 mb-2" />
-                  <span className="text-xs">No tokens found</span>
+                  <span className="text-xs">{t('common.no_tokens_found')}</span>
                 </div>
               )}
             </div>

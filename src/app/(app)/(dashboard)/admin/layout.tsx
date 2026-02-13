@@ -1,8 +1,10 @@
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
-import { validateSession, isAuthorized } from '@/core/auth/auth_guard';
 import { UserRole } from '@/core/constants/roles';
-import { decryptToken } from '@/core/security/token';
+import { ENV } from '@/core/config/env';
+
+const BACKEND_URL = ENV.BACKEND_URL;
+const INTERNAL_PROXY_SECRET = ENV.INTERNAL_PROXY_SECRET;
 
 export default async function AdminLayout({
   children,
@@ -10,28 +12,31 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   const cookieStore = await cookies();
-  const encryptedToken = cookieStore.get('token')?.value;
+  const sessionId = cookieStore.get('session_id')?.value;
 
-  if (!encryptedToken) {
+  if (!sessionId) {
     redirect('/login');
   }
 
-  const token = await decryptToken(encryptedToken);
-  if (!token) {
+  const response = await fetch(`${BACKEND_URL}/api/v1/auth/me`, {
+    method: 'GET',
+    headers: {
+      'X-Session-Id': sessionId,
+      ...(INTERNAL_PROXY_SECRET ? { 'X-Internal-Proxy-Secret': INTERNAL_PROXY_SECRET } : {}),
+    },
+    cache: 'no-store',
+  });
+
+  if (!response.ok) {
     redirect('/login');
   }
 
-  const session = await validateSession(token);
-  console.log(`[AdminLayout] Session: ${JSON.stringify(session)}`);
-  
-  if (!session || !isAuthorized(session.role, UserRole.ADMIN)) {
-    console.log(`[AdminLayout] Access denied. Role: ${session?.role}`);
-    redirect('/dashboard'); // or 403 page
+  const payload = await response.json();
+  const role = payload?.data?.user?.role || payload?.user?.role || null;
+
+  if (role !== UserRole.ADMIN) {
+    redirect('/dashboard');
   }
 
-  return (
-    <>
-      {children}
-    </>
-  );
+  return <>{children}</>;
 }

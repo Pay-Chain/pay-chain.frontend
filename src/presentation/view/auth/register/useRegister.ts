@@ -3,37 +3,37 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { useRegisterMutation } from '@/data/usecase';
-import { useAppKitAccount, useAppKit } from '@reown/appkit/react';
+import { useAppKitAccount } from '@reown/appkit/react';
 import { useSignMessage } from 'wagmi';
-import type { RegisterRequest } from '@/data/model/request';
-
-
-const registerSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-  confirmPassword: z.string()
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
-});
-
-type RegisterFormData = z.infer<typeof registerSchema>;
+import { useTranslation } from '@/presentation/hooks';
+type RegisterFormData = {
+  name: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+};
 
 export function useRegister() {
+  const { t } = useTranslation();
   const [step, setStep] = useState(1);
   const router = useRouter();
   const { mutate: register, isPending } = useRegisterMutation();
   const { address, isConnected } = useAppKitAccount();
-  const { open } = useAppKit();
   const { signMessageAsync } = useSignMessage();
+  const registerSchema = z.object({
+    name: z.string().min(2, t('auth.validation.name_min')),
+    email: z.string().email(t('auth.validation.email_invalid')),
+    password: z.string().min(8, t('auth.validation.password_min_register')),
+    confirmPassword: z.string()
+  }).refine((data) => data.password === data.confirmPassword, {
+    message: t('auth.validation.password_mismatch'),
+    path: ['confirmPassword'],
+  });
 
   const form = useForm<RegisterFormData>({
-    resolver: zodResolver(registerSchema),
     defaultValues: {
       name: '',
       email: '',
@@ -44,21 +44,33 @@ export function useRegister() {
 
   const handleAccountSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    form.trigger(['name', 'email', 'password', 'confirmPassword']).then((isValid) => {
-      if (isValid) {
-        setStep(2);
+    const values = form.getValues();
+    const parsed = registerSchema.safeParse(values);
+    if (!parsed.success) {
+      for (const issue of parsed.error.issues) {
+        const key = issue.path[0] as keyof RegisterFormData | undefined;
+        if (key) {
+          form.setError(key, { message: issue.message });
+        }
       }
-    });
+      return;
+    }
+    setStep(2);
   };
 
   const handleFinalSubmit = async () => {
     if (!address) {
-      form.setError('root', { message: 'Please connect your wallet' });
+      form.setError('root', { message: t('auth.wallet_required_error') });
       return;
     }
 
     try {
-      const message = `Sign this message to verify your wallet for Pay-Chain registration.\n\nWallet: ${address}\nTimestamp: ${Date.now()}`;
+      const message = [
+        t('auth.sign_wallet_message_prefix'),
+        '',
+        `${t('auth.sign_wallet_message_wallet')}: ${address}`,
+        `${t('auth.sign_wallet_message_timestamp')}: ${Date.now()}`,
+      ].join('\n');
       const signature = await signMessageAsync({ message });
 
       const values = form.getValues();
@@ -72,19 +84,25 @@ export function useRegister() {
           walletSignature: signature,
         },
         {
-          onSuccess: () => {
-            toast.success('Registration successful! Redirecting...');
+          onSuccess: (response: any) => {
+            if (response?.error) {
+              const msg = response.error;
+              toast.error(msg);
+              form.setError('root', { message: msg });
+              return;
+            }
+            toast.success(t('toasts.auth.register_success'));
             router.push('/dashboard');
           },
           onError: (err) => {
-            const message = err.message || 'Registration failed';
+            const message = err.message || t('toasts.auth.register_failed');
             toast.error(message);
             form.setError('root', { message });
           },
         }
       );
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Registration failed';
+      const message = err instanceof Error ? err.message : t('toasts.auth.register_failed');
       toast.error(message);
       form.setError('root', { message });
     }
@@ -97,7 +115,6 @@ export function useRegister() {
     isPending,
     address,
     isConnected,
-    open,
     handleAccountSubmit,
     handleFinalSubmit,
   };

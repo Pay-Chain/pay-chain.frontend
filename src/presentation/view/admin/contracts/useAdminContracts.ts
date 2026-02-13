@@ -1,11 +1,17 @@
 import { useState } from 'react';
 import { useAdminContracts as useAdminContractsQuery, useCreateContract, useDeleteContract, useUpdateContract, useAdminChains } from '@/data/usecase/useAdmin';
 import { useDebounce } from '@/presentation/hooks/useDebounce';
+import { useTranslation } from '@/presentation/hooks';
+import { useTokensQuery } from '@/data/usecase';
 import { toast } from 'sonner';
 
+const POOL_ONLY_TYPES = new Set(['POOL']);
+
 export const useAdminContracts = () => {
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterChain, setFilterChain] = useState('');
+  const [filterType, setFilterType] = useState('');
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
 
@@ -18,13 +24,29 @@ export const useAdminContracts = () => {
     contractAddress: '',
     chainId: '',
     type: 'GATEWAY',
+    version: '1.0.0',
+    startBlock: 0,
+    abi: '',
+    deployerAddress: '',
+    token0Address: '',
+    token1Address: '',
+    feeTier: 0,
+    hookAddress: '',
+    metadata: '',
+    isActive: true,
   });
 
   const debouncedSearch = useDebounce(searchTerm, 500);
 
   // Fetch Data
-  const { data: contractsData, isLoading: isContractsLoading, refetch: refetchContracts } = useAdminContractsQuery(page, limit);
+  const { data: contractsData, isLoading: isContractsLoading, refetch: refetchContracts } = useAdminContractsQuery(
+    page,
+    limit,
+    filterChain || undefined,
+    filterType || undefined
+  );
   const { data: chains } = useAdminChains();
+  const { data: tokensData } = useTokensQuery();
 
   const createContract = useCreateContract();
   const updateContract = useUpdateContract();
@@ -32,17 +54,89 @@ export const useAdminContracts = () => {
 
   const contracts = contractsData?.items || [];
   const meta = contractsData?.meta;
+  const chainItems = chains?.items || [];
+  const tokenItems = tokensData?.items || [];
+
+  const normalizeAddress = (value?: string | null) => (value || '').trim().toLowerCase();
+
+  const getTokenByContractAddress = (address?: string | null) => {
+    const normalized = normalizeAddress(address);
+    if (!normalized) return undefined;
+
+    return tokenItems.find((token: any) => {
+      const candidates = [
+        token?.contractAddress,
+        token?.address,
+      ]
+        .filter(Boolean)
+        .map((v) => normalizeAddress(String(v)));
+      return candidates.includes(normalized);
+    });
+  };
+
+  const getPoolTokensByContract = (contract: any) => {
+    const token0 = getTokenByContractAddress(contract?.token0Address);
+    const token1 = getTokenByContractAddress(contract?.token1Address);
+    return { token0, token1 };
+  };
+  const resolveSelectedChainId = (contract: any): string => {
+    const rawCandidates = [
+      contract?.chainUuid,
+      contract?.chainUUID,
+      contract?.chain_id,
+      contract?.chainId,
+      contract?.blockchainId,
+      contract?.networkId,
+    ]
+      .filter(Boolean)
+      .map((v) => String(v));
+
+    if (rawCandidates.length === 0) return '';
+
+    // Prefer direct UUID-like match to selector option id.
+    const directMatch = chainItems.find((chain: any) =>
+      rawCandidates.some((candidate) => candidate === String(chain.id) || candidate === String(chain.uuid))
+    );
+    if (directMatch) return String(directMatch.id || directMatch.uuid);
+
+    // Fallback: contract has blockchain/network id, map it to chain UUID option.
+    const mappedMatch = chainItems.find((chain: any) =>
+      rawCandidates.some(
+        (candidate) =>
+          candidate === String(chain.chainId) ||
+          candidate === String(chain.networkId) ||
+          candidate === String(chain.id)
+      )
+    );
+    if (mappedMatch) return String(mappedMatch.id || mappedMatch.uuid);
+
+    return rawCandidates[0];
+  };
 
   const filteredContracts = contracts.filter((c: any) => {
     const matchesSearch = c.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
                           c.contractAddress?.toLowerCase().includes(debouncedSearch.toLowerCase());
-    const matchesChain = !filterChain || c.chainId.toString() === filterChain;
-    return matchesSearch && matchesChain;
+    return matchesSearch;
   });
 
   const handleOpenAdd = () => {
     setEditingId(null);
-    setFormData({ name: '', contractAddress: '', chainId: '', type: 'GATEWAY' });
+    setFormData({
+      name: '',
+      contractAddress: '',
+      chainId: '',
+      type: 'GATEWAY',
+      version: '1.0.0',
+      startBlock: 0,
+      abi: '',
+      deployerAddress: '',
+      token0Address: '',
+      token1Address: '',
+      feeTier: 0,
+      hookAddress: '',
+      metadata: '',
+      isActive: true,
+    });
     setIsModalOpen(true);
   };
 
@@ -51,8 +145,18 @@ export const useAdminContracts = () => {
     setFormData({
       name: contract.name,
       contractAddress: contract.contractAddress,
-      chainId: contract.chainId || '',
+      chainId: resolveSelectedChainId(contract),
       type: contract.type || 'GATEWAY',
+      version: contract.version || '1.0.0',
+      startBlock: contract.startBlock || 0,
+      abi: contract.abi ? JSON.stringify(contract.abi, null, 2) : '',
+      deployerAddress: contract.deployerAddress || '',
+      token0Address: contract.token0Address || '',
+      token1Address: contract.token1Address || '',
+      feeTier: contract.feeTier || 0,
+      hookAddress: contract.hookAddress || '',
+      metadata: contract.metadata ? JSON.stringify(contract.metadata, null, 2) : '',
+      isActive: contract.isActive ?? true,
     });
     setIsModalOpen(true);
   };
@@ -64,23 +168,62 @@ export const useAdminContracts = () => {
 
   const handleSubmit = (e?: React.FormEvent) => {
     e?.preventDefault();
+
+    // Prepare data
+    let abiObj = null;
+    try {
+      if (formData.abi) abiObj = JSON.parse(formData.abi);
+    } catch (err) {
+      return toast.error(t('admin.contracts_view.toasts.invalid_abi_json'));
+    }
+
+    let metadataObj = null;
+    try {
+      if (formData.metadata) metadataObj = JSON.parse(formData.metadata);
+    } catch (err) {
+      return toast.error(t('admin.contracts_view.toasts.invalid_metadata_json'));
+    }
+
+    const payload: Record<string, any> = {
+      ...formData,
+      abi: abiObj,
+      metadata: metadataObj,
+      startBlock: Number(formData.startBlock),
+      feeTier: Number(formData.feeTier),
+    };
+
+    // Only keep pool-specific fields for POOL contracts.
+    if (!POOL_ONLY_TYPES.has(formData.type)) {
+      payload.token0Address = '';
+      payload.token1Address = '';
+      payload.feeTier = 0;
+      payload.hookAddress = '';
+    } else {
+      if (!formData.token0Address || !formData.token1Address) {
+        return toast.error(t('admin.contracts_view.toasts.pool_tokens_required'));
+      }
+      if (Number.isNaN(payload.feeTier) || payload.feeTier < 0) {
+        return toast.error(t('admin.contracts_view.toasts.fee_tier_invalid'));
+      }
+    }
+
     if (editingId) {
-      updateContract.mutate({ id: editingId, data: formData }, {
+      updateContract.mutate({ id: editingId, data: payload }, {
         onSuccess: () => {
           handleCloseModal();
-          toast.success('Contract updated successfully');
+          toast.success(t('admin.contracts_view.toasts.update_success'));
           refetchContracts();
         },
-        onError: (err: any) => toast.error(err.message || 'Failed to update contract'),
+        onError: (err: any) => toast.error(err.message || t('admin.contracts_view.toasts.update_failed')),
       });
     } else {
-      createContract.mutate(formData, {
+      createContract.mutate(payload, {
         onSuccess: () => {
           handleCloseModal();
-          toast.success('Contract created successfully');
+          toast.success(t('admin.contracts_view.toasts.create_success'));
           refetchContracts();
         },
-        onError: (err: any) => toast.error(err.message || 'Failed to create contract'),
+        onError: (err: any) => toast.error(err.message || t('admin.contracts_view.toasts.create_failed')),
       });
     }
   };
@@ -90,10 +233,10 @@ export const useAdminContracts = () => {
       deleteContract.mutate(deleteId, {
         onSuccess: () => {
           setDeleteId(null);
-          toast.success('Contract deleted successfully');
+          toast.success(t('admin.contracts_view.toasts.delete_success'));
           refetchContracts();
         },
-        onError: (err: any) => toast.error(err.message || 'Failed to delete contract'),
+        onError: (err: any) => toast.error(err.message || t('admin.contracts_view.toasts.delete_failed')),
       });
     }
   };
@@ -102,6 +245,7 @@ export const useAdminContracts = () => {
     state: {
       searchTerm,
       filterChain,
+      filterType,
       contracts,
       meta,
       chains,
@@ -118,6 +262,7 @@ export const useAdminContracts = () => {
     actions: {
       setSearchTerm: (term: string) => { setSearchTerm(term); setPage(1); },
       setFilterChain: (chain: string) => { setFilterChain(chain); setPage(1); },
+      setFilterType: (type: string) => { setFilterType(type); setPage(1); },
       setFormData,
       setDeleteId,
       setPage,
@@ -126,6 +271,8 @@ export const useAdminContracts = () => {
       handleCloseModal,
       handleSubmit,
       handleDelete,
+      getTokenByContractAddress,
+      getPoolTokensByContract,
     }
   };
 };

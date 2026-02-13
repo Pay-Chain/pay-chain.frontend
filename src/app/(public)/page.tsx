@@ -1,10 +1,10 @@
-'use client';
-
 import Link from 'next/link';
 import Image from 'next/image';
-import { useAuthStore } from '@/presentation/hooks';
 import { Button, Card } from '@/presentation/components/atoms';
 import Navbar from '@/presentation/components/organisms/Navbar';
+import { getServerDictionary } from '@/core/i18n/server';
+import { translate } from '@/core/i18n/translate';
+import { HomeCtaActions } from '@/presentation/view/public/home/HomeCtaActions';
 import {
   ArrowRight,
   Zap,
@@ -12,7 +12,6 @@ import {
   Link as LinkIcon,
   Shield,
   Sparkles,
-  ChevronRight,
   Globe,
   RefreshCw,
   Wallet,
@@ -21,76 +20,60 @@ import {
   Activity
 } from 'lucide-react';
 
-export default function LandingPage() {
-  const { isAuthenticated } = useAuthStore();
+export default async function LandingPage() {
+  const dictionary = await getServerDictionary();
+  const t = (key: string) => translate(dictionary, key);
 
-  const paymentRequestExample = `{
-  "id": "prq_01H…",
-  "chainId": "eip155:8453",
-  "contractAddress": "0xGateway…",
-  "amount": "1000000",
-  "decimals": 6,
-  "txData": { "to": "0xGateway…", "hex": "0x…" },
-  "expiresAt": "2026-01-18T12:34:56Z"
-}
-
-// Solana variant:
-// txData: { "base64": "…" }`;
-
-  const feeFormulaExample = `Total Charged = Amount + Total Fee
-Total Fee = max(Fixed Base Fee, Percentage Fee) + Bridge Fee + Gas Fee
-
-If FAILED:
-→ Refund = Amount (100% returned)
-→ Fee is NOT refunded`;
+  const paymentRequestExample = t('public_home.payment_request_example');
+  const feeFormulaExample = t('public_home.fee_formula_example');
 
   const features = [
     {
       icon: <Globe className="w-8 h-8" />,
-      title: 'Multi-Chain Support',
-      description: 'Send payments across EVM chains and Solana using CCIP & Hyperbridge with consistent CAIP-2 chain identifiers.',
+      title: t('public_home.features.multi_chain.title'),
+      description: t('public_home.features.multi_chain.description'),
       color: 'blue',
     },
     {
       icon: <RefreshCw className="w-8 h-8" />,
-      title: 'Auto-Swap',
-      description: 'Pay in USDT, settle in USDC. DEX routing (Uniswap v4 / Jupiter) swaps stablecoins automatically.',
+      title: t('public_home.features.auto_swap.title'),
+      description: t('public_home.features.auto_swap.description'),
       color: 'green',
     },
     {
       icon: <LinkIcon className="w-8 h-8" />,
-      title: 'Payment Requests',
-      description: 'Create a shareable pay link. Backend returns ready-to-sign txData (EVM hex / Solana base64) with 15-minute expiry.',
+      title: t('public_home.features.payment_requests.title'),
+      description: t('public_home.features.payment_requests.description'),
       color: 'purple',
     },
     {
       icon: <Activity className="w-8 h-8" />,
-      title: 'Real-time Tracking',
-      description: 'Track request and payment status (pending/completed/expired) from dashboard, powered by on-chain events + indexer.',
+      title: t('public_home.features.realtime_tracking.title'),
+      description: t('public_home.features.realtime_tracking.description'),
       color: 'blue',
     },
     {
       icon: <RefreshCw className="w-8 h-8" />,
-      title: 'RPC Failover',
-      description: 'Multiple RPC providers per chain with automatic failover to keep payments reliable during network outages.',
+      title: t('public_home.features.rpc_failover.title'),
+      description: t('public_home.features.rpc_failover.description'),
       color: 'amber',
     },
     {
       icon: <Shield className="w-8 h-8" />,
-      title: '100% Refund Guarantee',
-      description: 'If a cross-chain attempt fails, the full amount is refunded to the sender automatically (fees excluded).',
+      title: t('public_home.features.refund_guarantee.title'),
+      description: t('public_home.features.refund_guarantee.description'),
       color: 'amber',
     },
     {
       icon: <CheckCircle2 className="w-8 h-8" />,
-      title: 'Verified Merchants',
-      description: 'Transact with confidence. Only verified Partner, Corporate, UMKM, and Retail merchants can receive payments.',
+      title: t('public_home.features.verified_merchants.title'),
+      description: t('public_home.features.verified_merchants.description'),
       color: 'purple',
     },
     {
       icon: <Wallet className="w-8 h-8" />,
-      title: 'Wallet-First Security',
-      description: 'Wallet is mandatory on registration. Adding a new wallet triggers verification checks (KYC), except admin accounts.',
+      title: t('public_home.features.wallet_security.title'),
+      description: t('public_home.features.wallet_security.description'),
       color: 'green',
     },
   ];
@@ -98,23 +81,23 @@ If FAILED:
   const steps = [
     {
       icon: <Wallet className="w-6 h-6" />,
-      title: 'Connect Wallet',
-      description: 'Connect your EVM or Solana wallet (non-custodial by design).',
+      title: t('public_home.steps.connect_wallet.title'),
+      description: t('public_home.steps.connect_wallet.description'),
     },
     {
       icon: <Coins className="w-6 h-6" />,
-      title: 'Create Request',
-      description: 'Define amount/token. Get contract + txData (hex/base64) that expires in 15 minutes.',
+      title: t('public_home.steps.create_request.title'),
+      description: t('public_home.steps.create_request.description'),
     },
     {
       icon: <ArrowRight className="w-6 h-6" />,
-      title: 'Sign & Pay',
-      description: 'Open the pay link and sign the prepared transaction inside your wallet.',
+      title: t('public_home.steps.sign_pay.title'),
+      description: t('public_home.steps.sign_pay.description'),
     },
     {
       icon: <CheckCircle2 className="w-6 h-6" />,
-      title: 'Track & Settle',
-      description: 'Indexer confirms on-chain events and updates status. If failed, amount is refunded automatically.',
+      title: t('public_home.steps.track_settle.title'),
+      description: t('public_home.steps.track_settle.description'),
     },
   ];
 
@@ -129,9 +112,9 @@ If FAILED:
   };
 
   const supportedChains = [
-    { name: 'Base', logo: '/chain/base-icon.svg', width: 28, height: 28 },
-    { name: 'Arbitrum', logo: '/chain/arbitrum-icon.svg', width: 28, height: 28 },
-    { name: 'Solana', logo: '/chain/solana-icon.svg', width: 24, height: 24 },
+    { name: t('public_home.supported_chains.base'), logo: '/chain/base-icon.svg', width: 28, height: 28 },
+    { name: t('public_home.supported_chains.arbitrum'), logo: '/chain/arbitrum-icon.svg', width: 28, height: 28 },
+    { name: t('public_home.supported_chains.solana'), logo: '/chain/solana-icon.svg', width: 24, height: 24 },
   ];
 
   return (
@@ -151,7 +134,7 @@ If FAILED:
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent-green/10 border border-accent-green/30 mb-8 animate-fade-in backdrop-blur-sm">
               <span className="w-2 h-2 rounded-full bg-accent-green animate-pulse" />
-              <span className="text-sm text-accent-green font-medium">Mainnet is Live</span>
+              <span className="text-sm text-accent-green font-medium">{t('public_home.hero.mainnet_badge')}</span>
               <Sparkles className="w-4 h-4 text-accent-green" />
             </div>
 
@@ -162,14 +145,12 @@ If FAILED:
                 alt="Pay-Chain Logo"
                 className="block mx-auto h-50 w-50 object-contain transition-transform duration-300 group-hover:scale-110"
               />
-              <span className="block text-foreground mb-2 text-6xl">Pay-Chain</span>
+              <span className="block text-foreground mb-2 text-6xl">{t('common.brand')}</span>
             </h1>
 
             {/* Subtitle */}
             <p className="mx-auto mt-6 max-w-2xl body-lg text-muted animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-              Pay-Chain is a non-custodial cross-chain stablecoin payment gateway for EVM chains and Solana.
-              Generate payment requests with ready-to-sign transaction data (EVM hex / Solana base64),
-              auto-swap stablecoins via DEX routing, and track every payment end-to-end in real time.
+              {t('public_home.hero.subtitle')}
             </p>
 
             {/* Quick Highlights */}
@@ -180,9 +161,9 @@ If FAILED:
                     <LinkIcon className="w-5 h-5" />
                   </div>
                   <div>
-                    <p className="text-foreground font-semibold">Payment Requests</p>
+                    <p className="text-foreground font-semibold">{t('public_home.quick_cards.payment_requests.title')}</p>
                     <p className="text-sm text-muted mt-1">
-                      Share a pay link with contract + txData, ready for wallet signing.
+                      {t('public_home.quick_cards.payment_requests.description')}
                     </p>
                   </div>
                 </div>
@@ -193,9 +174,9 @@ If FAILED:
                     <RefreshCw className="w-5 h-5" />
                   </div>
                   <div>
-                    <p className="text-foreground font-semibold">Bridge + Swap</p>
+                    <p className="text-foreground font-semibold">{t('public_home.quick_cards.bridge_swap.title')}</p>
                     <p className="text-sm text-muted mt-1">
-                      Automatic stablecoin conversion and bridge selection for best execution.
+                      {t('public_home.quick_cards.bridge_swap.description')}
                     </p>
                   </div>
                 </div>
@@ -206,9 +187,9 @@ If FAILED:
                     <Shield className="w-5 h-5" />
                   </div>
                   <div>
-                    <p className="text-foreground font-semibold">Refund Policy</p>
+                    <p className="text-foreground font-semibold">{t('public_home.quick_cards.refund_policy.title')}</p>
                     <p className="text-sm text-muted mt-1">
-                      If a cross-chain attempt fails, your amount is refunded (fees excluded).
+                      {t('public_home.quick_cards.refund_policy.description')}
                     </p>
                   </div>
                 </div>
@@ -217,7 +198,7 @@ If FAILED:
 
             {/* Supported chains */}
             <div className="mt-20 animate-fade-in-up" style={{ animationDelay: '300ms' }}>
-              <p className="label mb-6 uppercase tracking-wider text-muted/60">Supported Networks</p>
+              <p className="label mb-6 uppercase tracking-wider text-muted/60">{t('public_home.supported_networks.label')}</p>
               <div className="flex flex-wrap justify-center gap-6">
                 {supportedChains.map((chain, index) => (
                   <div
@@ -237,7 +218,7 @@ If FAILED:
                 ))}
               </div>
               <p className="mt-6 text-xs text-muted/70 max-w-2xl mx-auto">
-                Plus Ethereum, Polygon, Optimism, and more EVM networks — with CAIP-2 chain IDs for consistent routing.
+                {t('public_home.supported_networks.caption')}
               </p>
             </div>
           </div>
@@ -250,10 +231,10 @@ If FAILED:
           <div className="text-center mb-16 animate-fade-in-up">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent-purple/10 border border-accent-purple/20 mb-4">
               <Zap className="w-4 h-4 text-accent-purple" />
-              <span className="text-xs text-accent-purple font-medium uppercase tracking-wider">Features</span>
+              <span className="text-xs text-accent-purple font-medium uppercase tracking-wider">{t('public_home.features_section.badge')}</span>
             </div>
-            <h2 className="heading-1 text-foreground">Why Pay-Chain?</h2>
-            <p className="mt-4 body-lg text-muted">Built for the multi-chain future</p>
+            <h2 className="heading-1 text-foreground">{t('public_home.features_section.title')}</h2>
+            <p className="mt-4 body-lg text-muted">{t('public_home.features_section.subtitle')}</p>
           </div>
 
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -286,9 +267,9 @@ If FAILED:
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent-blue/10 border border-accent-blue/20 mb-4">
               <RefreshCw className="w-4 h-4 text-accent-blue" />
-              <span className="text-xs text-accent-blue font-medium uppercase tracking-wider">How It Works</span>
+              <span className="text-xs text-accent-blue font-medium uppercase tracking-wider">{t('public_home.how_it_works.badge')}</span>
             </div>
-            <h2 className="heading-1 text-foreground">Seamless Experience</h2>
+            <h2 className="heading-1 text-foreground">{t('public_home.how_it_works.title')}</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 relative">
@@ -310,9 +291,7 @@ If FAILED:
 
           <div className="mt-16 max-w-3xl mx-auto text-center animate-fade-in-up" style={{ animationDelay: '700ms' }}>
             <p className="text-muted leading-relaxed">
-              Payment requests expire in <strong className="text-foreground">15 minutes</strong>.
-              If the cross-chain execution fails, the protocol refunds the <strong className="text-foreground">amount</strong> automatically
-              (fees are used for gas/bridge attempts and are not refunded).
+              {t('public_home.how_it_works.footer')}
             </p>
           </div>
         </div>
@@ -324,25 +303,24 @@ If FAILED:
           <div className="text-center mb-16 animate-fade-in-up">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent-purple/10 border border-accent-purple/20 mb-4">
               <LinkIcon className="w-4 h-4 text-accent-purple" />
-              <span className="text-xs text-accent-purple font-medium uppercase tracking-wider">Payment Requests</span>
+              <span className="text-xs text-accent-purple font-medium uppercase tracking-wider">{t('public_home.requests_section.badge')}</span>
             </div>
-            <h2 className="heading-1 text-foreground">Ready-to-Sign Transaction Data</h2>
+            <h2 className="heading-1 text-foreground">{t('public_home.requests_section.title')}</h2>
             <p className="mt-4 body-lg text-muted max-w-3xl mx-auto">
-              Merchants generate a pay link that includes everything a wallet needs to sign: contract address, amount, decimals, chainId, and txData.
-              EVM uses <strong className="text-foreground">hex calldata</strong>; Solana uses <strong className="text-foreground">base64 transaction</strong>.
+              {t('public_home.requests_section.subtitle')}
             </p>
           </div>
 
           <div className="grid lg:grid-cols-2 gap-8 items-start">
             <div className="space-y-6 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
               <div className="card-glass p-8">
-                <h3 className="heading-3 mb-4">What you get</h3>
+                <h3 className="heading-3 mb-4">{t('public_home.requests_section.what_you_get_title')}</h3>
                 <ul className="space-y-4">
                   {[
-                    'A shareable URL (e.g., /pay/{requestId}) for a one-click payment experience.',
-                    'txData is pre-built: the payer only reviews and signs in their wallet.',
-                    'Chain identifiers follow CAIP-2 format (eip155:* / solana:*).',
-                    'Requests are time-boxed to reduce price/routing drift and limit risk.'
+                    t('public_home.requests_section.items.item_1'),
+                    t('public_home.requests_section.items.item_2'),
+                    t('public_home.requests_section.items.item_3'),
+                    t('public_home.requests_section.items.item_4'),
                   ].map((item, i) => (
                     <li key={i} className="flex items-start gap-3 text-muted">
                       <div className="mt-2 w-1.5 h-1.5 rounded-full bg-accent-purple" />
@@ -355,11 +333,10 @@ If FAILED:
               <div className="card-glass p-8">
                 <div className="flex items-center gap-3 mb-4">
                   <Clock className="w-5 h-5 text-accent-green" />
-                  <h3 className="heading-3">Expiration by design</h3>
+                  <h3 className="heading-3">{t('public_home.requests_section.expiration_title')}</h3>
                 </div>
                 <p className="text-muted leading-relaxed">
-                  Every request expires in <strong className="text-foreground">15 minutes</strong>.
-                  This keeps execution deterministic and helps prevent stuck or stale requests during volatile network conditions.
+                  {t('public_home.requests_section.expiration_description')}
                 </p>
               </div>
             </div>
@@ -368,11 +345,11 @@ If FAILED:
               <div className="card-glass p-8 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-96 h-96 bg-accent-blue/10 rounded-full blur-[100px] -mr-32 -mt-32" />
                 <div className="bg-black/40 rounded-xl p-6 border border-white/5 font-mono text-sm leading-relaxed overflow-x-auto custom-scrollbar">
-                  <div className="text-accent-purple mb-2">// Example backend response</div>
+                  <div className="text-accent-purple mb-2">{t('public_home.requests_section.response_title')}</div>
                   <pre className="text-muted/90 whitespace-pre-wrap">{paymentRequestExample}</pre>
                 </div>
                 <p className="mt-4 text-xs text-muted/70">
-                  Tip: The pay page will automatically prompt the correct wallet flow (EVM or Solana) based on <code className="text-foreground">chainId</code>.
+                  {t('public_home.requests_section.tip')}
                 </p>
               </div>
             </div>
@@ -386,23 +363,22 @@ If FAILED:
           <div className="text-center mb-16 animate-fade-in-up">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 mb-4">
               <Shield className="w-4 h-4 text-amber-400" />
-              <span className="text-xs text-amber-400 font-medium uppercase tracking-wider">Fees & Refund</span>
+              <span className="text-xs text-amber-400 font-medium uppercase tracking-wider">{t('public_home.fees_section.badge')}</span>
             </div>
-            <h2 className="heading-1 text-foreground">Transparent Fees, Amount-Back Guarantee</h2>
+            <h2 className="heading-1 text-foreground">{t('public_home.fees_section.title')}</h2>
             <p className="mt-4 body-lg text-muted max-w-3xl mx-auto">
-              Pay-Chain charges a fee for execution (gas/bridge/swap).
-              If execution fails, the protocol refunds the <strong className="text-foreground">amount</strong> — fees are excluded.
+              {t('public_home.fees_section.subtitle')}
             </p>
           </div>
 
           <div className="grid lg:grid-cols-2 gap-8 items-start">
             <div className="card-glass p-8 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-              <h3 className="heading-3 mb-4">Fee & refund formula</h3>
+              <h3 className="heading-3 mb-4">{t('public_home.fees_section.formula_title')}</h3>
               <div className="bg-black/40 rounded-xl p-6 border border-white/5 font-mono text-sm leading-relaxed overflow-x-auto custom-scrollbar">
                 <pre className="text-muted/90 whitespace-pre-wrap">{feeFormulaExample}</pre>
               </div>
               <p className="mt-4 text-sm text-muted leading-relaxed">
-                Fees cover bridge attempts, on-chain execution, and routing. If you need deterministic accounting, use payment requests so the payer signs a pre-quoted transaction.
+                {t('public_home.fees_section.formula_note')}
               </p>
             </div>
 
@@ -413,8 +389,8 @@ If FAILED:
                     <Clock className="w-5 h-5" />
                   </div>
                   <div>
-                    <p className="text-foreground font-semibold">Request TTL</p>
-                    <p className="text-sm text-muted mt-1">15-minute expiry to prevent stale or risky execution.</p>
+                    <p className="text-foreground font-semibold">{t('public_home.fees_section.cards.request_ttl_title')}</p>
+                    <p className="text-sm text-muted mt-1">{t('public_home.fees_section.cards.request_ttl_description')}</p>
                   </div>
                 </div>
               </Card>
@@ -425,8 +401,8 @@ If FAILED:
                     <Zap className="w-5 h-5" />
                   </div>
                   <div>
-                    <p className="text-foreground font-semibold">Settlement target</p>
-                    <p className="text-sm text-muted mt-1">Designed for under ~2 minutes average settlement.</p>
+                    <p className="text-foreground font-semibold">{t('public_home.fees_section.cards.settlement_title')}</p>
+                    <p className="text-sm text-muted mt-1">{t('public_home.fees_section.cards.settlement_description')}</p>
                   </div>
                 </div>
               </Card>
@@ -437,8 +413,8 @@ If FAILED:
                     <CheckCircle2 className="w-5 h-5" />
                   </div>
                   <div>
-                    <p className="text-foreground font-semibold">Success target</p>
-                    <p className="text-sm text-muted mt-1">Built to exceed 99% execution success rate.</p>
+                    <p className="text-foreground font-semibold">{t('public_home.fees_section.cards.success_title')}</p>
+                    <p className="text-sm text-muted mt-1">{t('public_home.fees_section.cards.success_description')}</p>
                   </div>
                 </div>
               </Card>
@@ -449,8 +425,8 @@ If FAILED:
                     <Shield className="w-5 h-5" />
                   </div>
                   <div>
-                    <p className="text-foreground font-semibold">Refund scope</p>
-                    <p className="text-sm text-muted mt-1">100% amount refunded on failure (fees excluded).</p>
+                    <p className="text-foreground font-semibold">{t('public_home.fees_section.cards.refund_title')}</p>
+                    <p className="text-sm text-muted mt-1">{t('public_home.fees_section.cards.refund_description')}</p>
                   </div>
                 </div>
               </Card>
@@ -467,27 +443,18 @@ If FAILED:
             <div className="absolute inset-0 bg-linear-to-r from-accent-purple/10 to-accent-blue/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl" />
 
             <div className="relative z-10">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent-green/10 border border-accent-green/20 mb-6">
-                <Sparkles className="w-4 h-4 text-accent-green" />
-                <span className="text-xs text-accent-green font-medium">Get Started</span>
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent-green/10 border border-accent-green/20 mb-6">
+                  <Sparkles className="w-4 h-4 text-accent-green" />
+                <span className="text-xs text-accent-green font-medium">{t('public_home.cta.badge')}</span>
               </div>
-              <h2 className="heading-2 text-foreground mb-6">Ready to transform your payments?</h2>
+              <h2 className="heading-2 text-foreground mb-6">{t('public_home.cta.title')}</h2>
               <p className="body-lg text-muted mb-10 max-w-xl mx-auto">
-                Join verified merchants and users leveraging the power of cross-chain liquidity.
+                {t('public_home.cta.subtitle')}
               </p>
-              <div className="flex flex-col sm:flex-row justify-center gap-4">
-                <Link href={isAuthenticated ? '/dashboard' : '/register'}>
-                  <Button variant="primary" size="lg" glow>
-                    Start Accepting Crypto
-                    <ArrowRight className="w-5 h-5" />
-                  </Button>
-                </Link>
-                <Link href="/contact">
-                  <Button variant="outline" size="lg">
-                    Contact Sales
-                  </Button>
-                </Link>
-              </div>
+              <HomeCtaActions
+                primaryLabel={t('public_home.cta.start_accepting')}
+                secondaryLabel={t('public_home.cta.contact_sales')}
+              />
             </div>
           </div>
         </div>
@@ -498,13 +465,13 @@ If FAILED:
         <div className="container-app">
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <p className="text-muted text-sm">
-              © {new Date().getFullYear()} Pay-Chain. All rights reserved.
+              © {new Date().getFullYear()} {t('common.brand')}. {t('public_home.footer.rights')}
             </p>
             <div className="flex gap-8 text-sm text-muted">
-              <Link href="/about" className="hover:text-white transition-colors">About Protocol</Link>
-              <Link href="/team" className="hover:text-white transition-colors">Team</Link>
-              <Link href="/docs" className="hover:text-white transition-colors">Documentation</Link>
-              <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
+              <Link href="/about" className="hover:text-white transition-colors">{t('public_home.footer.about_protocol')}</Link>
+              <Link href="/team" className="hover:text-white transition-colors">{t('public_home.footer.team')}</Link>
+              <Link href="/docs" className="hover:text-white transition-colors">{t('public_home.footer.documentation')}</Link>
+              <Link href="/privacy" className="hover:text-white transition-colors">{t('public_home.footer.privacy_policy')}</Link>
             </div>
           </div>
         </div>

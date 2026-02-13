@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { Clock } from 'lucide-react';
+import { useTranslation } from '@/presentation/hooks';
 import { BaseModal } from './BaseModal';
 import { Button } from '../atoms/Button';
 
@@ -18,12 +19,14 @@ export const SessionTimeoutModal = ({
   onExtend,
   isLoading = false,
 }: SessionTimeoutModalProps) => {
+  const { t } = useTranslation();
+
   return (
     <BaseModal
       isOpen={isOpen}
       onClose={onClose}
-      title="Session Expiring Soon"
-      description="Your session is about to expire. Would you like to extend it and stay logged in?"
+      title={t('session_modal.title')}
+      description={t('session_modal.description')}
       className="max-w-md"
       footer={
         <div className="flex flex-col sm:flex-row gap-3 w-full">
@@ -32,7 +35,7 @@ export const SessionTimeoutModal = ({
             onClick={onClose}
             className="flex-1 text-muted"
           >
-            Log Out
+            {t('session_modal.logout')}
           </Button>
           <Button
             variant="primary"
@@ -41,7 +44,7 @@ export const SessionTimeoutModal = ({
             className="flex-1"
             glow
           >
-            Extend Session
+            {t('session_modal.extend')}
           </Button>
         </div>
       }
@@ -51,7 +54,7 @@ export const SessionTimeoutModal = ({
           <Clock className="w-8 h-8 text-accent-purple animate-pulse" />
         </div>
         <p className="text-sm text-center text-muted">
-          For your security, we'll log you out unless you extend your current session.
+          {t('session_modal.body')}
         </p>
       </div>
     </BaseModal>

@@ -3,6 +3,7 @@
  * Acts as HTTP connector for Chain, Token, Wallet, Merchant, PaymentRequest
  */
 import { httpClient } from '@/core/network';
+import type { ApiResponse } from '@/core/network';
 import { API_ENDPOINTS } from '@/core/constant';
 import type {
   ConnectWalletRequest,
@@ -93,7 +94,7 @@ class PaymentRequestDataSource {
     );
   }
 
-  async getPublic(id: string) {
+  async getPublic(id: string): Promise<ApiResponse<PaymentRequestResponse>> {
     return httpClient.get<PaymentRequestResponse>(API_ENDPOINTS.PAY_PUBLIC(id));
   }
 }
