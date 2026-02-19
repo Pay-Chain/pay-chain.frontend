@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { useTranslation } from '@/presentation/hooks';
+import { useTranslation, useUrlQueryState } from '@/presentation/hooks';
+import { QUERY_PARAM_KEYS } from '@/core/constant';
 import { useAdminTeams as useAdminTeamsQuery, useCreateTeam, useDeleteTeam, useUpdateTeam } from '@/data/usecase/useAdmin';
 import { useDebounce } from '@/presentation/hooks/useDebounce';
 
@@ -32,7 +33,8 @@ const defaultForm: TeamForm = {
 
 export function useAdminTeams() {
   const { t } = useTranslation();
-  const [searchTerm, setSearchTerm] = useState('');
+  const { getSearch, setMany } = useUrlQueryState();
+  const searchTerm = getSearch();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -139,7 +141,8 @@ export function useAdminTeams() {
       isMutationPending,
     },
     actions: {
-      setSearchTerm,
+      setSearchTerm: (value: string) =>
+        setMany({ [QUERY_PARAM_KEYS.q]: value, [QUERY_PARAM_KEYS.legacySearch]: null }),
       setFormData,
       setDeleteId,
       openAddModal,

@@ -5,5 +5,7 @@ export { default as BottomBar } from './BottomBar';
 export { default as MobileDrawer } from './MobileDrawer';
 export { mainNavItems, secondaryNavItems } from './Sidebar';
 export * from './ChainSelector';
+export * from './TokenSelector';
+export * from './ChainTokenSelector';
 export { default as WalletConnectModal } from './WalletConnectModal';
 export { WalletConnectModalHost } from './WalletConnectModal';

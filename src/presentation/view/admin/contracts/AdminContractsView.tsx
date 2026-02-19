@@ -1,12 +1,13 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 import { useAdminContracts } from './useAdminContracts';
 import { Card, Button, Input, TokenIcon } from '@/presentation/components/atoms';
 import { BaseModal, DeleteConfirmationModal, Pagination } from '@/presentation/components/molecules';
 import { ChainSelector } from '@/presentation/components/organisms';
 import { useTranslation } from '@/presentation/hooks';
-import { Plus, Trash2, Code, ShieldCheck, ArrowRightLeft, Search, Edit2, LayoutGrid, Copy, Check } from 'lucide-react';
+import { Plus, Trash2, Code, ShieldCheck, ArrowRightLeft, Search, Edit2, LayoutGrid, Copy, Check, AlertTriangle, RefreshCw } from 'lucide-react';
 import { shortenAddress } from '@/core/utils/format';
 
 const POOL_ONLY_TYPES = new Set(['POOL']);
@@ -17,6 +18,7 @@ const metadataPlaceholderByType: Record<string, string> = {
   TOKEN_SWAPPER: '{"universalRouter":"0x...","poolManager":"0x...","bridgeToken":"0x..."}',
   ADAPTER_CCIP: '{"router":"0x...","chainSelector":"..."}',
   ADAPTER_HYPERBRIDGE: '{"host":"0x...","dispatcher":"0x..."}',
+  ADAPTER_LAYERZERO: '{"endpoint":"0x...","dstEid":"...","peer":"0x..."}',
   TOKEN_REGISTRY: '{"description":"Token support registry"}',
   VAULT: '{"description":"Custody vault"}',
   POOL: '{"tickSpacing":60,"dex":"uniswap_v4"}',
@@ -31,7 +33,12 @@ export const AdminContractsView = () => {
     filterChain,
     filterType,
     chains,
+    configSourceChainId,
+    configDestChainId,
+    configCheckResult,
+    isConfigCheckLoading,
     filteredContracts,
+    contractAbiSummaryMap,
     isContractsLoading,
     isModalOpen,
     editingId,
@@ -61,6 +68,7 @@ export const AdminContractsView = () => {
     { value: 'TOKEN_SWAPPER', label: t('admin.contracts_view.contract_types.token_swapper') },
     { value: 'ADAPTER_CCIP', label: t('admin.contracts_view.contract_types.adapter_ccip') },
     { value: 'ADAPTER_HYPERBRIDGE', label: t('admin.contracts_view.contract_types.adapter_hyperbridge') },
+    { value: 'ADAPTER_LAYERZERO', label: t('admin.contracts_view.contract_types.adapter_layerzero') },
     { value: 'POOL', label: t('admin.contracts_view.contract_types.pool') },
     { value: 'VAULT', label: t('admin.contracts_view.contract_types.vault') },
     { value: 'MOCK', label: t('admin.contracts_view.contract_types.mock') },
@@ -93,6 +101,7 @@ export const AdminContractsView = () => {
     const raw = `${chain?.name || ''} ${chain?.chainId || ''} ${chain?.networkId || ''}`.toLowerCase();
     if (raw.includes('base')) return '/chain/base-icon.svg';
     if (raw.includes('arbitrum') || raw.includes('42161')) return '/chain/arbitrum-icon.svg';
+    if (raw.includes('polygon') || raw.includes('137')) return '/chain/polygon-icon.svg';
     if (raw.includes('solana') || raw.includes('svm')) return '/chain/solana-icon.svg';
     return null;
   };
@@ -157,6 +166,59 @@ export const AdminContractsView = () => {
         </div>
       </div>
 
+      <Card className="p-4 bg-white/5 border-white/10 rounded-2xl">
+        <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-3 items-end">
+          <ChainSelector
+            label={t('admin.contracts_view.modal.chain')}
+            chains={chains?.items || []}
+            selectedChainId={configSourceChainId}
+            onSelect={(chain) => actions.setConfigSourceChainId(chain?.id || '')}
+            placeholder={t('admin.onchain_adapters_view.source_chain')}
+          />
+          <ChainSelector
+            label={t('admin.onchain_adapters_view.dest_chain')}
+            chains={chains?.items || []}
+            selectedChainId={configDestChainId}
+            onSelect={(chain) => actions.setConfigDestChainId(chain?.id || '')}
+            placeholder={t('admin.onchain_adapters_view.dest_chain')}
+          />
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => actions.refetchConfigCheck()}
+            disabled={!configSourceChainId || isConfigCheckLoading}
+            className="h-[44px]"
+          >
+            <RefreshCw className={`w-4 h-4 ${isConfigCheckLoading ? 'animate-spin' : ''}`} />
+            {t('admin.onchain_adapters_view.refresh')}
+          </Button>
+        </div>
+        {configCheckResult && (
+          <div className="mt-4 space-y-3">
+            <div className="flex flex-wrap gap-2 text-xs">
+              <span className="px-2 py-1 rounded-full bg-white/10 border border-white/10">{configCheckResult.overallStatus}</span>
+              <span className="px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">{t('admin.contracts_view.config_status_ok')}: {configCheckResult.summary?.ok ?? 0}</span>
+              <span className="px-2 py-1 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/20">{t('admin.contracts_view.config_status_warn')}: {configCheckResult.summary?.warn ?? 0}</span>
+              <span className="px-2 py-1 rounded-full bg-red-500/10 text-red-300 border border-red-500/20">{t('admin.contracts_view.config_status_error')}: {configCheckResult.summary?.error ?? 0}</span>
+            </div>
+            {(configCheckResult.globalChecks || []).length > 0 && (
+              <div className="space-y-2">
+                {(configCheckResult.globalChecks || []).map((check: any, idx: number) => (
+                  <div key={`${check.code}-${idx}`} className={`px-3 py-2 rounded-lg border text-xs flex items-start gap-2 ${
+                    check.status === 'ERROR' ? 'bg-red-500/10 border-red-500/20 text-red-200' :
+                    check.status === 'WARN' ? 'bg-amber-500/10 border-amber-500/20 text-amber-200' :
+                    'bg-emerald-500/10 border-emerald-500/20 text-emerald-200'
+                  }`}>
+                    <AlertTriangle className="w-3.5 h-3.5 mt-0.5" />
+                    <span>{check.message}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </Card>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {isContractsLoading ? (
           <div className="col-span-full p-12 text-center text-muted text-sm flex flex-col items-center justify-center gap-4 border border-white/5 rounded-2xl bg-white/5">
@@ -201,7 +263,12 @@ export const AdminContractsView = () => {
                     </div>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-lg truncate group-hover:text-primary transition-colors">{contract.name}</h3>
+                    <Link
+                      href={`/admin/contracts/${contract.id}`}
+                      className="font-bold text-lg truncate group-hover:text-primary transition-colors hover:underline underline-offset-4 block"
+                    >
+                      {contract.name}
+                    </Link>
                     <div className="flex flex-wrap gap-2 mt-1">
                       <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-muted uppercase tracking-widest font-bold border border-white/5">
                         {contract.chainId}
@@ -231,6 +298,21 @@ export const AdminContractsView = () => {
                 </div>
                 
                 <div className="px-5 pb-5 mt-auto">
+                  <div className="mb-2">
+                    <div className="text-[11px] text-muted mb-1">{t('admin.contracts_view.abi_label')}</div>
+                    <div className="flex flex-wrap gap-1">
+                      {(contractAbiSummaryMap?.[contract.id]?.generatedFields || []).slice(0, 4).map((field) => (
+                        <span key={`${contract.id}-${field}`} className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-primary">
+                          {field}
+                        </span>
+                      ))}
+                      {(!(contractAbiSummaryMap?.[contract.id]?.generatedFields || []).length) && (
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 border border-white/10 text-muted">
+                          -
+                        </span>
+                      )}
+                    </div>
+                  </div>
                   {contract.type === 'POOL' && (
                     <div className="mb-2 py-2 px-3 bg-black/30 rounded-xl border border-white/5 flex items-center justify-between">
                       <div className="flex items-center -space-x-2">

@@ -19,11 +19,11 @@ import { useMemo, useCallback, useState, useEffect } from 'react';
 
 
 export function NewPaymentView() {
-  const { 
-    form, 
-    loading, 
-    error, 
-    handleSubmit, 
+  const {
+    form,
+    loading,
+    error,
+    handleSubmit,
     primaryWallet,
     handleSourceChainSelect,
     handleDestChainSelect,
@@ -81,8 +81,8 @@ export function NewPaymentView() {
   const selectedToken = useMemo(() => {
     if (!sourceTokenAddress) return null;
     return tokenItems.find(
-      t => t.address === sourceTokenAddress || 
-           (t.isNative && sourceTokenAddress === '0x0000000000000000000000000000000000000000')
+      t => t.address === sourceTokenAddress ||
+        (t.isNative && sourceTokenAddress === '0x0000000000000000000000000000000000000000')
     ) || null;
   }, [tokenItems, sourceTokenAddress]);
 
@@ -236,45 +236,45 @@ export function NewPaymentView() {
                 )}
               </div>
               <div className="space-y-1.5">
-                 <Label className="flex justify-between items-center text-sm font-medium text-foreground/80 ml-1 mb-1.5">
-                    {t('payments.amount')}
-                    {balanceData && (
-                        <span className="text-xs text-muted-foreground">
-                            Max: {formattedBalance} {balanceData.symbol}
-                        </span>
+                <Label className="flex justify-between items-center text-sm font-medium text-foreground/80 ml-1 mb-1.5">
+                  {t('payments.amount')}
+                  {balanceData && (
+                    <span className="text-xs text-muted-foreground">
+                      Max: {formattedBalance} {balanceData.symbol}
+                    </span>
+                  )}
+                </Label>
+                <div className="relative">
+                  <Input
+                    type="text"
+                    placeholder={sourceTokenAddress ? '0' : t('payments.select_token_first')}
+                    disabled={!sourceTokenAddress}
+                    value={displayAmount}
+                    onChange={handleAmountChange}
+                    className="pr-24"
+                  />
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                    {selectedTokenSymbol && (
+                      <span className="text-xs font-medium text-muted-foreground select-none">
+                        {selectedTokenSymbol}
+                      </span>
                     )}
-                 </Label>
-                 <div className="relative">
-                    <Input
-                        type="text"
-                        placeholder={sourceTokenAddress ? '0' : t('payments.select_token_first')}
-                        disabled={!sourceTokenAddress}
-                        value={displayAmount}
-                        onChange={handleAmountChange}
-                        className="pr-24"
-                    />
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                      {selectedTokenSymbol && (
-                        <span className="text-xs font-medium text-muted-foreground select-none">
-                          {selectedTokenSymbol}
-                        </span>
-                      )}
-                      {balanceData && (
-                          <button
-                              type="button"
-                              onClick={handleMaxClick}
-                              className="text-xs font-bold text-accent-purple hover:text-accent-purple/80 transition-colors bg-accent-purple/10 hover:bg-accent-purple/20 px-2 py-1 rounded"
-                          >
-                              MAX
-                          </button>
-                      )}
-                    </div>
-                 </div>
-                 {form.formState.errors.amount && (
-                    <p className="text-sm font-medium text-destructive animate-in slide-in-from-top-1 fade-in-20">
-                        {form.formState.errors.amount.message}
-                    </p>
-                 )}
+                    {balanceData && (
+                      <button
+                        type="button"
+                        onClick={handleMaxClick}
+                        className="text-xs font-bold text-accent-purple hover:text-accent-purple/80 transition-colors bg-accent-purple/10 hover:bg-accent-purple/20 px-2 py-1 rounded"
+                      >
+                        MAX
+                      </button>
+                    )}
+                  </div>
+                </div>
+                {form.formState.errors.amount && (
+                  <p className="text-sm font-medium text-destructive animate-in slide-in-from-top-1 fade-in-20">
+                    {form.formState.errors.amount.message}
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -308,15 +308,15 @@ export function NewPaymentView() {
           )}
 
           {form.formState.errors.root && (
-             <div className="flex items-start gap-3 p-4 rounded-xl bg-red-500/10 border border-red-500/30 animate-fade-in">
-               <div className="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center shrink-0">
-                 <AlertTriangle className="w-5 h-5 text-red-400" />
-               </div>
-               <div>
-                 <p className="text-red-400 font-medium">{t('payments.form_error_label')}</p>
-                 <p className="text-red-400/80 text-sm mt-1">{form.formState.errors.root.message}</p>
-               </div>
-             </div>
+            <div className="flex items-start gap-3 p-4 rounded-xl bg-red-500/10 border border-red-500/30 animate-fade-in">
+              <div className="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-5 h-5 text-red-400" />
+              </div>
+              <div>
+                <p className="text-red-400 font-medium">{t('payments.form_error_label')}</p>
+                <p className="text-red-400/80 text-sm mt-1">{form.formState.errors.root.message}</p>
+              </div>
+            </div>
           )}
 
           {/* Actions */}
@@ -324,8 +324,8 @@ export function NewPaymentView() {
             <Link href="/dashboard">
               <Button type="button" variant="ghost">{t('common.cancel')}</Button>
             </Link>
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               variant="primary"
               loading={loading}
               disabled={!primaryWallet || loading}

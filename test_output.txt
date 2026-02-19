@@ -1,0 +1,81 @@
+
+> pay-chain.frontend@0.1.0 test /Users/staffinc/Documents/Development/pay-chain/pay-chain.frontend
+> jest
+
+FAIL test/unit/useDashboard.test.ts
+  useDashboard
+    ✕ should return initial state (14 ms)
+    ✕ should sync payments when data loads (1 ms)
+
+  ● useDashboard › should return initial state
+
+    TypeError: Cannot destructure property 'data' of '(0 , _usecase.useAdminStats)(...)' as it is undefined.
+
+      19 |   const { data: paymentsData, isLoading: paymentsLoading } = usePaymentsQuery(1, 5);
+      20 |   const { data: walletsData } = useWalletsQuery();
+    > 21 |   const { data: adminStats } = useAdminStats();
+         |                 ^
+      22 |
+      23 |   useEffect(() => {
+      24 |     if (paymentsData) {
+
+      at adminStats (src/presentation/view/dashboard/useDashboard.ts:21:17)
+      at test/unit/useDashboard.test.ts:25:53
+      at TestComponent (node_modules/.pnpm/@testing-library+react@16.3.2_@testing-library+dom@10.4.1_@types+react-dom@19.2.3_@type_893f466751a7d66081fd06e9edb9241a/node_modules/@testing-library/react/dist/pure.js:330:27)
+      at Object.react_stack_bottom_frame (node_modules/.pnpm/react-dom@19.2.4_react@19.2.4/node_modules/react-dom/cjs/react-dom-client.development.js:25904:20)
+      at renderWithHooks (node_modules/.pnpm/react-dom@19.2.4_react@19.2.4/node_modules/react-dom/cjs/react-dom-client.development.js:7662:22)
+      at updateFunctionComponent (node_modules/.pnpm/react-dom@19.2.4_react@19.2.4/node_modules/react-dom/cjs/react-dom-client.development.js:10166:19)
+      at beginWork (node_modules/.pnpm/react-dom@19.2.4_react@19.2.4/node_modules/react-dom/cjs/react-dom-client.development.js:11778:18)
+      at runWithFiberInDEV (node_modules/.pnpm/react-dom@19.2.4_react@19.2.4/node_modules/react-dom/cjs/react-dom-client.development.js:874:13)
+      at performUnitOfWork (node_modules/.pnpm/react-dom@19.2.4_react@19.2.4/node_modules/react-dom/cjs/react-dom-client.development.js:17641:22)
+      at workLoopSync (node_modules/.pnpm/react-dom@19.2.4_react@19.2.4/node_modules/react-dom/cjs/react-dom-client.development.js:17469:41)
+      at renderRootSync (node_modules/.pnpm/react-dom@19.2.4_react@19.2.4/node_modules/react-dom/cjs/react-dom-client.development.js:17450:11)
+      at performWorkOnRoot (node_modules/.pnpm/react-dom@19.2.4_react@19.2.4/node_modules/react-dom/cjs/react-dom-client.development.js:16583:35)
+      at performWorkOnRootViaSchedulerTask (node_modules/.pnpm/react-dom@19.2.4_react@19.2.4/node_modules/react-dom/cjs/react-dom-client.development.js:18957:7)
+      at flushActQueue (node_modules/.pnpm/react@19.2.4/node_modules/react/cjs/react.development.js:590:34)
+      at process.env.NODE_ENV.exports.act (node_modules/.pnpm/react@19.2.4/node_modules/react/cjs/react.development.js:884:10)
+      at node_modules/.pnpm/@testing-library+react@16.3.2_@testing-library+dom@10.4.1_@types+react-dom@19.2.3_@type_893f466751a7d66081fd06e9edb9241a/node_modules/@testing-library/react/dist/act-compat.js:46:25
+      at renderRoot (node_modules/.pnpm/@testing-library+react@16.3.2_@testing-library+dom@10.4.1_@types+react-dom@19.2.3_@type_893f466751a7d66081fd06e9edb9241a/node_modules/@testing-library/react/dist/pure.js:189:26)
+      at render (node_modules/.pnpm/@testing-library+react@16.3.2_@testing-library+dom@10.4.1_@types+react-dom@19.2.3_@type_893f466751a7d66081fd06e9edb9241a/node_modules/@testing-library/react/dist/pure.js:291:10)
+      at renderHook (node_modules/.pnpm/@testing-library+react@16.3.2_@testing-library+dom@10.4.1_@types+react-dom@19.2.3_@type_893f466751a7d66081fd06e9edb9241a/node_modules/@testing-library/react/dist/pure.js:339:7)
+      at Object.<anonymous> (test/unit/useDashboard.test.ts:25:34)
+
+  ● useDashboard › should sync payments when data loads
+
+    TypeError: Cannot destructure property 'data' of '(0 , _usecase.useAdminStats)(...)' as it is undefined.
+
+      19 |   const { data: paymentsData, isLoading: paymentsLoading } = usePaymentsQuery(1, 5);
+      20 |   const { data: walletsData } = useWalletsQuery();
+    > 21 |   const { data: adminStats } = useAdminStats();
+         |                 ^
+      22 |
+      23 |   useEffect(() => {
+      24 |     if (paymentsData) {
+
+      at adminStats (src/presentation/view/dashboard/useDashboard.ts:21:17)
+      at test/unit/useDashboard.test.ts:41:34
+      at TestComponent (node_modules/.pnpm/@testing-library+react@16.3.2_@testing-library+dom@10.4.1_@types+react-dom@19.2.3_@type_893f466751a7d66081fd06e9edb9241a/node_modules/@testing-library/react/dist/pure.js:330:27)
+      at Object.react_stack_bottom_frame (node_modules/.pnpm/react-dom@19.2.4_react@19.2.4/node_modules/react-dom/cjs/react-dom-client.development.js:25904:20)
+      at renderWithHooks (node_modules/.pnpm/react-dom@19.2.4_react@19.2.4/node_modules/react-dom/cjs/react-dom-client.development.js:7662:22)
+      at updateFunctionComponent (node_modules/.pnpm/react-dom@19.2.4_react@19.2.4/node_modules/react-dom/cjs/react-dom-client.development.js:10166:19)
+      at beginWork (node_modules/.pnpm/react-dom@19.2.4_react@19.2.4/node_modules/react-dom/cjs/react-dom-client.development.js:11778:18)
+      at runWithFiberInDEV (node_modules/.pnpm/react-dom@19.2.4_react@19.2.4/node_modules/react-dom/cjs/react-dom-client.development.js:874:13)
+      at performUnitOfWork (node_modules/.pnpm/react-dom@19.2.4_react@19.2.4/node_modules/react-dom/cjs/react-dom-client.development.js:17641:22)
+      at workLoopSync (node_modules/.pnpm/react-dom@19.2.4_react@19.2.4/node_modules/react-dom/cjs/react-dom-client.development.js:17469:41)
+      at renderRootSync (node_modules/.pnpm/react-dom@19.2.4_react@19.2.4/node_modules/react-dom/cjs/react-dom-client.development.js:17450:11)
+      at performWorkOnRoot (node_modules/.pnpm/react-dom@19.2.4_react@19.2.4/node_modules/react-dom/cjs/react-dom-client.development.js:16583:35)
+      at performWorkOnRootViaSchedulerTask (node_modules/.pnpm/react-dom@19.2.4_react@19.2.4/node_modules/react-dom/cjs/react-dom-client.development.js:18957:7)
+      at flushActQueue (node_modules/.pnpm/react@19.2.4/node_modules/react/cjs/react.development.js:590:34)
+      at process.env.NODE_ENV.exports.act (node_modules/.pnpm/react@19.2.4/node_modules/react/cjs/react.development.js:884:10)
+      at node_modules/.pnpm/@testing-library+react@16.3.2_@testing-library+dom@10.4.1_@types+react-dom@19.2.3_@type_893f466751a7d66081fd06e9edb9241a/node_modules/@testing-library/react/dist/act-compat.js:46:25
+      at renderRoot (node_modules/.pnpm/@testing-library+react@16.3.2_@testing-library+dom@10.4.1_@types+react-dom@19.2.3_@type_893f466751a7d66081fd06e9edb9241a/node_modules/@testing-library/react/dist/pure.js:189:26)
+      at render (node_modules/.pnpm/@testing-library+react@16.3.2_@testing-library+dom@10.4.1_@types+react-dom@19.2.3_@type_893f466751a7d66081fd06e9edb9241a/node_modules/@testing-library/react/dist/pure.js:291:10)
+      at renderHook (node_modules/.pnpm/@testing-library+react@16.3.2_@testing-library+dom@10.4.1_@types+react-dom@19.2.3_@type_893f466751a7d66081fd06e9edb9241a/node_modules/@testing-library/react/dist/pure.js:339:7)
+      at Object.<anonymous> (test/unit/useDashboard.test.ts:41:15)
+
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 2 total
+Snapshots:   0 total
+Time:        0.563 s, estimated 1 s
+Ran all test suites.
+ ELIFECYCLE  Test failed. See above for more details.

@@ -5,12 +5,15 @@ import { useCreateToken } from '@/presentation/hooks/useTokenList/useCreateToken
 import { useUpdateToken } from '@/presentation/hooks/useTokenList/useUpdateToken';
 import { useDeleteToken } from '@/presentation/hooks/useTokenList/useDeleteToken';
 import { useDebounce } from '@/presentation/hooks/useDebounce';
+import { useUrlQueryState } from '@/presentation/hooks';
+import { QUERY_PARAM_KEYS } from '@/core/constant';
 import { SupportedTokenEntity } from '@/src/domain/entity/token/TokenEntity';
 
 export const useAdminTokens = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterChainId, setFilterChainId] = useState<string>('');
-  const [page, setPage] = useState(1);
+  const { getString, getNumber, getSearch, setMany } = useUrlQueryState();
+  const searchTerm = getSearch();
+  const filterChainId = getString(QUERY_PARAM_KEYS.chainId);
+  const page = getNumber(QUERY_PARAM_KEYS.page, 1);
   const [limit] = useState(10);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -96,9 +99,12 @@ export const useAdminTokens = () => {
   };
 
   const clearFilters = () => {
-    setSearchTerm('');
-    setFilterChainId('');
-    setPage(1);
+    setMany({
+      [QUERY_PARAM_KEYS.q]: null,
+      [QUERY_PARAM_KEYS.legacySearch]: null,
+      [QUERY_PARAM_KEYS.chainId]: null,
+      [QUERY_PARAM_KEYS.page]: 1,
+    });
   };
 
   return {
@@ -117,9 +123,17 @@ export const useAdminTokens = () => {
       isMutationPending: createToken.isPending || updateToken.isPending || deleteToken.isPending,
     },
     actions: {
-      setSearchTerm: (term: string) => { setSearchTerm(term); setPage(1); },
-      setFilterChainId: (id: string) => { setFilterChainId(id); setPage(1); },
-      setPage,
+      setSearchTerm: (term: string) =>
+        setMany({
+          [QUERY_PARAM_KEYS.q]: term,
+          [QUERY_PARAM_KEYS.legacySearch]: null,
+          [QUERY_PARAM_KEYS.page]: 1,
+        }),
+      setFilterChainId: (id: string) => setMany({ [QUERY_PARAM_KEYS.chainId]: id, [QUERY_PARAM_KEYS.page]: 1 }),
+      setPage: (value: number | ((prev: number) => number)) => {
+        const next = typeof value === 'function' ? value(page) : value;
+        setMany({ [QUERY_PARAM_KEYS.page]: next });
+      },
       setFormData,
       setDeleteId,
       handleOpenAdd,

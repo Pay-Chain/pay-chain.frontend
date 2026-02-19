@@ -9,7 +9,11 @@ import { useState, useEffect } from 'react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
-export default function Navbar() {
+interface NavbarProps {
+  mode?: 'auto' | 'public';
+}
+
+export default function Navbar({ mode = 'auto' }: NavbarProps) {
   const pathname = usePathname();
   const { isAuthenticated, user, logout } = useAuthStore();
   const { t, locale, setLocale } = useTranslation();
@@ -41,7 +45,8 @@ export default function Navbar() {
     { href: '/wallets', label: t('common.wallets') },
   ];
 
-  const navItems = isAuthenticated ? authNav : publicNav;
+  const showAuthenticatedState = mode === 'auto' && isAuthenticated;
+  const navItems = showAuthenticatedState ? authNav : publicNav;
 
   return (
     <nav className={twMerge(
@@ -106,7 +111,7 @@ export default function Navbar() {
               </button>
 
              {/* Auth/CTA Buttons */}
-            {isAuthenticated ? (
+            {showAuthenticatedState ? (
               <div className="flex items-center gap-4">
                  <div className="flex items-center gap-3 pl-4 border-l border-white/10">
                     {/* User Info */}
@@ -179,7 +184,7 @@ export default function Navbar() {
                  </button>
               </div>
               
-              {!isAuthenticated && (
+              {!showAuthenticatedState && (
                 <Link href="/register" onClick={() => setMobileMenuOpen(false)} className="block">
                   <Button variant="primary" size="lg" glow className="w-full justify-center">
                     Get Started
@@ -187,7 +192,7 @@ export default function Navbar() {
                 </Link>
               )}
 
-               {isAuthenticated && (
+               {showAuthenticatedState && (
                 <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)} className="block">
                   <Button variant="primary" size="lg" glow className="w-full justify-center">
                     Dashboard

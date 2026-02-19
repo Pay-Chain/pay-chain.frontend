@@ -1,16 +1,18 @@
 import { useState } from 'react';
 import { useRpcList } from '@/presentation/hooks/useRpcList/useRpcList';
-import { useAdminChains, useUpdateChain, useDeleteChain } from '@/data/usecase/useAdmin';
+import { useAdminChains, useCreateRpc, useUpdateRpc, useDeleteRpc } from '@/data/usecase/useAdmin';
 import { useDebounce } from '@/presentation/hooks/useDebounce';
-import { useTranslation } from '@/presentation/hooks';
+import { useTranslation, useUrlQueryState } from '@/presentation/hooks';
+import { QUERY_PARAM_KEYS } from '@/core/constant';
 import { toast } from 'sonner';
 
 export const useAdminRPCs = () => {
   const { t } = useTranslation();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterChainId, setFilterChainId] = useState<string>('');
-  const [filterActive, setFilterActive] = useState<string>(''); // "true", "false", ""
-  const [page, setPage] = useState(1);
+  const { getString, getNumber, getSearch, setMany } = useUrlQueryState();
+  const searchTerm = getSearch();
+  const filterChainId = getString(QUERY_PARAM_KEYS.chainId);
+  const filterActive = getString(QUERY_PARAM_KEYS.active); // "true", "false", ""
+  const page = getNumber(QUERY_PARAM_KEYS.page, 1);
   const [limit] = useState(10);
 
   const debouncedSearch = useDebounce(searchTerm, 500);
@@ -26,12 +28,13 @@ export const useAdminRPCs = () => {
 
   // Fetch Chains
   const { data: chains } = useAdminChains();
-  const updateChain = useUpdateChain();
-  const deleteChain = useDeleteChain();
+  const createRpc = useCreateRpc();
+  const updateRpc = useUpdateRpc();
+  const deleteRpc = useDeleteRpc();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [editingChainId, setEditingChainId] = useState<string | null>(null);
+  const [editingRpcId, setEditingRpcId] = useState<string | null>(null);
   const [selectedChainId, setSelectedChainId] = useState<string>('');
   const [formData, setFormData] = useState({
     name: '',
@@ -40,12 +43,13 @@ export const useAdminRPCs = () => {
     explorerUrl: '',
     symbol: '',
     chainType: 'EVM',
+    isActive: true,
   });
 
   const handleOpenAdd = () => {
-    setEditingChainId(null);
+    setEditingRpcId(null);
     setSelectedChainId('');
-    setFormData({ name: '', chainId: '', rpcUrl: '', explorerUrl: '', symbol: '', chainType: 'EVM' });
+    setFormData({ name: '', chainId: '', rpcUrl: '', explorerUrl: '', symbol: '', chainType: 'EVM', isActive: true });
     setIsModalOpen(true);
   };
 
@@ -70,13 +74,7 @@ export const useAdminRPCs = () => {
         };
     }
 
-    setEditingChainId(rpc.id); // RPC ID for update (wait, backend uses ChainID/RPC ID mixed?)
-    // Correction: UpdateChain uses Chain ID, UpdateRPC presumably uses Chain ID or RPC ID. 
-    // The previous code used `chain.id` which was RPC's chain relation ID?
-    // Let's look at `updateChain.mutate({ id: targetId ...`. 
-    // If we are editing RPC config for a chain, we likely need chain ID.
-    // Use `rpc.chainId` as the target ID for the form.
-    
+    setEditingRpcId(rpc.id);
     setSelectedChainId(rpc.chainId);
 
     let caip2Id = chain.caip2;
@@ -90,10 +88,11 @@ export const useAdminRPCs = () => {
     setFormData({
       name: chain.name || `${t('admin.rpcs_view.chain_fallback_prefix')} ${rpc.chainId.substring(0, 8)}...`,
       chainId: caip2Id || '',
-      rpcUrl: rpc.url || '', // Use RPC's URL not Chain's default
+      rpcUrl: rpc.url || '', 
       explorerUrl: chain.explorerUrl || '',
       symbol: chain.symbol || '',
       chainType: chain.chainType || 'EVM',
+      isActive: rpc.isActive ?? true,
     });
     setIsModalOpen(true);
   };
@@ -119,45 +118,74 @@ export const useAdminRPCs = () => {
       chainId: caip2Id || '',
       symbol: chain.symbol || '',
       chainType: chain.chainType || 'EVM',
+      isActive: chain.isActive ?? true,
     });
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setIsDeleteModalOpen(false);
-    setEditingChainId(null);
+    setEditingRpcId(null);
   };
 
   const handleSubmit = (e?: React.FormEvent) => {
     e?.preventDefault();
-    const targetId = editingChainId || selectedChainId;
-    if (!targetId) {
-      toast.error(t('admin.rpcs_view.toasts.select_chain_first'));
-      return;
-    }
+    
+    if (editingRpcId) {
+        // Update existing RPC
+        const payload = {
+            url: formData.rpcUrl,
+            isActive: formData.isActive,
+            // priority: 0 // Optional, maybe add field later
+        };
 
-    updateChain.mutate({ id: targetId, data: { ...formData, id: targetId } }, {
-      onSuccess: () => {
-        handleCloseModal();
-        toast.success(`${t('admin.rpcs_view.toasts.update_success')} ${formData.name}`);
-        refetch();
-      },
-      onError: (err: any) => {
-        toast.error(err.message || t('admin.rpcs_view.toasts.update_failed'));
-      }
-    });
+        updateRpc.mutate({ id: editingRpcId, data: payload }, {
+            onSuccess: () => {
+                handleCloseModal();
+                toast.success(`${t('admin.rpcs_view.toasts.update_success')} ${formData.name}`);
+                refetch();
+            },
+            onError: (err: any) => {
+                toast.error(err.message || t('admin.rpcs_view.toasts.update_failed'));
+            }
+        });
+    } else {
+        // Create new RPC
+        if (!selectedChainId) {
+            toast.error(t('admin.rpcs_view.toasts.select_chain_first'));
+            return;
+        }
+
+        const payload = {
+            chainId: selectedChainId,
+            url: formData.rpcUrl,
+            priority: 0, // Default priority
+        };
+
+        createRpc.mutate(payload, {
+            onSuccess: () => {
+                handleCloseModal();
+                toast.success(t('admin.rpcs_view.toasts.create_success') || 'RPC created successfully');
+                refetch();
+            },
+            onError: (err: any) => {
+                toast.error(err.message || t('admin.rpcs_view.toasts.create_failed') || 'Failed to create RPC');
+            }
+        });
+    }
   };
 
-  const handleOpenDelete = (chain: any) => {
-    setEditingChainId(chain.id.toString());
-    setFormData({ ...formData, name: chain.name }); 
+  const handleOpenDelete = (rpc: any) => {
+    setEditingRpcId(rpc.id);
+    const chainName = rpc.chain?.name || `${t('admin.rpcs_view.chain_fallback_prefix')} ${rpc.chainId.substring(0, 8)}...`;
+    setFormData({ ...formData, name: `${chainName} - ${rpc.url}` }); 
     setIsDeleteModalOpen(true);
   };
 
   const handleDelete = () => {
-     if (!editingChainId) return;
+     if (!editingRpcId) return;
      
-     deleteChain.mutate(editingChainId, {
+     deleteRpc.mutate(editingRpcId, {
         onSuccess: () => {
            handleCloseModal();
            toast.success(t('admin.rpcs_view.toasts.remove_success'));
@@ -170,10 +198,13 @@ export const useAdminRPCs = () => {
   };
 
   const clearFilters = () => {
-    setSearchTerm('');
-    setFilterChainId('');
-    setFilterActive('');
-    setPage(1);
+    setMany({
+      [QUERY_PARAM_KEYS.q]: null,
+      [QUERY_PARAM_KEYS.legacySearch]: null,
+      [QUERY_PARAM_KEYS.chainId]: null,
+      [QUERY_PARAM_KEYS.active]: null,
+      [QUERY_PARAM_KEYS.page]: 1,
+    });
   };
 
   return {
@@ -188,17 +219,26 @@ export const useAdminRPCs = () => {
       chains,
       isModalOpen,
       isDeleteModalOpen,
-      editingChainId,
+      editingRpcId,
+
       selectedChainId,
       formData,
-      isUpdatePending: updateChain.isPending,
-      isDeletePending: deleteChain.isPending,
+      isUpdatePending: updateRpc.isPending || createRpc.isPending,
+      isDeletePending: deleteRpc.isPending,
     },
     actions: {
-      setSearchTerm: (term: string) => { setSearchTerm(term); setPage(1); },
-      setFilterChainId: (id: string) => { setFilterChainId(id); setPage(1); },
-      setFilterActive: (active: string) => { setFilterActive(active); setPage(1); },
-      setPage,
+      setSearchTerm: (term: string) =>
+        setMany({
+          [QUERY_PARAM_KEYS.q]: term,
+          [QUERY_PARAM_KEYS.legacySearch]: null,
+          [QUERY_PARAM_KEYS.page]: 1,
+        }),
+      setFilterChainId: (id: string) => setMany({ [QUERY_PARAM_KEYS.chainId]: id, [QUERY_PARAM_KEYS.page]: 1 }),
+      setFilterActive: (active: string) => setMany({ [QUERY_PARAM_KEYS.active]: active, [QUERY_PARAM_KEYS.page]: 1 }),
+      setPage: (value: number | ((prev: number) => number)) => {
+        const next = typeof value === 'function' ? value(page) : value;
+        setMany({ [QUERY_PARAM_KEYS.page]: next });
+      },
       setFormData,
       setSelectedChainId,
       handleChainSelect,

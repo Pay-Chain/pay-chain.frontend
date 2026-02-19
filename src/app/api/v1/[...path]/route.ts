@@ -5,8 +5,8 @@ import { ENV } from '@/core/config/env';
 
 const BACKEND_URL = ENV.BACKEND_URL;
 const INTERNAL_PROXY_SECRET = ENV.INTERNAL_PROXY_SECRET;
-const ADMIN_API_KEY = ENV.ADMIN_API_KEY;
-const ADMIN_SECRET_KEY = ENV.ADMIN_SECRET_KEY;
+const ADMIN_API_KEY = ENV.ADMIN_API_KEY.trim();
+const ADMIN_SECRET_KEY = ENV.ADMIN_SECRET_KEY.trim();
 
 /**
  * Proxy API Route Handler
@@ -47,6 +47,7 @@ async function proxyRequest(
   }
 
   try {
+    let usedAdminFallback = false;
     // Get request body for non-GET requests
     let body = '';
     if (request.method !== 'GET' && request.method !== 'HEAD') {
@@ -79,6 +80,7 @@ async function proxyRequest(
       headers.set('X-Api-Key', ADMIN_API_KEY);
       headers.set('X-Timestamp', timestamp);
       headers.set('X-Signature', signature);
+      usedAdminFallback = true;
       console.log(`[Proxy] Injected ADMIN_API_KEY signature for ${targetPath}`);
     }
 
@@ -143,6 +145,22 @@ async function proxyRequest(
     }
 
     // Standard Response Handling
+    if (
+      isPaymentAppEndpoint &&
+      usedAdminFallback &&
+      response.status === 401 &&
+      typeof data?.error === 'string' &&
+      data.error.toLowerCase().includes('invalid api key')
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            'ADMIN_API_KEY / ADMIN_SECRET_KEY tidak valid atau tidak terdaftar di tabel api_keys backend.',
+        },
+        { status: 401 }
+      );
+    }
+
     const responseHeaders = new Headers();
     response.headers.forEach((value, key) => {
       // Skip hop-by-hop headers

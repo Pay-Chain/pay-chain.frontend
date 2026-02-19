@@ -18,7 +18,7 @@ export const AdminRPCsView = () => {
     isRpcLoading,
     chains,
     isModalOpen,
-    editingChainId,
+    editingRpcId,
     selectedChainId,
     formData,
     isUpdatePending,
@@ -198,15 +198,15 @@ export const AdminRPCsView = () => {
       <BaseModal
         isOpen={isModalOpen}
         onClose={actions.handleCloseModal}
-        title={editingChainId ? `${t('admin.rpcs_view.edit_connection_title')} - ${formData.name}` : t('admin.rpcs_view.configure_new_title')}
-        description={editingChainId ? t('admin.rpcs_view.edit_connection_desc') : t('admin.rpcs_view.configure_new_desc')}
+        title={editingRpcId ? `${t('admin.rpcs_view.edit_connection_title')} - ${formData.name}` : t('admin.rpcs_view.configure_new_title')}
+        description={editingRpcId ? t('admin.rpcs_view.edit_connection_desc') : t('admin.rpcs_view.configure_new_desc')}
         onConfirm={actions.handleSubmit}
-        confirmLabel={editingChainId ? t('admin.rpcs_view.save_changes') : t('admin.rpcs_view.enable_connection')}
+        confirmLabel={editingRpcId ? t('admin.rpcs_view.save_changes') : t('admin.rpcs_view.enable_connection')}
         isConfirmLoading={isUpdatePending}
-        isConfirmDisabled={!formData.rpcUrl || !formData.explorerUrl || (!editingChainId && !selectedChainId)}
+        isConfirmDisabled={!formData.rpcUrl || !formData.explorerUrl || (!editingRpcId && !selectedChainId)}
       >
         <form onSubmit={actions.handleSubmit} className="space-y-4">
-          {!editingChainId && (
+          {!editingRpcId && (
             <div className="space-y-2">
               <ChainSelector
                 label={t('admin.rpcs_view.select_target_chain')}

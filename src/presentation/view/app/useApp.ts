@@ -1,15 +1,25 @@
 import { useEffect, useState, useMemo } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { useAccount, useSwitchChain, useSendTransaction } from 'wagmi';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useAccount, useSwitchChain, useSendTransaction, usePublicClient } from 'wagmi';
 import { useCreatePaymentAppMutation, useChainsQuery, useTokensQuery } from '@/data/usecase';
 import type { CreatePaymentAppRequest } from '@/data/model/request';
-import { parseUnits } from 'viem';
+import { encodeFunctionData, erc20Abi, parseUnits } from 'viem';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { PublicKey, SystemProgram, Transaction, TransactionInstruction } from '@solana/web3.js';
 import { signedProxyHttpClient } from '@/core/network';
+import type { RouteErrorDiagnostics } from '@/data/data_source/payment_app_data_source';
+import { paymentAppRepository } from '@/data/repositories/repository_impl/payment_app_repository_impl';
 import { ChainItemData } from '@/presentation/components/molecules/ChainListItem';
 import { TokenItemData } from '@/presentation/components/molecules/TokenListItem';
+import { ChainTokenItem } from '@/presentation/components/organisms/ChainTokenSelector';
 import { useTranslation } from '@/presentation/hooks';
+import { useUnifiedWallet } from '@/presentation/providers/UnifiedWalletProvider';
+import {
+  formatMoneyDisplay,
+  sanitizeNumberWithDecimals,
+  stripMoneyFormat,
+  validateAddress,
+} from '@/core/utils/validators';
 
 const TOKEN_PROGRAM_ID = new PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA');
 
@@ -24,17 +34,29 @@ export interface UseAppReturn {
   setDestChainId: (id: string) => void;
   amount: string;
   setAmount: (val: string) => void;
-  tokenAddress: string;
-  setTokenAddress: (addr: string) => void;
+  sourceTokenAddress: string;
+  destTokenAddress: string;
   receiver: string;
   setReceiver: (addr: string) => void;
-  decimals: number;
-  setDecimals: (d: number) => void;
   filteredTokens: TokenItemData[];
   selectedToken: TokenItemData | undefined;
+  chainTokenItems: ChainTokenItem[];
+  selectedSourceChainTokenId?: string;
+  selectedDestChainTokenId?: string;
+  handleSourceChainTokenSelect: (item: ChainTokenItem) => void;
+  handleDestChainTokenSelect: (item: ChainTokenItem) => void;
+  amountDisplay: string;
+  handleAmountChange: (value: string) => void;
+  handleMaxClick: () => void;
+  selectedTokenSymbol: string;
+  formattedBalance: string;
+  canUseMax: boolean;
+  addressError: string | null;
+  receiverPlaceholder: string;
   isLoading: boolean;
   isSuccess: boolean;
   error: string | null;
+  routeErrorDiagnostics: RouteErrorDiagnostics | null;
   txHash: string | null;
   currentChain: any | undefined;
   handlePay: () => void;
@@ -52,6 +74,8 @@ export interface CreatePaymentAppParams {
 
 export function useApp(): UseAppReturn {
   const { t } = useTranslation();
+  const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const { address: evmAddress, isConnected: isEvmConnected, chainId } = useAccount();
   const { publicKey, sendTransaction: sendSolTransaction } = useWallet();
@@ -63,11 +87,14 @@ export function useApp(): UseAppReturn {
   const { data: tokensData } = useTokensQuery();
   const { switchChain } = useSwitchChain();
   const { sendTransactionAsync } = useSendTransaction();
+  const publicClient = usePublicClient();
+  const { getNativeBalance, getErc20Balance, getSplTokenBalance } = useUnifiedWallet();
   const createPaymentMutation = useCreatePaymentAppMutation();
   const { connection } = useConnection();
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [routeErrorDiagnostics, setRouteErrorDiagnostics] = useState<RouteErrorDiagnostics | null>(null);
   const [txHash, setTxHash] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
 
@@ -75,9 +102,9 @@ export function useApp(): UseAppReturn {
   const [sourceChainId, setSourceChainId] = useState('');
   const [destChainId, setDestChainId] = useState('');
   const [amount, setAmount] = useState('');
-  const [tokenAddress, setTokenAddress] = useState('');
+  const [sourceTokenAddress, setSourceTokenAddress] = useState('');
+  const [destTokenAddress, setDestTokenAddress] = useState('');
   const [receiver, setReceiver] = useState('');
-  const [decimals, setDecimals] = useState(18);
   const [initializedFromQuery, setInitializedFromQuery] = useState(false);
 
   // Derived Data
@@ -111,9 +138,164 @@ export function useApp(): UseAppReturn {
   const selectedToken = useMemo(() => 
     filteredTokens.find(
       (token) =>
-        token.address === tokenAddress ||
-        (token.isNative && tokenAddress === '0x0000000000000000000000000000000000000000')
-    ), [filteredTokens, tokenAddress]);
+        token.address === sourceTokenAddress ||
+        (token.isNative && sourceTokenAddress === '0x0000000000000000000000000000000000000000')
+    ), [filteredTokens, sourceTokenAddress]);
+
+  const chainTokenItems = useMemo<ChainTokenItem[]>(
+    () =>
+      tokenItems
+        .map((token) => {
+          const chain = chainItems.find((item) => item.id === token.chainId);
+          if (!chain || !token.address) return null;
+          const normalizedChainType = String(chain.chainType || '').toUpperCase();
+          const parsedNetworkId = Number(String(chain.networkId || '').trim());
+          const evmChainId =
+            normalizedChainType === 'EVM' && Number.isFinite(parsedNetworkId) && parsedNetworkId > 0
+              ? parsedNetworkId
+              : undefined;
+
+          return {
+            id: `${chain.id}:${token.id}`,
+            chainId: chain.id,
+            chainName: chain.name,
+            chainLogoUrl: chain.logoUrl,
+            chainType: normalizedChainType,
+            evmChainId,
+            tokenName: token.name,
+            tokenSymbol: token.symbol,
+            tokenAddress: token.isNative
+              ? '0x0000000000000000000000000000000000000000'
+              : String(token.address),
+            tokenLogoUrl: token.logoUrl,
+            decimals: token.decimals,
+            isNative: token.isNative,
+          };
+        })
+        .filter(Boolean) as ChainTokenItem[],
+    [chainItems, tokenItems]
+  );
+
+  const selectedSourceChainTokenId = useMemo(() => {
+    if (!sourceChainId || !sourceTokenAddress) return undefined;
+    return chainTokenItems.find(
+      (item) =>
+        item.chainId === sourceChainId &&
+        item.tokenAddress.toLowerCase() === sourceTokenAddress.toLowerCase()
+    )?.id;
+  }, [chainTokenItems, sourceChainId, sourceTokenAddress]);
+
+  const selectedDestChainTokenId = useMemo(() => {
+    if (!destChainId || !destTokenAddress) return undefined;
+    return chainTokenItems.find(
+      (item) =>
+        item.chainId === destChainId &&
+        item.tokenAddress.toLowerCase() === destTokenAddress.toLowerCase()
+    )?.id;
+  }, [chainTokenItems, destChainId, destTokenAddress]);
+
+  const handleSourceChainTokenSelect = (item: ChainTokenItem) => {
+    setSourceChainId(item.chainId);
+    if (!destChainId) setDestChainId(item.chainId);
+    setSourceTokenAddress(item.tokenAddress);
+  };
+
+  const handleDestChainTokenSelect = (item: ChainTokenItem) => {
+    setDestChainId(item.chainId);
+    setDestTokenAddress(item.tokenAddress);
+  };
+
+  const selectedDestChain = useMemo(
+    () => chainItems.find((chain) => chain.id === destChainId),
+    [chainItems, destChainId]
+  );
+
+  const receiverPlaceholder = useMemo(() => {
+    const type = String(selectedDestChain?.chainType || '').toUpperCase();
+    if (type === 'SVM') return 'So11111111111111111111111111111111111111112';
+    return '0x...';
+  }, [selectedDestChain?.chainType]);
+
+  const addressError = useMemo(() => {
+    if (!receiver || !selectedDestChain?.chainType) return null;
+    const result = validateAddress(receiver, String(selectedDestChain.chainType));
+    return result === true ? null : result;
+  }, [receiver, selectedDestChain?.chainType]);
+
+  const [walletBalance, setWalletBalance] = useState<{ formatted: string; symbol: string } | null>(null);
+
+  const sourceChainType = useMemo(
+    () => String(chainItems.find((chain) => chain.id === sourceChainId)?.chainType || '').toUpperCase(),
+    [chainItems, sourceChainId]
+  );
+
+  useEffect(() => {
+    let mounted = true;
+    const fetchBalance = async () => {
+      if (!sourceChainId || !sourceTokenAddress) {
+        if (mounted) setWalletBalance(null);
+        return;
+      }
+      try {
+        if (sourceChainType === 'EVM') {
+          if (!isEvmConnected) {
+            if (mounted) setWalletBalance(null);
+            return;
+          }
+          const result =
+            sourceTokenAddress === '0x0000000000000000000000000000000000000000'
+              ? await getNativeBalance({ ecosystem: 'evm' })
+              : await getErc20Balance(sourceTokenAddress as `0x${string}`, {
+                  decimals: selectedToken?.decimals,
+                });
+          if (mounted) {
+            setWalletBalance(result ? { formatted: result.formatted, symbol: result.symbol } : null);
+          }
+          return;
+        }
+
+        if (sourceChainType === 'SVM') {
+          if (!isSvmConnected) {
+            if (mounted) setWalletBalance(null);
+            return;
+          }
+          const result =
+            selectedToken?.isNative
+              ? await getNativeBalance({ ecosystem: 'svm' })
+              : await getSplTokenBalance(sourceTokenAddress);
+          if (mounted) {
+            setWalletBalance(result ? { formatted: result.formatted, symbol: result.symbol } : null);
+          }
+          return;
+        }
+
+        if (mounted) setWalletBalance(null);
+      } catch {
+        if (mounted) setWalletBalance(null);
+      }
+    };
+
+    void fetchBalance();
+    return () => {
+      mounted = false;
+    };
+  }, [
+    sourceChainId,
+    sourceTokenAddress,
+    sourceChainType,
+    isEvmConnected,
+    isSvmConnected,
+    selectedToken?.decimals,
+    selectedToken?.isNative,
+    getNativeBalance,
+    getErc20Balance,
+    getSplTokenBalance,
+  ]);
+
+  const formattedBalance = walletBalance?.formatted || '0';
+  const canUseMax = Boolean(walletBalance && sourceChainId && sourceTokenAddress);
+  const selectedTokenSymbol = selectedToken?.symbol || walletBalance?.symbol || '';
+  const [amountDisplay, setAmountDisplay] = useState('');
 
   const resolveChainSelectorId = (value: string) => {
     if (!value) return '';
@@ -138,22 +320,19 @@ export function useApp(): UseAppReturn {
 
     const amountParam = searchParams.get('amount') || '';
     const tokenParam = searchParams.get('tokenAddress') || '';
+    const destTokenParam = searchParams.get('destTokenAddress') || tokenParam;
     const chainParam = searchParams.get('chainId') || '';
+    const destChainParam = searchParams.get('destChainId') || chainParam;
     const receiverParam = searchParams.get('receiver') || '';
-    const decimalsParam = searchParams.get('decimals');
 
     const resolvedChainId = resolveChainSelectorId(chainParam);
 
     setAmount(amountParam);
-    setTokenAddress(tokenParam);
+    setSourceTokenAddress(tokenParam);
+    setDestTokenAddress(destTokenParam);
     setReceiver(receiverParam);
     setSourceChainId(resolvedChainId);
-    setDestChainId(resolvedChainId);
-
-    if (decimalsParam) {
-      const parsed = Number.parseInt(decimalsParam, 10);
-      if (Number.isFinite(parsed)) setDecimals(parsed);
-    }
+    setDestChainId(resolveChainSelectorId(destChainParam) || resolvedChainId);
 
     const apiKey = searchParams.get('apiKey');
     const secretKey = searchParams.get('secretKey');
@@ -165,19 +344,90 @@ export function useApp(): UseAppReturn {
   }, [searchParams, chainsData, initializedFromQuery]);
 
   useEffect(() => {
-    if (selectedToken?.decimals) setDecimals(selectedToken.decimals);
-  }, [selectedToken]);
+    if (!initializedFromQuery || !searchParams) return;
+
+    const params = new URLSearchParams(searchParams.toString());
+    const sourceChain = (chainsData?.items || []).find((chain) => String(chain.id) === sourceChainId);
+    const destChain = (chainsData?.items || []).find((chain) => String(chain.id) === destChainId);
+    const sourceChainQuery = sourceChain?.caip2 || sourceChainId;
+    const destChainQuery = destChain?.caip2 || destChainId;
+
+    if (sourceChainQuery) params.set('chainId', sourceChainQuery);
+    else params.delete('chainId');
+
+    if (destChainQuery) params.set('destChainId', destChainQuery);
+    else params.delete('destChainId');
+
+    if (sourceTokenAddress) params.set('tokenAddress', sourceTokenAddress);
+    else params.delete('tokenAddress');
+
+    if (destTokenAddress) params.set('destTokenAddress', destTokenAddress);
+    else params.delete('destTokenAddress');
+
+    if (amount) params.set('amount', amount);
+    else params.delete('amount');
+
+    if (receiver) params.set('receiver', receiver);
+    else params.delete('receiver');
+
+    const current = searchParams.toString();
+    const next = params.toString();
+    if (next !== current) {
+      router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false });
+    }
+  }, [
+    initializedFromQuery,
+    searchParams,
+    router,
+    pathname,
+    chainsData,
+    sourceChainId,
+    destChainId,
+    sourceTokenAddress,
+    destTokenAddress,
+    amount,
+    receiver,
+  ]);
+
+  useEffect(() => {
+    if (!amount) {
+      setAmountDisplay('');
+      return;
+    }
+    setAmountDisplay(formatMoneyDisplay(amount));
+  }, [amount]);
+
+  const handleAmountChange = (value: string) => {
+    const raw = stripMoneyFormat(value);
+    const decimals = selectedToken?.decimals ?? 18;
+    const sanitized = sanitizeNumberWithDecimals(raw, decimals);
+    setAmount(sanitized);
+    setAmountDisplay(formatMoneyDisplay(sanitized));
+  };
+
+  const handleMaxClick = () => {
+    if (!formattedBalance) return;
+    const decimals = selectedToken?.decimals ?? 18;
+    const sanitized = sanitizeNumberWithDecimals(formattedBalance, decimals);
+    setAmount(sanitized);
+    setAmountDisplay(formatMoneyDisplay(sanitized));
+  };
 
   const handlePay = async () => {
     setIsLoading(true);
     setError(null);
+    setRouteErrorDiagnostics(null);
+    let diagnosticsTarget: { paymentId: string; sourceChainId: string } | null = null;
     try {
       if (!isEvmConnected || !evmAddress) {
         throw new Error(t('payments.connect_wallet_notice'));
       }
 
-      if (!sourceChainId || !destChainId || !tokenAddress || !amount || !receiver) {
+      if (!sourceChainId || !destChainId || !sourceTokenAddress || !destTokenAddress || !amount || !receiver) {
         throw new Error(t('app_view.complete_fields_error'));
+      }
+      if (addressError) {
+        throw new Error(addressError);
       }
 
       const selectedSourceChain = (chainsData?.items || []).find((chain) => String(chain.id) === sourceChainId);
@@ -188,10 +438,10 @@ export function useApp(): UseAppReturn {
         senderWalletAddress: isEvmConnected ? evmAddress! : publicKey!.toBase58(),
         sourceChainId: selectedSourceChain?.caip2 || sourceChainId,
         destChainId: selectedDestChain?.caip2 || destChainId,
-        sourceTokenAddress: tokenAddress,
-        destTokenAddress: tokenAddress,
+        sourceTokenAddress,
+        destTokenAddress,
         amount,
-        decimals,
+        decimals: selectedToken?.decimals ?? 18,
         receiverAddress: receiver,
       };
       
@@ -200,6 +450,7 @@ export function useApp(): UseAppReturn {
 
       const sourceChain = payment.sourceChainId || selectedSourceChain?.caip2 || '';
       if (!sourceChain) throw new Error(t('common.error'));
+      diagnosticsTarget = { paymentId: payment.paymentId, sourceChainId: sourceChain };
 
       if (sourceChain.startsWith('eip155:')) {
         if (!isEvmConnected || !evmAddress) throw new Error(t('payments.connect_wallet_notice'));
@@ -207,10 +458,61 @@ export function useApp(): UseAppReturn {
         if (chainId !== targetChainIdNum) {
           await switchChain({ chainId: targetChainIdNum });
         }
+
+        const approvalTo = payment.signatureData?.approval?.to as `0x${string}` | undefined;
+        const approvalSpender = payment.signatureData?.approval?.spender as `0x${string}` | undefined;
+        const approvalAmountRaw = String(payment.signatureData?.approval?.amount || '').trim();
+        const approvalDataRaw = payment.signatureData?.approval?.data as `0x${string}` | undefined;
+        let approvalData = approvalDataRaw;
+
+        const sourceAmountUnits = parseUnits(amount, selectedToken?.decimals ?? 18);
+        const feeUnits = (() => {
+          const raw = String(payment.feeBreakdown?.totalFee || '').trim();
+          if (!raw) return BigInt(0);
+          try {
+            return BigInt(raw);
+          } catch {
+            return BigInt(0);
+          }
+        })();
+        const expectedApprovalAmount = sourceAmountUnits + feeUnits;
+        const approvalAmount = (() => {
+          if (approvalAmountRaw) {
+            try {
+              return BigInt(approvalAmountRaw);
+            } catch {
+              return expectedApprovalAmount;
+            }
+          }
+          return expectedApprovalAmount;
+        })();
+
+        if (approvalTo && approvalSpender) {
+          approvalData = encodeFunctionData({
+            abi: erc20Abi,
+            functionName: 'approve',
+            args: [approvalSpender, approvalAmount],
+          });
+        }
+
+        if (approvalTo && approvalData) {
+          const approvalHash = await sendTransactionAsync({
+            to: approvalTo,
+            data: approvalData,
+            value: parseUnits('0', 0),
+          });
+          if (publicClient) {
+            const receipt = await publicClient.waitForTransactionReceipt({ hash: approvalHash });
+            if (receipt.status !== 'success') {
+              throw new Error('Approval transaction failed');
+            }
+          }
+        }
+
         const hash = await sendTransactionAsync({
           to: payment.signatureData?.to as `0x${string}`,
           data: payment.signatureData?.data as `0x${string}`,
-          value: parseUnits('0', 0),
+          value: payment.signatureData?.value ? BigInt(payment.signatureData.value) : parseUnits('0', 0),
         });
         setTxHash(hash);
       } else if (sourceChain.startsWith('solana:')) {
@@ -218,14 +520,14 @@ export function useApp(): UseAppReturn {
         if (!payment.signatureData?.programId || !payment.signatureData?.data) {
           throw new Error(t('common.error'));
         }
-        if (!tokenAddress || tokenAddress.startsWith('0x')) {
+        if (!sourceTokenAddress || sourceTokenAddress.startsWith('0x')) {
           throw new Error(t('common.error'));
         }
 
         const programId = new PublicKey(payment.signatureData.programId);
         const instructionData = decodeBase58(payment.signatureData.data);
         const paymentIdBytes32 = uuidToBytes32(payment.paymentId);
-        const sourceMint = new PublicKey(tokenAddress);
+        const sourceMint = new PublicKey(sourceTokenAddress);
 
         const [configPda] = PublicKey.findProgramAddressSync([utf8('config')], programId);
         const [paymentPda] = PublicKey.findProgramAddressSync([utf8('payment'), paymentIdBytes32], programId);
@@ -262,7 +564,36 @@ export function useApp(): UseAppReturn {
 
     } catch (e: any) {
       console.error(e);
-      setError(t('pay_page.process_failed'));
+      let message = e instanceof Error ? e.message : '';
+      const shouldDiagnose =
+        !!diagnosticsTarget &&
+        (message.toLowerCase().includes('route payment failed') ||
+          message.toLowerCase().includes('execution reverted') ||
+          message.includes('#1002'));
+      if (shouldDiagnose && diagnosticsTarget) {
+        try {
+          const diagnostics = await paymentAppRepository.getRouteErrorDiagnostics({
+            sourceChainId: diagnosticsTarget.sourceChainId,
+            paymentId: diagnosticsTarget.paymentId,
+          });
+          if (diagnostics) {
+            setRouteErrorDiagnostics(diagnostics);
+            const hint = buildRouteErrorHint(diagnostics);
+            if (hint) {
+              message = `${message || t('pay_page.process_failed')} (${hint})`;
+            } else {
+              const decodedName = diagnostics.decoded?.name || diagnostics.decoded?.selector;
+              const decodedMessage = diagnostics.decoded?.message;
+              if (decodedName || decodedMessage) {
+                message = `${message || t('pay_page.process_failed')} (${[decodedName, decodedMessage].filter(Boolean).join(': ')})`;
+              }
+            }
+          }
+        } catch (diagErr) {
+          console.warn('failed to fetch route diagnostics', diagErr);
+        }
+      }
+      setError(message || t('pay_page.process_failed'));
     } finally {
       setIsLoading(false);
     }
@@ -279,21 +610,73 @@ export function useApp(): UseAppReturn {
     setDestChainId,
     amount,
     setAmount,
-    tokenAddress,
-    setTokenAddress,
+    sourceTokenAddress,
+    destTokenAddress,
     receiver,
     setReceiver,
-    decimals,
-    setDecimals,
     filteredTokens,
     selectedToken,
+    chainTokenItems,
+    selectedSourceChainTokenId,
+    selectedDestChainTokenId,
+    handleSourceChainTokenSelect,
+    handleDestChainTokenSelect,
+    amountDisplay,
+    handleAmountChange,
+    handleMaxClick,
+    selectedTokenSymbol,
+    formattedBalance,
+    canUseMax,
+    addressError,
+    receiverPlaceholder,
     isLoading,
     isSuccess,
     error,
+    routeErrorDiagnostics,
     txHash,
     currentChain: chainsData?.items?.find(c => String(c.networkId) === String(chainId) || c.id === chainId),
     handlePay,
   };
+}
+
+function buildRouteErrorHint(diagnostics: RouteErrorDiagnostics): string {
+  const name = diagnostics.decoded?.name || '';
+  const details = diagnostics.decoded?.details as Record<string, unknown> | undefined;
+  if (name === 'RouteNotConfigured') {
+    const dest = String(details?.destChainId || '');
+    return dest ? `route belum dikonfigurasi untuk ${dest}` : 'route belum dikonfigurasi';
+  }
+  if (name === 'ChainSelectorMissing') {
+    const dest = String(details?.destChainId || '');
+    return dest ? `CCIP chain selector belum diset untuk ${dest}` : 'CCIP chain selector belum diset';
+  }
+  if (name === 'DestinationAdapterMissing') {
+    const dest = String(details?.destChainId || '');
+    return dest ? `adapter tujuan belum diset untuk ${dest}` : 'adapter tujuan belum diset';
+  }
+  if (name === 'StateMachineIdNotSet') {
+    const dest = String(details?.destChainId || '');
+    return dest ? `state machine id Hyperbridge belum diset untuk ${dest}` : 'state machine id Hyperbridge belum diset';
+  }
+  if (name === 'DestinationNotSet') {
+    const dest = String(details?.destChainId || '');
+    return dest ? `destination Hyperbridge belum diset untuk ${dest}` : 'destination Hyperbridge belum diset';
+  }
+  if (name === 'InsufficientNativeFee') {
+    const required = String(details?.requiredWei || '');
+    const provided = String(details?.providedWei || '');
+    if (required && provided) {
+      return `native fee kurang (required ${required} wei, provided ${provided} wei)`;
+    }
+    return 'native fee kurang';
+  }
+  if (name === 'NativeFeeQuoteUnavailable') {
+    return 'fee quote bridge belum tersedia';
+  }
+  if (name === 'FeeQuoteFailed') {
+    return 'fee quote bridge gagal';
+  }
+  return '';
 }
 
 const ASSOCIATED_TOKEN_PROGRAM_ID = new PublicKey('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL');

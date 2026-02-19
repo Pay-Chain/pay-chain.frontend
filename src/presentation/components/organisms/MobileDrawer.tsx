@@ -12,6 +12,11 @@ import {
   Globe,
   X,
   ChevronRight,
+  Waypoints,
+  Cable,
+  Percent,
+  Route,
+  Shuffle,
 } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 
@@ -35,6 +40,13 @@ const adminDrawerNavItems = [
   { href: '/admin/contracts', labelKey: 'admin.contracts', icon: Settings },
   { href: '/admin/rpcs', labelKey: 'admin.rpcs', icon: Settings },
   { href: '/admin/tokens', labelKey: 'admin.tokens', icon: Settings },
+  { href: '/admin/payment-bridges', labelKey: 'admin.paymentBridges', icon: Waypoints },
+  { href: '/admin/bridge-configs', labelKey: 'admin.bridgeConfigs', icon: Cable },
+  { href: '/admin/fee-configs', labelKey: 'admin.feeConfigs', icon: Percent },
+  { href: '/admin/onchain-adapters', labelKey: 'admin.onchainAdapters', icon: Route },
+  { href: '/admin/route-policies', labelKey: 'admin.routePolicies', icon: Route },
+  { href: '/admin/layerzero-configs', labelKey: 'admin.layerzeroConfigs', icon: Shuffle },
+  { href: '/admin/crosschain-config', labelKey: 'admin.crosschainConfigs', icon: Shuffle },
 ];
 
 export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
@@ -81,7 +93,7 @@ export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
       />
 
       {/* Drawer */}
-      <div className="lg:hidden fixed left-4 top-4 bottom-4 w-[280px] bg-surface/95 backdrop-blur-xl border border-white/10 rounded-2xl z-50 animate-slide-in-left shadow-2xl">
+      <div className="lg:hidden fixed left-4 top-4 bottom-4 w-[280px] max-h-[calc(100dvh-2rem)] overflow-hidden bg-surface/95 backdrop-blur-xl border border-white/10 rounded-2xl z-50 animate-slide-in-left shadow-2xl flex flex-col">
         {/* Header */}
         <div className="h-16 flex items-center justify-between px-4 border-b border-white/10">
           <div className="flex items-center gap-3">
@@ -116,7 +128,7 @@ export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-3 space-y-1">
+        <nav className="flex-1 min-h-0 p-3 space-y-1 overflow-y-auto">
           <span className="px-3 py-2 text-xs font-medium text-muted uppercase tracking-wider block">
             {t('nav.more')}
           </span>

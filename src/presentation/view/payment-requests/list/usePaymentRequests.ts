@@ -1,10 +1,12 @@
 'use client';
 
 import { usePaymentRequestsQuery } from '@/data/usecase';
-import { useState } from 'react';
+import { useUrlQueryState } from '@/presentation/hooks';
+import { QUERY_PARAM_KEYS } from '@/core/constant';
 
 export function usePaymentRequests() {
-  const [page, setPage] = useState(1);
+  const { getNumber, setMany } = useUrlQueryState();
+  const page = getNumber(QUERY_PARAM_KEYS.page, 1);
   const limit = 10;
   
   const { data, isLoading } = usePaymentRequestsQuery(page, limit);
@@ -15,6 +17,9 @@ export function usePaymentRequests() {
     isLoading,
 
     page,
-    setPage,
+    setPage: (value: number | ((prev: number) => number)) => {
+      const next = typeof value === 'function' ? value(page) : value;
+      setMany({ [QUERY_PARAM_KEYS.page]: next });
+    },
   };
 }

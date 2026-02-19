@@ -1,31 +1,23 @@
 'use client';
 
-import { usePaymentsQuery } from '@/data/usecase';
-import { usePaymentStore } from '@/presentation/hooks';
-import { useEffect, useState } from 'react';
+import { usePaymentStore, useUrlQueryState } from '@/presentation/hooks';
+import { QUERY_PARAM_KEYS } from '@/core/constant';
 
 export function usePayments() {
-  const [page, setPage] = useState(1);
+  const { getNumber, setMany } = useUrlQueryState();
+  const page = getNumber(QUERY_PARAM_KEYS.page, 1);
   const limit = 10;
   
-  const { payments, setPayments, setLoading } = usePaymentStore();
-  const { data, isLoading } = usePaymentsQuery(page, limit);
-
-  useEffect(() => {
-    if (data) {
-      setPayments(data.payments ?? [], data.pagination);
-    }
-  }, [data, setPayments]);
-
-  useEffect(() => {
-    setLoading(isLoading);
-  }, [isLoading, setLoading]);
+  const { payments, loading: isLoading, pagination } = usePaymentStore(page, limit);
 
   return {
     payments,
     isLoading,
-    pagination: data?.pagination,
+    pagination,
     page,
-    setPage,
+    setPage: (value: number | ((prev: number) => number)) => {
+      const next = typeof value === 'function' ? value(page) : value;
+      setMany({ [QUERY_PARAM_KEYS.page]: next });
+    },
   };
 }

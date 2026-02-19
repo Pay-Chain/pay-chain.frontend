@@ -53,6 +53,8 @@ export interface Chain {
   symbol: string;
   logoUrl?: string;
   isActive: boolean;
+  ccipChainSelector?: string;
+  layerZeroEid?: number;
 }
 
 // Token entity

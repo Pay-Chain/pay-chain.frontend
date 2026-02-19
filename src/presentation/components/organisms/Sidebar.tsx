@@ -20,6 +20,11 @@ import {
   Code2,
   Server,
   Coins,
+  Waypoints,
+  Cable,
+  Percent,
+  Route,
+  Shuffle,
 } from 'lucide-react';
 
 // Navigation items definition
@@ -44,6 +49,13 @@ export const adminNavItems = [
   { href: '/admin/contracts', labelKey: 'admin.contracts', icon: Code2 },
   { href: '/admin/rpcs', labelKey: 'admin.rpcs', icon: Server },
   { href: '/admin/tokens', labelKey: 'admin.tokens', icon: Coins },
+  { href: '/admin/payment-bridges', labelKey: 'admin.paymentBridges', icon: Waypoints },
+  { href: '/admin/bridge-configs', labelKey: 'admin.bridgeConfigs', icon: Cable },
+  { href: '/admin/fee-configs', labelKey: 'admin.feeConfigs', icon: Percent },
+  { href: '/admin/onchain-adapters', labelKey: 'admin.onchainAdapters', icon: Route },
+  { href: '/admin/route-policies', labelKey: 'admin.routePolicies', icon: Route },
+  { href: '/admin/layerzero-configs', labelKey: 'admin.layerzeroConfigs', icon: Shuffle },
+  { href: '/admin/crosschain-config', labelKey: 'admin.crosschainConfigs', icon: Shuffle },
 ];
 
 export default function Sidebar() {
@@ -64,7 +76,7 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="hidden lg:flex m-5 fixed left-2 top-2 bottom-2 w-[260px] flex-col bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl z-40">
+    <aside className="hidden lg:flex m-5 fixed left-2 top-2 bottom-2 w-[260px] max-h-[calc(100dvh-1rem)] overflow-hidden flex-col bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl z-40">
       {/* Logo */}
       <div className="h-14 flex items-center px-5 border-b border-white/10">
         <Link href="/dashboard" className="flex items-center gap-3 group">
@@ -93,7 +105,7 @@ export default function Sidebar() {
       </div>
 
       {/* Main Navigation */}
-      <nav className="flex-1 px-2 py-1 overflow-y-auto">
+      <nav className="flex-1 min-h-0 px-2 py-1 overflow-y-auto">
         <div className="space-y-0.5">
           {mainNavItems.map((item) => {
             const Icon = item.icon;

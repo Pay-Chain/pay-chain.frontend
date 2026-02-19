@@ -1,0 +1,14 @@
+
+> pay-chain.frontend@0.1.0 test /Users/staffinc/Documents/Development/pay-chain/pay-chain.frontend
+> jest
+
+PASS test/unit/useDashboard.test.ts
+  useDashboard
+    ✓ should return initial state (9 ms)
+    ✓ should sync payments when data loads (5 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       2 passed, 2 total
+Snapshots:   0 total
+Time:        0.736 s, estimated 1 s
+Ran all test suites.

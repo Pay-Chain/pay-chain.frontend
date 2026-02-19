@@ -34,7 +34,21 @@ export interface CreatePaymentResponse {
   signatureData?: {
     to?: string;
     data?: string;
+    value?: string;
     programId?: string;
+    approval?: {
+      to?: string;
+      data?: string;
+      spender?: string;
+      amount?: string;
+    };
+    transactions?: Array<{
+      kind?: string;
+      to?: string;
+      data?: string;
+      spender?: string;
+      amount?: string;
+    }>;
   };
 }
 
@@ -139,6 +153,20 @@ export interface CreatePaymentAppResponse {
   signatureData?: {
     to?: string;
     data?: string;
+    value?: string;
     programId?: string;
+    approval?: {
+      to?: string;
+      data?: string;
+      spender?: string;
+      amount?: string;
+    };
+    transactions?: Array<{
+      kind?: string;
+      to?: string;
+      data?: string;
+      spender?: string;
+      amount?: string;
+    }>;
   };
 }

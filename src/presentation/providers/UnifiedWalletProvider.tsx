@@ -1,8 +1,8 @@
 'use client';
 
-import React, { createContext, useCallback, useContext, useEffect, useMemo } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef } from 'react';
 import { useAppKit } from '@reown/appkit/react';
-import { useAccount, useDisconnect, usePublicClient } from 'wagmi';
+import { useAccount, useDisconnect, usePublicClient, useSwitchChain } from 'wagmi';
 import { WalletReadyState } from '@solana/wallet-adapter-base';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { PublicKey } from '@solana/web3.js';
@@ -40,8 +40,9 @@ interface UnifiedWalletContextValue {
   evmAddress: `0x${string}` | null;
   svmAddress: string | null;
   evmChainId?: number;
+  switchEvmChain: (targetChainId: number) => Promise<boolean>;
   connectEvm: () => Promise<void>;
-  connectSvm: () => Promise<void>;
+  connectSvm: () => Promise<boolean>;
   disconnectActiveWallet: () => Promise<void>;
   getNativeBalance: (options?: NativeBalanceOptions) => Promise<BalanceResult | null>;
   getErc20Balance: (
@@ -84,6 +85,7 @@ export function UnifiedWalletProvider({ children }: { children: React.ReactNode 
   const { open } = useAppKit();
   const { address: evmAddress, isConnected: isEvmConnected, chainId } = useAccount();
   const { disconnectAsync: disconnectEvm } = useDisconnect();
+  const { switchChainAsync } = useSwitchChain();
   const publicClient = usePublicClient({ chainId });
   const { connection } = useConnection();
   const {
@@ -95,6 +97,11 @@ export function UnifiedWalletProvider({ children }: { children: React.ReactNode 
     connected: isSvmConnected,
     publicKey,
   } = useWallet();
+  const walletRef = useRef(wallet);
+
+  useEffect(() => {
+    walletRef.current = wallet;
+  }, [wallet]);
 
   const activeWallet: WalletEcosystem = isEvmConnected ? 'evm' : isSvmConnected ? 'svm' : null;
   const svmAddress = publicKey?.toBase58() ?? null;
@@ -108,11 +115,32 @@ export function UnifiedWalletProvider({ children }: { children: React.ReactNode 
     await open({ view: 'Connect' });
   }, [isSvmConnected, isEvmConnected, disconnectSvmWallet, open]);
 
-  const connectSvm = useCallback(async () => {
+  const switchEvmChain = useCallback(
+    async (targetChainId: number): Promise<boolean> => {
+      if (!Number.isFinite(targetChainId) || targetChainId <= 0) return false;
+      if (!isEvmConnected) return false;
+      if (chainId === targetChainId) return true;
+      if (!switchChainAsync) return false;
+      try {
+        await switchChainAsync({ chainId: targetChainId });
+        return true;
+      } catch {
+        return false;
+      }
+    },
+    [isEvmConnected, chainId, switchChainAsync]
+  );
+
+  const connectRef = useRef(connectSvmWallet);
+  useEffect(() => {
+    connectRef.current = connectSvmWallet;
+  }, [connectSvmWallet]);
+
+  const connectSvm = useCallback(async (): Promise<boolean> => {
     if (isEvmConnected && !isSvmConnected) {
       await disconnectEvm();
     }
-    if (isSvmConnected) return;
+    if (isSvmConnected) return true;
 
     const uniqueWallets = Array.from(
       new Map(wallets.map((item) => [item.adapter.name, item])).values()
@@ -129,13 +157,67 @@ export function UnifiedWalletProvider({ children }: { children: React.ReactNode 
     const target =
       candidates.find((item) => preferred.includes(String(item.adapter.name))) ?? candidates[0];
 
-    if (!wallet || wallet.adapter.name !== target.adapter.name) {
-      select(target.adapter.name);
-    }
+    const isWalletNotSelectedError = (error: unknown) => {
+      if (!error) return false;
+      const maybe = error as { name?: unknown; message?: unknown };
+      const errorName = typeof maybe.name === 'string' ? maybe.name : '';
+      const errorMessage = typeof maybe.message === 'string' ? maybe.message : '';
+      return (
+        errorName === 'WalletNotSelectedError' ||
+        errorMessage.includes('WalletNotSelectedError') ||
+        errorMessage.toLowerCase().includes('wallet not selected')
+      );
+    };
 
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    await connectSvmWallet();
-  }, [isEvmConnected, isSvmConnected, wallets, wallet, select, connectSvmWallet, disconnectEvm]);
+    const maxAttempts = 10;
+    for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+      try {
+        // Ensure adapter selection is applied before connect call.
+        if (!walletRef.current || walletRef.current.adapter.name !== target.adapter.name) {
+          select(target.adapter.name);
+          // Wait for state update to propagate
+          await new Promise((resolve) => setTimeout(resolve, 150));
+        }
+
+        // Wait for selected wallet state to settle before connect.
+        if (!walletRef.current || walletRef.current.adapter.name !== target.adapter.name) {
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          continue;
+        }
+
+        // Use the ref to ensure we call the latest connect function
+        // which is bound to the currently selected adapter
+        await connectRef.current();
+        return true;
+      } catch (error) {
+        if (!isWalletNotSelectedError(error)) {
+          // Start: Specific handling for when the wallet is already connected but
+          // the state hasn't fully propagated or there's a race condition
+          const msg = error instanceof Error ? error.message : String(error);
+          if (msg.includes('already connected') || msg.includes('Wallet is connected')) {
+            return true;
+          }
+          // End: Specific handling
+          console.error('Connection error:', error);
+          // If it's a different error, we might still want to retry a bit if it's transient,
+          // but usually other errors are fatal.
+          // However, sometimes "WalletDisconnectedError" happens if the popup is closed.
+          // Let's rethrow if it's not a selection error.
+          if (msg.includes('User rejected') || msg.includes('Hammer')) { // Hammer is sometimes used for "User rejected"
+            throw error;
+          }
+        }
+
+        // If it IS a WalletNotSelectedError, we retry.
+        if (attempt === maxAttempts - 1) {
+          // Last attempt failed
+          return false;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 200 + attempt * 50));
+      }
+    }
+    return false;
+  }, [isEvmConnected, isSvmConnected, wallets, select, disconnectEvm]);
 
   const disconnectActiveWallet = useCallback(async () => {
     if (isEvmConnected) {
@@ -202,10 +284,10 @@ export function UnifiedWalletProvider({ children }: { children: React.ReactNode 
         typeof options?.decimals === 'number'
           ? Promise.resolve(options.decimals)
           : publicClient.readContract({
-              address: tokenAddress,
-              abi: erc20Abi,
-              functionName: 'decimals',
-            }).then((v) => Number(v)),
+            address: tokenAddress,
+            abi: erc20Abi,
+            functionName: 'decimals',
+          }).then((v) => Number(v)),
         publicClient
           .readContract({
             address: tokenAddress,
@@ -278,6 +360,7 @@ export function UnifiedWalletProvider({ children }: { children: React.ReactNode 
       evmAddress: evmAddress ?? null,
       svmAddress,
       evmChainId: chainId,
+      switchEvmChain,
       connectEvm,
       connectSvm,
       disconnectActiveWallet,
@@ -294,6 +377,7 @@ export function UnifiedWalletProvider({ children }: { children: React.ReactNode 
       evmAddress,
       svmAddress,
       chainId,
+      switchEvmChain,
       connectEvm,
       connectSvm,
       disconnectActiveWallet,

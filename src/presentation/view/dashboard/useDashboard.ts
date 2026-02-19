@@ -1,53 +1,54 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useAuthStore, useWalletStore, usePaymentStore } from '@/presentation/hooks';
-import { usePaymentsQuery, useWalletsQuery, useAdminStats } from '@/data/usecase';
+import { useWalletsQuery, useAdminStats } from '@/data/usecase';
 import type { Payment } from '@/data/model/entity';
 
 export function useDashboard() {
   const { user } = useAuthStore();
   const { primaryWallet: wallet, syncWithServer } = useWalletStore();
-  const { payments, setPayments, setLoading } = usePaymentStore();
+  const { payments, loading: paymentsLoading } = usePaymentStore(1, 5);
+  /*
   const [stats, setStats] = useState({
     totalPayments: 0,
     totalVolume: 0,
     activeWallets: 0,
     pendingPayments: 0,
   });
+  */
 
-  const { data: paymentsData, isLoading: paymentsLoading } = usePaymentsQuery(1, 5);
   const { data: walletsData } = useWalletsQuery();
   const { data: adminStats } = useAdminStats();
 
   useEffect(() => {
-    if (paymentsData) {
-      const paymentsList = paymentsData.payments ?? [];
-      setPayments(paymentsList, paymentsData.pagination);
-
-      const currentStats = {
-        totalPayments: paymentsData.pagination?.total ?? paymentsList.length,
-        // useAdminStats provides global volume, replacing client-side calculation
-        // Note: This shows global volume, which might be intended for admin views or demo purposes
-        totalVolume: adminStats ? parseFloat(adminStats.totalVolume || '0') : 0,
-        pendingPayments: paymentsList.filter(
-          (p: Payment) => p.status === 'pending' || p.status === 'processing'
-        ).length,
-        activeWallets: 0,
-      };
-
-      if (walletsData) {
-        syncWithServer(walletsData.wallets ?? []);
-        currentStats.activeWallets = walletsData.wallets?.length ?? 0;
-      }
-
-      setStats(currentStats);
+    if (walletsData?.wallets) {
+      syncWithServer(walletsData.wallets);
     }
-  }, [paymentsData, walletsData, adminStats, setPayments, syncWithServer]);
+  }, [walletsData, syncWithServer]);
 
-  useEffect(() => {
-    setLoading(paymentsLoading);
-  }, [paymentsLoading, setLoading]);
+  // Derived state using useMemo instead of useEffect+useState
+  const stats = useMemo(() => {
+    if (!payments) {
+      return {
+        totalPayments: 0,
+        totalVolume: 0,
+        activeWallets: 0,
+        pendingPayments: 0,
+      };
+    }
+
+    return {
+      totalPayments: payments.length,
+      totalVolume: adminStats ? parseFloat(adminStats.totalVolume || '0') : 0,
+      pendingPayments: payments.filter(
+        (p: Payment) => p.status === 'pending' || p.status === 'processing'
+      ).length,
+      activeWallets: walletsData?.wallets?.length ?? 0,
+    };
+  }, [payments, adminStats, walletsData]);
+
+
 
   return {
     user,

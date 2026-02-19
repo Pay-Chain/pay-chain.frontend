@@ -31,6 +31,36 @@ export const useAdminChains = (page?: number, limit?: number) => {
   });
 };
 
+export const useCreateRpc = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: any) => adminRepository.createRpc(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['rpcs'] });
+    },
+  });
+};
+
+export const useUpdateRpc = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) => adminRepository.updateRpc(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['rpcs'] });
+    },
+  });
+};
+
+export const useDeleteRpc = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => adminRepository.deleteRpc(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['rpcs'] });
+    },
+  });
+};
+
 export const useUpdateMerchantStatus = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -153,5 +183,345 @@ export const useDeleteTeam = () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'teams'] });
       queryClient.invalidateQueries({ queryKey: ['teams', 'public'] });
     },
+  });
+};
+
+export const useAdminPaymentBridges = (page?: number, limit?: number) => {
+  return useQuery({
+    queryKey: ['admin', 'payment-bridges', page, limit],
+    queryFn: () => adminRepository.getPaymentBridges(page, limit),
+  });
+};
+
+export const useCreatePaymentBridge = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: any) => adminRepository.createPaymentBridge(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'payment-bridges'] });
+    },
+  });
+};
+
+export const useUpdatePaymentBridge = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) => adminRepository.updatePaymentBridge(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'payment-bridges'] });
+    },
+  });
+};
+
+export const useDeletePaymentBridge = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => adminRepository.deletePaymentBridge(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'payment-bridges'] });
+    },
+  });
+};
+
+export const useAdminBridgeConfigs = (params?: { page?: number; limit?: number; sourceChainId?: string; destChainId?: string; bridgeId?: string }) => {
+  return useQuery({
+    queryKey: ['admin', 'bridge-configs', params?.page, params?.limit, params?.sourceChainId, params?.destChainId, params?.bridgeId],
+    queryFn: () => adminRepository.getBridgeConfigs(params),
+  });
+};
+
+export const useCreateBridgeConfig = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: any) => adminRepository.createBridgeConfig(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'bridge-configs'] });
+    },
+  });
+};
+
+export const useUpdateBridgeConfig = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) => adminRepository.updateBridgeConfig(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'bridge-configs'] });
+    },
+  });
+};
+
+export const useDeleteBridgeConfig = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => adminRepository.deleteBridgeConfig(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'bridge-configs'] });
+    },
+  });
+};
+
+export const useAdminFeeConfigs = (params?: { page?: number; limit?: number; chainId?: string; tokenId?: string }) => {
+  return useQuery({
+    queryKey: ['admin', 'fee-configs', params?.page, params?.limit, params?.chainId, params?.tokenId],
+    queryFn: () => adminRepository.getFeeConfigs(params),
+  });
+};
+
+export const useCreateFeeConfig = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: any) => adminRepository.createFeeConfig(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'fee-configs'] });
+    },
+  });
+};
+
+export const useUpdateFeeConfig = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) => adminRepository.updateFeeConfig(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'fee-configs'] });
+    },
+  });
+};
+
+export const useDeleteFeeConfig = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => adminRepository.deleteFeeConfig(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'fee-configs'] });
+    },
+  });
+};
+
+export const useAdminContractConfigCheck = (sourceChainId?: string, destChainId?: string) => {
+  return useQuery({
+    queryKey: ['admin', 'contracts', 'config-check', sourceChainId, destChainId],
+    queryFn: () => adminRepository.getContractConfigCheck({ sourceChainId: sourceChainId!, destChainId }),
+    enabled: !!sourceChainId,
+  });
+};
+
+export const useAdminContractById = (id?: string) => {
+  return useQuery({
+    queryKey: ['admin', 'contracts', id],
+    queryFn: () => adminRepository.getContractById(id!),
+    enabled: !!id,
+  });
+};
+
+export const useAdminContractConfigCheckById = (id?: string) => {
+  return useQuery({
+    queryKey: ['admin', 'contracts', id, 'config-check'],
+    queryFn: () => adminRepository.getContractConfigCheckById(id!),
+    enabled: !!id,
+  });
+};
+
+export const useOnchainAdapterStatus = (sourceChainId?: string, destChainId?: string) => {
+  return useQuery({
+    queryKey: ['admin', 'onchain-adapters', 'status', sourceChainId, destChainId],
+    queryFn: () => adminRepository.getOnchainAdapterStatus({ sourceChainId: sourceChainId!, destChainId: destChainId! }),
+    enabled: !!sourceChainId && !!destChainId,
+  });
+};
+
+export const useRegisterOnchainAdapter = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { sourceChainId: string; destChainId: string; bridgeType: number; adapterAddress: string }) =>
+      adminRepository.registerOnchainAdapter(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'onchain-adapters', 'status'] });
+    },
+  });
+};
+
+export const useSetOnchainDefaultBridge = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { sourceChainId: string; destChainId: string; bridgeType: number }) =>
+      adminRepository.setOnchainDefaultBridge(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'onchain-adapters', 'status'] });
+    },
+  });
+};
+
+export const useSetHyperbridgeConfig = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { sourceChainId: string; destChainId: string; stateMachineIdHex?: string; destinationContractHex?: string }) =>
+      adminRepository.setHyperbridgeConfig(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'onchain-adapters', 'status'] });
+    },
+  });
+};
+
+export const useSetCCIPConfig = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { sourceChainId: string; destChainId: string; chainSelector?: number; destinationAdapterHex?: string }) =>
+      adminRepository.setCCIPConfig(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'onchain-adapters', 'status'] });
+    },
+  });
+};
+
+export const useSetLayerZeroConfig = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { sourceChainId: string; destChainId: string; dstEid?: number; peerHex?: string; optionsHex?: string }) =>
+      adminRepository.setLayerZeroConfig(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'onchain-adapters', 'status'] });
+    },
+  });
+};
+
+export const useCrosschainConfigPreflight = (sourceChainId?: string, destChainId?: string) => {
+  return useQuery({
+    queryKey: ['admin', 'crosschain-config', 'preflight', sourceChainId, destChainId],
+    queryFn: () => adminRepository.getCrosschainPreflight({ sourceChainId: sourceChainId!, destChainId: destChainId! }),
+    enabled: !!sourceChainId && !!destChainId,
+  });
+};
+
+export const useCrosschainConfigOverview = (params?: { page?: number; limit?: number; sourceChainId?: string; destChainId?: string }) => {
+  return useQuery({
+    queryKey: ['admin', 'crosschain-config', 'overview', params?.page, params?.limit, params?.sourceChainId, params?.destChainId],
+    queryFn: () => adminRepository.getCrosschainOverview(params),
+  });
+};
+
+export const useRecheckCrosschainRoute = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: { sourceChainId: string; destChainId: string }) => adminRepository.recheckCrosschainRoute(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'crosschain-config', 'overview'] });
+    },
+  });
+};
+
+export const useRecheckCrosschainRoutesBulk = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: { routes: Array<{ sourceChainId: string; destChainId: string }> }) =>
+      adminRepository.recheckCrosschainRoutesBulk(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'crosschain-config', 'overview'] });
+    },
+  });
+};
+
+export const useAutoFixCrosschainRoute = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: { sourceChainId: string; destChainId: string; bridgeType?: number }) =>
+      adminRepository.autoFixCrosschainRoute(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'crosschain-config', 'overview'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'onchain-adapters', 'status'] });
+    },
+  });
+};
+
+export const useAutoFixCrosschainRoutesBulk = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: { routes: Array<{ sourceChainId: string; destChainId: string; bridgeType?: number }> }) =>
+      adminRepository.autoFixCrosschainRoutesBulk(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'crosschain-config', 'overview'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'onchain-adapters', 'status'] });
+    },
+  });
+};
+
+export const useRoutePolicies = (params?: { page?: number; limit?: number; sourceChainId?: string; destChainId?: string }) => {
+  return useQuery({
+    queryKey: ['admin', 'route-policies', params?.page, params?.limit, params?.sourceChainId, params?.destChainId],
+    queryFn: () => adminRepository.getRoutePolicies(params),
+  });
+};
+
+export const useCreateRoutePolicy = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: any) => adminRepository.createRoutePolicy(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'route-policies'] });
+    },
+  });
+};
+
+export const useUpdateRoutePolicy = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) => adminRepository.updateRoutePolicy(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'route-policies'] });
+    },
+  });
+};
+
+export const useDeleteRoutePolicy = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => adminRepository.deleteRoutePolicy(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'route-policies'] });
+    },
+  });
+};
+
+export const useLayerZeroPolicies = (params?: { page?: number; limit?: number; sourceChainId?: string; destChainId?: string; activeOnly?: boolean }) => {
+  return useQuery({
+    queryKey: ['admin', 'layerzero-configs', params?.page, params?.limit, params?.sourceChainId, params?.destChainId, params?.activeOnly],
+    queryFn: () => adminRepository.getLayerZeroPolicies(params),
+  });
+};
+
+export const useCreateLayerZeroPolicy = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: any) => adminRepository.createLayerZeroPolicy(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'layerzero-configs'] });
+    },
+  });
+};
+
+export const useUpdateLayerZeroPolicy = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) => adminRepository.updateLayerZeroPolicy(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'layerzero-configs'] });
+    },
+  });
+};
+
+export const useDeleteLayerZeroPolicy = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => adminRepository.deleteLayerZeroPolicy(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'layerzero-configs'] });
+    },
+  });
+};
+
+export const useRouteErrorDiagnostics = (sourceChainId?: string, paymentId?: string) => {
+  return useQuery({
+    queryKey: ['admin', 'diagnostics', 'route-error', sourceChainId, paymentId],
+    queryFn: () => adminRepository.getRouteErrorDiagnostics({ sourceChainId: sourceChainId!, paymentId: paymentId! }),
+    enabled: !!sourceChainId && !!paymentId,
   });
 };

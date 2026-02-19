@@ -1,8 +1,7 @@
-/*
 import { renderHook, waitFor } from '@testing-library/react';
 import { useDashboard } from '@/presentation/view/dashboard/useDashboard';
 import { useAuthStore, useWalletStore, usePaymentStore } from '@/presentation/hooks';
-import { usePaymentsQuery, useWalletsQuery } from '@/data/usecase';
+import { usePaymentsQuery, useWalletsQuery, useAdminStats } from '@/data/usecase';
 
 // Mock dependencies
 jest.mock('@/presentation/hooks');
@@ -20,6 +19,7 @@ describe('useDashboard', () => {
     
     (usePaymentsQuery as jest.Mock).mockReturnValue({ data: null, isLoading: false });
     (useWalletsQuery as jest.Mock).mockReturnValue({ data: null });
+    (useAdminStats as jest.Mock).mockReturnValue({ data: { totalVolume: '0' } });
   });
 
   it('should return initial state', () => {
@@ -46,5 +46,4 @@ describe('useDashboard', () => {
     });
   });
 });
-*/
 

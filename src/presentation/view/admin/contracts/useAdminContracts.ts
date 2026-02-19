@@ -1,7 +1,8 @@
-import { useState } from 'react';
-import { useAdminContracts as useAdminContractsQuery, useCreateContract, useDeleteContract, useUpdateContract, useAdminChains } from '@/data/usecase/useAdmin';
+import { useMemo, useState } from 'react';
+import { useAdminContracts as useAdminContractsQuery, useCreateContract, useDeleteContract, useUpdateContract, useAdminChains, useAdminContractConfigCheck } from '@/data/usecase/useAdmin';
 import { useDebounce } from '@/presentation/hooks/useDebounce';
-import { useTranslation } from '@/presentation/hooks';
+import { useTranslation, useUrlQueryState } from '@/presentation/hooks';
+import { QUERY_PARAM_KEYS } from '@/core/constant';
 import { useTokensQuery } from '@/data/usecase';
 import { toast } from 'sonner';
 
@@ -9,11 +10,14 @@ const POOL_ONLY_TYPES = new Set(['POOL']);
 
 export const useAdminContracts = () => {
   const { t } = useTranslation();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterChain, setFilterChain] = useState('');
-  const [filterType, setFilterType] = useState('');
-  const [page, setPage] = useState(1);
+  const { getString, getNumber, getSearch, setMany } = useUrlQueryState();
+  const searchTerm = getSearch();
+  const filterChain = getString(QUERY_PARAM_KEYS.chainId);
+  const filterType = getString(QUERY_PARAM_KEYS.type);
+  const page = getNumber(QUERY_PARAM_KEYS.page, 1);
   const [limit] = useState(10);
+  const [configSourceChainId, setConfigSourceChainId] = useState('');
+  const [configDestChainId, setConfigDestChainId] = useState('');
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -47,6 +51,10 @@ export const useAdminContracts = () => {
   );
   const { data: chains } = useAdminChains();
   const { data: tokensData } = useTokensQuery();
+  const { data: configCheckResult, isLoading: isConfigCheckLoading, refetch: refetchConfigCheck } = useAdminContractConfigCheck(
+    configSourceChainId || undefined,
+    configDestChainId || undefined
+  );
 
   const createContract = useCreateContract();
   const updateContract = useUpdateContract();
@@ -118,6 +126,46 @@ export const useAdminContracts = () => {
                           c.contractAddress?.toLowerCase().includes(debouncedSearch.toLowerCase());
     return matchesSearch;
   });
+
+  const getAbiSummary = (abiRaw: any) => {
+    try {
+      const abi = typeof abiRaw === 'string' ? JSON.parse(abiRaw) : abiRaw;
+      if (!Array.isArray(abi)) return { functions: [], generatedFields: [] };
+      const functionNames: string[] = [];
+      const generated = new Set<string>();
+      for (const entry of abi) {
+        if (!entry || entry.type !== 'function' || !entry.name) continue;
+        functionNames.push(entry.name);
+        if (entry.name.startsWith('set') && entry.name.length > 3) {
+          const field = entry.name.charAt(3).toLowerCase() + entry.name.slice(4);
+          if (field) generated.add(field);
+        }
+        const mutability = String(entry.stateMutability || '').toLowerCase();
+        const isWriteFunction = mutability !== 'view' && mutability !== 'pure';
+        if (isWriteFunction && Array.isArray(entry.inputs)) {
+          for (const input of entry.inputs) {
+            const inputName = String(input?.name || '').trim();
+            if (!inputName || inputName === '_') continue;
+            generated.add(inputName);
+          }
+        }
+      }
+      return {
+        functions: [...new Set(functionNames)].sort(),
+        generatedFields: [...generated].sort(),
+      };
+    } catch {
+      return { functions: [], generatedFields: [] };
+    }
+  };
+
+  const contractAbiSummaryMap = useMemo(() => {
+    const map: Record<string, { functions: string[]; generatedFields: string[] }> = {};
+    for (const contract of filteredContracts) {
+      map[contract.id] = getAbiSummary(contract.abi ?? []);
+    }
+    return map;
+  }, [filteredContracts]);
 
   const handleOpenAdd = () => {
     setEditingId(null);
@@ -249,7 +297,12 @@ export const useAdminContracts = () => {
       contracts,
       meta,
       chains,
+      configSourceChainId,
+      configDestChainId,
+      configCheckResult,
+      isConfigCheckLoading,
       filteredContracts,
+      contractAbiSummaryMap,
       isContractsLoading,
       isModalOpen,
       editingId,
@@ -260,17 +313,28 @@ export const useAdminContracts = () => {
       isMutationPending: createContract.isPending || updateContract.isPending || deleteContract.isPending,
     },
     actions: {
-      setSearchTerm: (term: string) => { setSearchTerm(term); setPage(1); },
-      setFilterChain: (chain: string) => { setFilterChain(chain); setPage(1); },
-      setFilterType: (type: string) => { setFilterType(type); setPage(1); },
+      setSearchTerm: (term: string) =>
+        setMany({
+          [QUERY_PARAM_KEYS.q]: term,
+          [QUERY_PARAM_KEYS.legacySearch]: null,
+          [QUERY_PARAM_KEYS.page]: 1,
+        }),
+      setFilterChain: (chain: string) => setMany({ [QUERY_PARAM_KEYS.chainId]: chain, [QUERY_PARAM_KEYS.page]: 1 }),
+      setFilterType: (type: string) => setMany({ [QUERY_PARAM_KEYS.type]: type, [QUERY_PARAM_KEYS.page]: 1 }),
+      setConfigSourceChainId,
+      setConfigDestChainId,
       setFormData,
       setDeleteId,
-      setPage,
+      setPage: (value: number | ((prev: number) => number)) => {
+        const next = typeof value === 'function' ? value(page) : value;
+        setMany({ [QUERY_PARAM_KEYS.page]: next });
+      },
       handleOpenAdd,
       handleOpenEdit,
       handleCloseModal,
       handleSubmit,
       handleDelete,
+      refetchConfigCheck,
       getTokenByContractAddress,
       getPoolTokensByContract,
     }

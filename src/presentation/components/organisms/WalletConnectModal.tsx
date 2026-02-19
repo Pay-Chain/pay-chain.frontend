@@ -50,7 +50,11 @@ export default function WalletConnectModal({ isOpen, onClose }: WalletConnectMod
       if (isEvmConnected && !isSvmConnected) {
         await disconnectActiveWallet();
       }
-      await connectSvm();
+      const connected = await connectSvm();
+      if (!connected) {
+        toast.error(t('wallets.errors.connect_svm_failed'));
+        return;
+      }
       onClose();
     } catch (error) {
       const message = error instanceof Error ? error.message : t('wallets.errors.connect_svm_failed');
