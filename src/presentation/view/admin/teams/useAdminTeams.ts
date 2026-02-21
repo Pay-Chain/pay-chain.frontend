@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { useTranslation, useUrlQueryState } from '@/presentation/hooks';
-import { QUERY_PARAM_KEYS } from '@/core/constant';
+import { QUERY_PARAM_KEYS } from '@/core/constants';
 import { useAdminTeams as useAdminTeamsQuery, useCreateTeam, useDeleteTeam, useUpdateTeam } from '@/data/usecase/useAdmin';
 import { useDebounce } from '@/presentation/hooks/useDebounce';
 

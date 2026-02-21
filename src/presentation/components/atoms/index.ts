@@ -8,4 +8,5 @@ export * from './TokenIcon';
 export * from './Label';
 export * from './PayChainLogo';
 export * from './WalletNetworkIcon';
+export * from './Tabs';
 export * from './ChainTokenIcon';

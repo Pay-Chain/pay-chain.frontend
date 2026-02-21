@@ -3,7 +3,7 @@ import { useAdminMerchants as useAdminMerchantsQuery, useUpdateMerchantStatus } 
 import { useDebounce } from '@/presentation/hooks/useDebounce';
 import { toast } from 'sonner';
 import { useTranslation, useUrlQueryState } from '@/presentation/hooks';
-import { QUERY_PARAM_KEYS } from '@/core/constant';
+import { QUERY_PARAM_KEYS } from '@/core/constants';
 
 export const useAdminMerchants = () => {
   const { t } = useTranslation();

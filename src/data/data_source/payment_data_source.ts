@@ -3,7 +3,7 @@
  * Acts as HTTP connector between PaymentRepository and httpClient
  */
 import { httpClient } from '@/core/network';
-import { API_ENDPOINTS } from '@/core/constant';
+import { API_ENDPOINTS } from '@/core/constants';
 import type { CreatePaymentRequest } from '../model/request';
 import type {
   CreatePaymentResponse,

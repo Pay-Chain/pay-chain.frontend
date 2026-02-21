@@ -72,6 +72,7 @@ export const API_ENDPOINTS = {
   // Tokens
   TOKENS: '/v1/tokens',
   TOKENS_STABLECOINS: '/v1/tokens/stablecoins',
+  TOKENS_CHECK_PAIR: '/v1/tokens/check-pair',
 
   // Teams
   TEAMS: '/v1/teams',

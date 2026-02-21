@@ -2,7 +2,7 @@
 
 import { usePaymentRequestsQuery } from '@/data/usecase';
 import { useUrlQueryState } from '@/presentation/hooks';
-import { QUERY_PARAM_KEYS } from '@/core/constant';
+import { QUERY_PARAM_KEYS } from '@/core/constants';
 
 export function usePaymentRequests() {
   const { getNumber, setMany } = useUrlQueryState();

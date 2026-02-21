@@ -525,3 +525,10 @@ export const useRouteErrorDiagnostics = (sourceChainId?: string, paymentId?: str
     enabled: !!sourceChainId && !!paymentId,
   });
 };
+
+export const useCheckTokenPairSupport = () => {
+  return useMutation({
+    mutationFn: (params: { chainId: string; tokenIn: string; tokenOut: string }) =>
+      adminRepository.checkTokenPairSupport(params),
+  });
+};

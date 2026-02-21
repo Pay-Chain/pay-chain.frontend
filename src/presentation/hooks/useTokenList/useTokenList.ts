@@ -1,11 +1,14 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, UseQueryOptions } from '@tanstack/react-query';
 import { httpClient } from '../../../core/network/http_client';
 import { GetTokenListUseCase } from '../../../domain/usecase/token/GetTokenListUseCase';
 import { TokenRepositoryImpl } from '../../../data/repository/TokenRepositoryImpl';
 import { TokenDataSourceImpl } from '../../../data/datasource/token/TokenDataSource';
-import { TokenFilterParams } from '../../../data/model/response/token/TokenResponse';
+import { TokenFilterParams, TokenListResponse } from '../../../data/model/response/token/TokenResponse';
 
-export const useTokenList = (params: TokenFilterParams) => {
+export const useTokenList = (
+  params: TokenFilterParams, 
+  options?: Partial<UseQueryOptions<TokenListResponse, Error>>
+) => {
   
   const dataSource = new TokenDataSourceImpl(httpClient);
   const repository = new TokenRepositoryImpl(dataSource);
@@ -16,5 +19,6 @@ export const useTokenList = (params: TokenFilterParams) => {
     queryFn: () => useCase.execute(params),
     retry: false,
     refetchOnWindowFocus: false,
+    ...options,
   });
 };

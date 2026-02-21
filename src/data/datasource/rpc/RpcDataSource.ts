@@ -1,5 +1,5 @@
 import { HttpClient } from "../../../core/network/http_client";
-import { API_ENDPOINTS } from "../../../core/constant/api_endpoints";
+import { API_ENDPOINTS } from "../../../core/constants/api_endpoints";
 import { RpcListResponse, RpcResponse, CreateRpcRequest, UpdateRpcRequest, RpcFilterParams } from "../../model/response/rpc/RpcResponse";
 
 export interface RpcDataSource {

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { KeyRound, Lock, ArrowRight } from 'lucide-react';
 import { Button, Input } from '@/presentation/components/atoms';
-import { ROUTES } from '@/core/constant/routes';
+import { ROUTES } from '@/core/constants/routes';
 import { useChangePasswordMutation } from '@/data/usecase';
 import { useTranslation } from '@/presentation/hooks';
 import { toast } from 'sonner';

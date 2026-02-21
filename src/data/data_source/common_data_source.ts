@@ -4,7 +4,7 @@
  */
 import { httpClient } from '@/core/network';
 import type { ApiResponse } from '@/core/network';
-import { API_ENDPOINTS } from '@/core/constant';
+import { API_ENDPOINTS } from '@/core/constants';
 import type {
   ConnectWalletRequest,
   ApplyMerchantRequest,

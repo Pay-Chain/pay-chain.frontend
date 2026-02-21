@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAdminUsers } from '@/data/usecase/useAdmin';
 import { useUrlQueryState } from '@/presentation/hooks';
-import { QUERY_PARAM_KEYS } from '@/core/constant';
+import { QUERY_PARAM_KEYS } from '@/core/constants';
 
 export const useAdminUsersViewModel = () => {
   const { getSearch, setMany } = useUrlQueryState();

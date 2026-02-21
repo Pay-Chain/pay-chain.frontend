@@ -16,7 +16,7 @@ const dictionaries: Record<Locale, Dictionary> = {
 type I18nContextType = {
   locale: Locale;
   setLocale: (locale: Locale) => void;
-  t: (key: string) => string;
+  t: (key: string, defaultValue?: string) => string;
   dictionary: Dictionary;
 };
 
@@ -56,7 +56,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   const dictionary = dictionaries[locale];
 
   // Nested key access helper (e.g. 'common.dashboard')
-  const t = (key: string): string => {
+  const t = (key: string, defaultValue?: string): string => {
     const keys = key.split('.');
     let value: any = dictionary;
     
@@ -64,11 +64,11 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       if (value && typeof value === 'object' && k in value) {
         value = value[k];
       } else {
-        return key; // Fallback to key if not found
+        return defaultValue || key; // Fallback to defaultValue or key if not found
       }
     }
     
-    return typeof value === 'string' ? value : key;
+    return typeof value === 'string' ? value : (defaultValue || key);
   };
 
   return (

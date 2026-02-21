@@ -1,5 +1,5 @@
 import { httpClient, ApiResponse } from '@/core/network';
-import { API_ENDPOINTS } from '@/core/constant/api_endpoints';
+import { API_ENDPOINTS } from '@/core/constants/api_endpoints';
 import type { CreateApiKeyRequest } from '../model/request';
 import type { CreateApiKeyResponse, ApiKeyResponse } from '../model/response';
 

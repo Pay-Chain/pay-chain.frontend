@@ -1,5 +1,5 @@
 import { httpClient } from '@/core/network';
-import { API_ENDPOINTS } from '@/core/constant';
+import { API_ENDPOINTS } from '@/core/constants';
 
 export interface AdminStats {
   totalUsers: number;
@@ -545,5 +545,18 @@ export class AdminDataSource {
     );
     if (error) throw new Error(error);
     return data?.diagnostics;
+  }
+
+  async checkTokenPairSupport(params: { chainId: string; tokenIn: string; tokenOut: string }): Promise<{ exists: boolean; isDirect: boolean; path: string[] }> {
+    const query = new URLSearchParams();
+    query.append('chainId', params.chainId);
+    query.append('tokenIn', params.tokenIn);
+    query.append('tokenOut', params.tokenOut);
+
+    const { data, error } = await httpClient.get<{ exists: boolean; isDirect: boolean; path: string[] }>(
+      `${API_ENDPOINTS.TOKENS_CHECK_PAIR}?${query.toString()}`
+    );
+    if (error) throw new Error(error);
+    return data!;
   }
 }

@@ -3,7 +3,7 @@
  * Acts as HTTP connector between AuthRepository and httpClient
  */
 import { httpClient } from '@/core/network';
-import { API_ENDPOINTS } from '@/core/constant';
+import { API_ENDPOINTS } from '@/core/constants';
 import type {
   LoginRequest,
   RegisterRequest,

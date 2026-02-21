@@ -1,5 +1,5 @@
 import { HttpClient } from "@/core/network/http_client";
-import { API_ENDPOINTS } from "@/core/constant/api_endpoints";
+import { API_ENDPOINTS } from "@/core/constants/api_endpoints";
 import { TokenListResponse, TokenFilterParams } from "../../model/response/token/TokenResponse";
 
 export interface TokenDataSource {
@@ -16,8 +16,8 @@ export class TokenDataSourceImpl implements TokenDataSource {
     const query = new URLSearchParams();
     if (params.chainId) query.append('chainId', params.chainId.toString());
     if (params.search) query.append('search', params.search);
-    if (params.page) query.append('page', params.page.toString());
-    if (params.limit) query.append('limit', params.limit.toString());
+    if (params.page !== undefined) query.append('page', params.page.toString());
+    if (params.limit !== undefined) query.append('limit', params.limit.toString());
 
     const response = await this.client.get<TokenListResponse>(`${API_ENDPOINTS.ADMIN_TOKENS}?${query.toString()}`);
     if (response.error || !response.data) {

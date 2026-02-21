@@ -687,6 +687,10 @@ export interface Dictionary {
     tokens_view: {
       title: string;
       subtitle: string;
+      tabs: {
+        tokens: string;
+        verification: string;
+      };
       search_placeholder: string;
       all_chains: string;
       add_token: string;
@@ -701,6 +705,55 @@ export interface Dictionary {
       min_amount: string;
       active: string;
       inactive: string;
+      pair_check: {
+        title: string;
+        subtitle: string;
+        select_chain: string;
+        chain_placeholder: string;
+        token_in: string;
+        token_placeholder: string;
+        token_out: string;
+        check_button: string;
+        verify_button: string;
+        reset_v4: string;
+        reset_v3: string;
+        reset_multihop: string;
+        reset_all: string;
+        result_direct: string;
+        result_multihop: string;
+        result_none: string;
+        result_supported: string;
+        supported_desc: string;
+        direct: string;
+        multi_hop: string;
+        swap_path: string;
+        result_not_supported: string;
+        not_supported_desc: string;
+        admin_actions: string;
+        reset_success_v3: string;
+        reset_error_v3: string;
+        reset_success_v4: string;
+        reset_error_v4: string;
+        reset_success_multihop: string;
+        reset_error_multihop: string;
+      };
+      register: {
+        direct_title: string;
+        direct_desc: string;
+        fee_tier: string;
+        fee_tier_placeholder: string;
+        register_button: string;
+        multihop_title: string;
+        multihop_desc: string;
+        path_placeholder: string;
+        hops: string;
+        add_hop: string;
+        no_hops_desc: string;
+        start_with_hop: string;
+        intermediate_placeholder: string;
+        register_multihop: string;
+        no_swapper: string;
+      };
       modal: {
         edit_title: string;
         add_title: string;

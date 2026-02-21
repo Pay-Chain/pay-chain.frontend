@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useAdminContracts as useAdminContractsQuery, useCreateContract, useDeleteContract, useUpdateContract, useAdminChains, useAdminContractConfigCheck } from '@/data/usecase/useAdmin';
 import { useDebounce } from '@/presentation/hooks/useDebounce';
 import { useTranslation, useUrlQueryState } from '@/presentation/hooks';
-import { QUERY_PARAM_KEYS } from '@/core/constant';
+import { QUERY_PARAM_KEYS } from '@/core/constants';
 import { useTokensQuery } from '@/data/usecase';
 import { toast } from 'sonner';
 

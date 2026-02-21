@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAdminChains as useAdminChainsQuery, useCreateChain, useUpdateChain, useDeleteChain } from '@/data/usecase/useAdmin';
 import { useTranslation, useUrlQueryState } from '@/presentation/hooks';
-import { QUERY_PARAM_KEYS } from '@/core/constant';
+import { QUERY_PARAM_KEYS } from '@/core/constants';
 import { toast } from 'sonner';
 
 export const useAdminChains = () => {

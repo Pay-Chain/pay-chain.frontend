@@ -3,7 +3,7 @@ import { useRpcList } from '@/presentation/hooks/useRpcList/useRpcList';
 import { useAdminChains, useCreateRpc, useUpdateRpc, useDeleteRpc } from '@/data/usecase/useAdmin';
 import { useDebounce } from '@/presentation/hooks/useDebounce';
 import { useTranslation, useUrlQueryState } from '@/presentation/hooks';
-import { QUERY_PARAM_KEYS } from '@/core/constant';
+import { QUERY_PARAM_KEYS } from '@/core/constants';
 import { toast } from 'sonner';
 
 export const useAdminRPCs = () => {

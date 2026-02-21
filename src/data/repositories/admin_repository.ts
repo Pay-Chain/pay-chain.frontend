@@ -252,4 +252,8 @@ export class AdminRepository {
   async getRouteErrorDiagnostics(params: RouteErrorDiagnosticsParams): Promise<any> {
     return this.dataSource.getRouteErrorDiagnostics(params);
   }
+
+  async checkTokenPairSupport(params: { chainId: string; tokenIn: string; tokenOut: string }): Promise<{ exists: boolean; isDirect: boolean; path: string[] }> {
+    return this.dataSource.checkTokenPairSupport(params);
+  }
 }
