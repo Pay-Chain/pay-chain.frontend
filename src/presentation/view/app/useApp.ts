@@ -3,7 +3,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useAccount, useSwitchChain, useSendTransaction, usePublicClient } from 'wagmi';
 import { useCreatePaymentAppMutation, useChainsQuery, useTokensQuery } from '@/data/usecase';
 import type { CreatePaymentAppRequest } from '@/data/model/request';
-import { encodeFunctionData, erc20Abi, parseUnits } from 'viem';
+import { encodeFunctionData, erc20Abi, formatUnits, parseUnits } from 'viem';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { PublicKey, SystemProgram, Transaction, TransactionInstruction } from '@solana/web3.js';
 import { signedProxyHttpClient } from '@/core/network';
@@ -57,6 +57,20 @@ export interface UseAppReturn {
   isSuccess: boolean;
   error: string | null;
   routeErrorDiagnostics: RouteErrorDiagnostics | null;
+  paymentCostPreview: {
+    sourceAmountRaw: string;
+    sourceAmountDisplay: string;
+    platformFeeRaw: string;
+    platformFeeDisplay: string;
+    bridgeFeeNativeRaw: string;
+    totalSourceRequiredRaw: string;
+    totalSourceRequiredDisplay: string;
+    bridgeQuoteOk: boolean | null;
+    bridgeQuoteReason: string;
+    bridgeType?: number;
+    isSameChain?: boolean;
+    feeSource: 'onchain' | 'legacy';
+  } | null;
   txHash: string | null;
   currentChain: any | undefined;
   handlePay: () => void;
@@ -98,6 +112,7 @@ export function useApp(): UseAppReturn {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [routeErrorDiagnostics, setRouteErrorDiagnostics] = useState<RouteErrorDiagnostics | null>(null);
+  const [paymentCostPreview, setPaymentCostPreview] = useState<UseAppReturn['paymentCostPreview']>(null);
   const [txHash, setTxHash] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
 
@@ -438,6 +453,7 @@ export function useApp(): UseAppReturn {
     setIsLoading(true);
     setError(null);
     setRouteErrorDiagnostics(null);
+    setPaymentCostPreview(null);
     let diagnosticsTarget: { paymentId: string; sourceChainId: string } | null = null;
     try {
       if (!isEvmConnected || !evmAddress) {
@@ -487,16 +503,27 @@ export function useApp(): UseAppReturn {
         let approvalData = approvalDataRaw;
 
         const sourceAmountUnits = parseUnits(amount, selectedToken?.decimals ?? 18);
-        const feeUnits = (() => {
-          const raw = String(payment.feeBreakdown?.totalFee || '').trim();
-          if (!raw) return BigInt(0);
-          try {
-            return BigInt(raw);
-          } catch {
-            return BigInt(0);
+        const expectedApprovalAmount = (() => {
+          const onchainTotalRaw = String(payment.onchainCost?.totalSourceTokenRequired || '').trim();
+          if (onchainTotalRaw) {
+            try {
+              return BigInt(onchainTotalRaw);
+            } catch {
+              // fallback below
+            }
           }
+
+          const feeUnits = (() => {
+            const raw = String(payment.feeBreakdown?.totalFee || '').trim();
+            if (!raw) return BigInt(0);
+            try {
+              return BigInt(raw);
+            } catch {
+              return BigInt(0);
+            }
+          })();
+          return sourceAmountUnits + feeUnits;
         })();
-        const expectedApprovalAmount = sourceAmountUnits + feeUnits;
         const approvalAmount = (() => {
           if (approvalAmountRaw) {
             try {
@@ -507,6 +534,36 @@ export function useApp(): UseAppReturn {
           }
           return expectedApprovalAmount;
         })();
+
+        const toDisplayAmount = (raw: string) => {
+          try {
+            const normalized = raw.trim() || '0';
+            const decimals = selectedToken?.decimals ?? 18;
+            return formatMoneyDisplay(formatUnits(BigInt(normalized), decimals));
+          } catch {
+            return '0';
+          }
+        };
+
+        const onchainCost = payment.onchainCost;
+        const platformFeeRaw = String(onchainCost?.platformFeeToken || payment.feeBreakdown?.platformFee || '0');
+        const totalSourceRequiredRaw = approvalAmount.toString();
+        const sourceAmountRaw = sourceAmountUnits.toString();
+
+        setPaymentCostPreview({
+          sourceAmountRaw,
+          sourceAmountDisplay: toDisplayAmount(sourceAmountRaw),
+          platformFeeRaw,
+          platformFeeDisplay: toDisplayAmount(platformFeeRaw),
+          bridgeFeeNativeRaw: String(onchainCost?.bridgeFeeNative || '0'),
+          totalSourceRequiredRaw,
+          totalSourceRequiredDisplay: toDisplayAmount(totalSourceRequiredRaw),
+          bridgeQuoteOk: typeof onchainCost?.bridgeQuoteOk === 'boolean' ? onchainCost.bridgeQuoteOk : null,
+          bridgeQuoteReason: String(onchainCost?.bridgeQuoteReason || ''),
+          bridgeType: onchainCost?.bridgeType,
+          isSameChain: onchainCost?.isSameChain,
+          feeSource: onchainCost ? 'onchain' : 'legacy',
+        });
 
         if (approvalTo && approvalSpender) {
           approvalData = encodeFunctionData({
@@ -654,6 +711,7 @@ export function useApp(): UseAppReturn {
     isSuccess,
     error,
     routeErrorDiagnostics,
+    paymentCostPreview,
     txHash,
     currentChain: chainsData?.items?.find(c => String(c.networkId) === String(chainId) || c.id === chainId),
     handlePay,

@@ -168,6 +168,18 @@ export interface Dictionary {
     complete_fields_error: string;
     own_address: string;
     other_address: string;
+    fee_breakdown_title: string;
+    source_amount: string;
+    platform_fee: string;
+    bridge_fee_native: string;
+    total_source_required: string;
+    fee_source: string;
+    fee_source_onchain: string;
+    fee_source_legacy: string;
+    bridge_quote_status: string;
+    bridge_quote_ok: string;
+    bridge_quote_failed: string;
+    bridge_quote_reason: string;
   };
   auth: {
     login: string;
@@ -1026,6 +1038,8 @@ export interface Dictionary {
         preflight_missing_adapter_contract: string;
         preflight_missing_route_payload: string;
         preflight_route_ready: string;
+        route_policy_saved: string;
+        route_policy_save_failed: string;
       };
     };
     route_policies_view: {
@@ -1042,6 +1056,10 @@ export interface Dictionary {
       default_bridge_type: string;
       fallback_mode: string;
       fallback_order_optional: string;
+      per_byte_rate: string;
+      overhead_bytes: string;
+      min_fee: string;
+      max_fee: string;
       strict: string;
       auto_fallback: string;
       create_title: string;

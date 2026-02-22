@@ -93,6 +93,10 @@ export interface RoutePolicyPayload {
   defaultBridgeType: number;
   fallbackMode?: 'strict' | 'auto_fallback';
   fallbackOrder?: number[];
+  perByteRate?: string;
+  overheadBytes?: string;
+  minFee?: string;
+  maxFee?: string;
 }
 
 export interface LayerZeroPolicyPayload {

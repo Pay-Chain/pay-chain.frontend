@@ -18,6 +18,9 @@ import {
   useSetLayerZeroConfig,
   useSetHyperbridgeConfig,
   useSetOnchainDefaultBridge,
+  useRoutePolicies,
+  useCreateRoutePolicy,
+  useUpdateRoutePolicy,
 } from '@/data/usecase/useAdmin';
 
 const DEFAULT_PAGE = 1;
@@ -128,6 +131,13 @@ export const useAdminCrosschainConfigs = () => {
   const [manualLayerZeroDstEid, setManualLayerZeroDstEid] = useState('');
   const [manualLayerZeroPeerHex, setManualLayerZeroPeerHex] = useState('');
   const [manualLayerZeroOptionsHex, setManualLayerZeroOptionsHex] = useState('');
+  const [policyDefaultBridgeType, setPolicyDefaultBridgeType] = useState<string>('0');
+  const [policyFallbackMode, setPolicyFallbackMode] = useState<'strict' | 'auto_fallback'>('strict');
+  const [policyFallbackOrderInput, setPolicyFallbackOrderInput] = useState('');
+  const [policyPerByteRate, setPolicyPerByteRate] = useState('');
+  const [policyOverheadBytes, setPolicyOverheadBytes] = useState('');
+  const [policyMinFee, setPolicyMinFee] = useState('');
+  const [policyMaxFee, setPolicyMaxFee] = useState('');
   const [manualCurrentStep, setManualCurrentStep] = useState<1 | 2 | 3 | 4>(1);
   const [manualStepCompleted, setManualStepCompleted] = useState({
     step1: false,
@@ -176,6 +186,14 @@ export const useAdminCrosschainConfigs = () => {
   const setHyperbridgeConfigMutation = useSetHyperbridgeConfig();
   const setCCIPConfigMutation = useSetCCIPConfig();
   const setLayerZeroConfigMutation = useSetLayerZeroConfig();
+  const routePoliciesQuery = useRoutePolicies({
+    page: 1,
+    limit: 1,
+    sourceChainId: sourceChainId || undefined,
+    destChainId: destChainId || undefined,
+  });
+  const createRoutePolicyMutation = useCreateRoutePolicy();
+  const updateRoutePolicyMutation = useUpdateRoutePolicy();
   const manualOnchainStatusQuery = useOnchainAdapterStatus(
     manualSourceChainId || undefined,
     manualDestChainId || undefined
@@ -322,7 +340,9 @@ export const useAdminCrosschainConfigs = () => {
     setDefaultBridgeMutation.isPending ||
     setHyperbridgeConfigMutation.isPending ||
     setCCIPConfigMutation.isPending ||
-    setLayerZeroConfigMutation.isPending;
+    setLayerZeroConfigMutation.isPending ||
+    createRoutePolicyMutation.isPending ||
+    updateRoutePolicyMutation.isPending;
   const routes = useMemo(() => {
     const all = overviewQuery.data?.items || [];
     if (statusFilter === 'ALL') return all;
@@ -336,6 +356,53 @@ export const useAdminCrosschainConfigs = () => {
     () => selectedSourceRoutes.filter((route: any) => String(route.overallStatus || '').toUpperCase() === 'ERROR'),
     [selectedSourceRoutes]
   );
+  const activeRoutePolicy = useMemo(
+    () => (routePoliciesQuery.data?.items || [])[0] || null,
+    [routePoliciesQuery.data?.items]
+  );
+
+  useEffect(() => {
+    if (!sourceChainId || !destChainId) {
+      setPolicyDefaultBridgeType('0');
+      setPolicyFallbackMode('strict');
+      setPolicyFallbackOrderInput('');
+      setPolicyPerByteRate('');
+      setPolicyOverheadBytes('');
+      setPolicyMinFee('');
+      setPolicyMaxFee('');
+      return;
+    }
+
+    const bridgeType = String(activeRoutePolicy?.defaultBridgeType ?? activeRoutePolicy?.default_bridge_type ?? '');
+    if (bridgeType === '0' || bridgeType === '1' || bridgeType === '2') {
+      setPolicyDefaultBridgeType(bridgeType);
+    } else if (manualBridgeOptions.length) {
+      setPolicyDefaultBridgeType(String(manualBridgeOptions[0].bridgeType));
+    }
+
+    const fallbackMode = String(activeRoutePolicy?.fallbackMode || activeRoutePolicy?.fallback_mode || '').trim();
+    setPolicyFallbackMode(fallbackMode === 'auto_fallback' ? 'auto_fallback' : 'strict');
+
+    const fallbackOrderRaw = activeRoutePolicy?.fallbackOrder ?? activeRoutePolicy?.fallback_order;
+    if (Array.isArray(fallbackOrderRaw)) {
+      setPolicyFallbackOrderInput(
+        fallbackOrderRaw
+          .map((item: any) => Number(item))
+          .filter((item: any) => Number.isFinite(item))
+          .join(',')
+      );
+      return;
+    }
+    if (typeof fallbackOrderRaw === 'string' && fallbackOrderRaw.trim()) {
+      setPolicyFallbackOrderInput(fallbackOrderRaw.trim().replace(/[\[\]\s]/g, ''));
+    } else {
+      setPolicyFallbackOrderInput('');
+    }
+    setPolicyPerByteRate(String(activeRoutePolicy?.perByteRate ?? activeRoutePolicy?.per_byte_rate ?? '').trim());
+    setPolicyOverheadBytes(String(activeRoutePolicy?.overheadBytes ?? activeRoutePolicy?.overhead_bytes ?? '').trim());
+    setPolicyMinFee(String(activeRoutePolicy?.minFee ?? activeRoutePolicy?.min_fee ?? '').trim());
+    setPolicyMaxFee(String(activeRoutePolicy?.maxFee ?? activeRoutePolicy?.max_fee ?? '').trim());
+  }, [sourceChainId, destChainId, activeRoutePolicy, manualBridgeOptions]);
 
   useEffect(() => {
     if (manualBridgeType !== '0') return;
@@ -1281,6 +1348,65 @@ export const useAdminCrosschainConfigs = () => {
     toast.success(t('admin.crosschain_configs_view.toasts.report_exported'));
   };
 
+  const parseFallbackOrder = (raw: string): number[] => {
+    const normalized = String(raw || '')
+      .split(',')
+      .map((item) => Number(item.trim()))
+      .filter((item) => Number.isFinite(item) && item >= 0 && item <= 255);
+    return Array.from(new Set(normalized));
+  };
+
+  const normalizeUnsignedInteger = (raw: string): string => {
+    const trimmed = String(raw || '').trim();
+    if (!trimmed) return '';
+    return /^[0-9]+$/.test(trimmed) ? trimmed : '';
+  };
+
+  const handleSaveRoutePolicy = async () => {
+    if (!sourceChainId || !destChainId) {
+      toast.error(t('admin.crosschain_configs_view.toasts.select_source_chain_first'));
+      return;
+    }
+
+    const defaultBridgeType = Number(policyDefaultBridgeType);
+    if (!Number.isFinite(defaultBridgeType)) {
+      toast.error(t('admin.crosschain_configs_view.toasts.manual_required_fields'));
+      return;
+    }
+
+    const fallbackOrder = parseFallbackOrder(policyFallbackOrderInput);
+    const payload: any = {
+      sourceChainId,
+      destChainId,
+      defaultBridgeType,
+      fallbackMode: policyFallbackMode,
+      perByteRate: normalizeUnsignedInteger(policyPerByteRate),
+      overheadBytes: normalizeUnsignedInteger(policyOverheadBytes),
+      minFee: normalizeUnsignedInteger(policyMinFee),
+      maxFee: normalizeUnsignedInteger(policyMaxFee),
+    };
+    if (fallbackOrder.length > 0) {
+      payload.fallbackOrder = fallbackOrder;
+    }
+
+    try {
+      if (activeRoutePolicy?.id) {
+        await updateRoutePolicyMutation.mutateAsync({
+          id: String(activeRoutePolicy.id),
+          data: payload,
+        });
+      } else {
+        await createRoutePolicyMutation.mutateAsync(payload);
+      }
+      await routePoliciesQuery.refetch();
+      await overviewQuery.refetch();
+      await preflightQuery.refetch();
+      toast.success(t('admin.crosschain_configs_view.toasts.route_policy_saved'));
+    } catch (error: any) {
+      toast.error(error?.message || t('admin.crosschain_configs_view.toasts.route_policy_save_failed'));
+    }
+  };
+
   return {
     state: {
       sourceChainId,
@@ -1298,6 +1424,13 @@ export const useAdminCrosschainConfigs = () => {
       manualLayerZeroDstEid,
       manualLayerZeroPeerHex,
       manualLayerZeroOptionsHex,
+      policyDefaultBridgeType,
+      policyFallbackMode,
+      policyFallbackOrderInput,
+      policyPerByteRate,
+      policyOverheadBytes,
+      policyMinFee,
+      policyMaxFee,
       manualCurrentStep,
       manualStepCompleted,
       manualExecution,
@@ -1308,10 +1441,12 @@ export const useAdminCrosschainConfigs = () => {
       manualDestCCIPContracts,
       manualDestLayerZeroContracts,
       routes,
+      activeRoutePolicy,
       selectedSourceRoutes,
       selectedSourceErrorRoutes,
       wizardReport,
       preflight: preflightQuery.data,
+      isRoutePolicyLoading: routePoliciesQuery.isLoading || routePoliciesQuery.isFetching,
       isPreflightLoading: preflightQuery.isLoading || preflightQuery.isFetching,
       isLoading: chainQuery.isLoading || overviewQuery.isLoading,
       isPending,
@@ -1334,6 +1469,14 @@ export const useAdminCrosschainConfigs = () => {
       setManualLayerZeroDstEid,
       setManualLayerZeroPeerHex,
       setManualLayerZeroOptionsHex,
+      setPolicyDefaultBridgeType,
+      setPolicyFallbackMode,
+      setPolicyFallbackOrderInput,
+      setPolicyPerByteRate,
+      setPolicyOverheadBytes,
+      setPolicyMinFee,
+      setPolicyMaxFee,
+      saveRoutePolicy: handleSaveRoutePolicy,
       registerAdapterManual: handleRegisterAdapterManual,
       setDefaultBridgeManual: handleSetDefaultBridgeManual,
       setDefaultBridgeQuick: handleSetDefaultBridgeQuick,

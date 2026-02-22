@@ -169,4 +169,13 @@ export interface CreatePaymentAppResponse {
       amount?: string;
     }>;
   };
+  onchainCost?: {
+    platformFeeToken: string;
+    bridgeFeeNative: string;
+    totalSourceTokenRequired: string;
+    bridgeType: number;
+    isSameChain: boolean;
+    bridgeQuoteOk: boolean;
+    bridgeQuoteReason: string;
+  };
 }

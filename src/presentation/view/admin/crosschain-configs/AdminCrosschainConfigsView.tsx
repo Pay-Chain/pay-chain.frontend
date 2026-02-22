@@ -176,6 +176,114 @@ export const AdminCrosschainConfigsView = () => {
 
       <Card className="p-5 bg-white/5 border-white/10 space-y-3">
         <div className="flex items-center justify-between gap-3">
+          <div>
+            <h3 className="text-base font-semibold text-foreground">{t('admin.route_policies_view.title')}</h3>
+            <p className="text-sm text-muted">{t('admin.route_policies_view.subtitle')}</p>
+          </div>
+          <span
+            className={`inline-flex px-2 py-1 rounded-full border text-xs font-medium ${
+              state.activeRoutePolicy
+                ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
+                : 'bg-amber-500/10 text-amber-300 border-amber-500/30'
+            }`}
+          >
+            {state.activeRoutePolicy ? t('admin.route_policies_view.update_title') : t('admin.route_policies_view.create_title')}
+          </span>
+        </div>
+        {!state.sourceChainId || !state.destChainId ? (
+          <p className="text-sm text-muted">{t('admin.crosschain_configs_view.preflight_select_hint')}</p>
+        ) : (
+          <div className="space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-foreground/80 ml-1">
+                  {t('admin.route_policies_view.default_bridge_type')}
+                </label>
+                <select
+                  className="h-11 rounded-full bg-white/5 border border-white/10 px-3 text-sm w-full"
+                  value={state.policyDefaultBridgeType}
+                  onChange={(e) => actions.setPolicyDefaultBridgeType(e.target.value)}
+                  disabled={state.isPending || state.isRoutePolicyLoading}
+                >
+                  {(manualBridgeOptions.length ? manualBridgeOptions : [{ bridgeType: '0', name: 'Hyperbridge' }]).map((item: any) => (
+                    <option key={String(item.bridgeType)} value={String(item.bridgeType)}>
+                      {String(item.bridgeType)} - {item.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-foreground/80 ml-1">{t('admin.route_policies_view.fallback_mode')}</label>
+                <select
+                  className="h-11 rounded-full bg-white/5 border border-white/10 px-3 text-sm w-full"
+                  value={state.policyFallbackMode}
+                  onChange={(e) => actions.setPolicyFallbackMode(e.target.value as 'strict' | 'auto_fallback')}
+                  disabled={state.isPending || state.isRoutePolicyLoading}
+                >
+                  <option value="strict">{t('admin.route_policies_view.strict')}</option>
+                  <option value="auto_fallback">{t('admin.route_policies_view.auto_fallback')}</option>
+                </select>
+              </div>
+              <Input
+                label={t('admin.route_policies_view.fallback_order_optional')}
+                placeholder="0,1,2"
+                value={state.policyFallbackOrderInput}
+                onChange={(e) => actions.setPolicyFallbackOrderInput(e.target.value)}
+                disabled={state.isPending || state.isRoutePolicyLoading}
+              />
+              <Input
+                label={t('admin.route_policies_view.per_byte_rate')}
+                placeholder="300"
+                value={state.policyPerByteRate}
+                onChange={(e) => actions.setPolicyPerByteRate(e.target.value)}
+                disabled={state.isPending || state.isRoutePolicyLoading}
+              />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+              <Input
+                label={t('admin.route_policies_view.overhead_bytes')}
+                placeholder="256"
+                value={state.policyOverheadBytes}
+                onChange={(e) => actions.setPolicyOverheadBytes(e.target.value)}
+                disabled={state.isPending || state.isRoutePolicyLoading}
+              />
+              <Input
+                label={t('admin.route_policies_view.min_fee')}
+                placeholder="0"
+                value={state.policyMinFee}
+                onChange={(e) => actions.setPolicyMinFee(e.target.value)}
+                disabled={state.isPending || state.isRoutePolicyLoading}
+              />
+              <Input
+                label={t('admin.route_policies_view.max_fee')}
+                placeholder="0"
+                value={state.policyMaxFee}
+                onChange={(e) => actions.setPolicyMaxFee(e.target.value)}
+                disabled={state.isPending || state.isRoutePolicyLoading}
+              />
+              <div className="flex items-end">
+                <Button
+                  className="w-full"
+                  size="sm"
+                  variant="primary"
+                  onClick={() => actions.saveRoutePolicy()}
+                  disabled={state.isPending || state.isRoutePolicyLoading}
+                >
+                  {t('common.save')}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+        {state.activeRoutePolicy?.id && (
+          <p className="text-xs text-muted break-all">
+            id: {String(state.activeRoutePolicy.id)}
+          </p>
+        )}
+      </Card>
+
+      <Card className="p-5 bg-white/5 border-white/10 space-y-3">
+        <div className="flex items-center justify-between gap-3">
           <h3 className="text-base font-semibold text-foreground">{t('admin.crosschain_configs_view.preflight_title')}</h3>
           <Button
             size="sm"

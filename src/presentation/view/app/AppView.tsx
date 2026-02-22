@@ -32,6 +32,7 @@ export default function AppView() {
     receiverPlaceholder,
     isOwnAddress, setIsOwnAddress,
     isLoading, isSuccess, error, routeErrorDiagnostics, txHash,
+    paymentCostPreview,
     handlePay,
     handleReversePair
   } = useApp();
@@ -148,6 +149,51 @@ export default function AppView() {
           canUseMax={canUseMax}
           onMaxClick={handleMaxClick}
         />
+
+        {paymentCostPreview && (
+          <div className="rounded-xl border border-white/10 bg-white/5 p-4 space-y-2">
+            <p className="text-xs uppercase tracking-wide text-foreground/70">
+              {t('app_view.fee_breakdown_title')}
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+              <p className="text-muted">
+                {t('app_view.source_amount')}: <span className="text-foreground">{paymentCostPreview.sourceAmountDisplay}</span>
+              </p>
+              <p className="text-muted">
+                {t('app_view.platform_fee')}: <span className="text-foreground">{paymentCostPreview.platformFeeDisplay}</span>
+              </p>
+              <p className="text-muted">
+                {t('app_view.total_source_required')}: <span className="text-foreground">{paymentCostPreview.totalSourceRequiredDisplay}</span>
+              </p>
+              <p className="text-muted">
+                {t('app_view.fee_source')}:{' '}
+                <span className="text-foreground">
+                  {paymentCostPreview.feeSource === 'onchain'
+                    ? t('app_view.fee_source_onchain')
+                    : t('app_view.fee_source_legacy')}
+                </span>
+              </p>
+              <p className="text-muted break-all">
+                {t('app_view.bridge_fee_native')}: <span className="text-foreground">{paymentCostPreview.bridgeFeeNativeRaw} wei</span>
+              </p>
+              {paymentCostPreview.bridgeQuoteOk !== null && (
+                <p className="text-muted break-all">
+                  {t('app_view.bridge_quote_status')}:{' '}
+                  <span className={paymentCostPreview.bridgeQuoteOk ? 'text-emerald-300' : 'text-amber-300'}>
+                    {paymentCostPreview.bridgeQuoteOk
+                      ? t('app_view.bridge_quote_ok')
+                      : t('app_view.bridge_quote_failed')}
+                  </span>
+                </p>
+              )}
+            </div>
+            {!!paymentCostPreview.bridgeQuoteReason && (
+              <p className="text-xs text-muted break-all">
+                {t('app_view.bridge_quote_reason')}: {paymentCostPreview.bridgeQuoteReason}
+              </p>
+            )}
+          </div>
+        )}
 
         <div className="space-y-2">
           <div className="flex items-center justify-between px-1">
