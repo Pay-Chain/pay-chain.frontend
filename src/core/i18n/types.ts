@@ -166,6 +166,8 @@ export interface Dictionary {
     connect_wallet_subtitle: string;
     pay_now: string;
     complete_fields_error: string;
+    own_address: string;
+    other_address: string;
   };
   auth: {
     login: string;
@@ -1177,7 +1179,9 @@ export interface Dictionary {
         select_function: string;
         select_function_placeholder: string;
         run_action: string;
+        result: string;
         action_success: string;
+        query_success: string;
         action_failed: string;
         action_not_supported: string;
       };

@@ -7,7 +7,7 @@ import { Button, Card } from '@/presentation/components/atoms';
 import { useTranslation } from '@/presentation/hooks';
 import { useAdminContractDetail } from './useAdminContractDetail';
 import { Input } from '@/presentation/components/atoms';
-import { useRegisterOnchainAdapter, useSetCCIPConfig, useSetHyperbridgeConfig, useSetOnchainDefaultBridge } from '@/data/usecase/useAdmin';
+import { useAdminGenericInteract, useRegisterOnchainAdapter, useSetCCIPConfig, useSetHyperbridgeConfig, useSetLayerZeroConfig, useSetOnchainDefaultBridge } from '@/data/usecase/useAdmin';
 import { toast } from 'sonner';
 
 type Props = {
@@ -28,12 +28,15 @@ export const AdminContractDetailView = ({ id }: Props) => {
   const setDefaultBridgeMutation = useSetOnchainDefaultBridge();
   const setHyperbridgeConfigMutation = useSetHyperbridgeConfig();
   const setCCIPConfigMutation = useSetCCIPConfig();
+  const setLayerZeroConfigMutation = useSetLayerZeroConfig();
+  const genericInteractMutation = useAdminGenericInteract();
   const [selectedFunction, setSelectedFunction] = useState('');
   const [functionInputValues, setFunctionInputValues] = useState<Record<string, string>>({});
+  const [genericResult, setGenericResult] = useState<any>(null);
 
   const selectedFn = useMemo(
-    () => state.writableFunctions.find((fn) => fn.name === selectedFunction),
-    [state.writableFunctions, selectedFunction]
+    () => state.allFunctions.find((fn) => fn.name === selectedFunction),
+    [state.allFunctions, selectedFunction]
   );
 
   const updateInput = (key: string, value: string) => {
@@ -44,6 +47,7 @@ export const AdminContractDetailView = ({ id }: Props) => {
     if (!selectedFn || !state.contract) return;
     const sourceChainId = String(state.contract.chainId || '');
     try {
+      setGenericResult(null);
       if (selectedFn.name === 'registerAdapter') {
         await registerAdapterMutation.mutateAsync({
           sourceChainId,
@@ -87,7 +91,48 @@ export const AdminContractDetailView = ({ id }: Props) => {
         actions.refetch();
         return;
       }
-      toast.error(t('admin.contracts_view.detail.action_not_supported'));
+      if (selectedFn.name === 'setRoute') {
+        await setLayerZeroConfigMutation.mutateAsync({
+          sourceChainId,
+          destChainId: functionInputValues.destChainId || '',
+          dstEid: functionInputValues.dstEid ? Number(functionInputValues.dstEid) : undefined,
+          peerHex: functionInputValues.peer || '',
+        });
+        toast.success(t('admin.contracts_view.detail.action_success'));
+        actions.refetch();
+        return;
+      }
+      if (selectedFn.name === 'setEnforcedOptions') {
+        await setLayerZeroConfigMutation.mutateAsync({
+          sourceChainId,
+          destChainId: functionInputValues.destChainId || '',
+          optionsHex: functionInputValues.options || '',
+        });
+        toast.success(t('admin.contracts_view.detail.action_success'));
+        actions.refetch();
+        return;
+      }
+
+      // Generic Fallback
+      const response = await genericInteractMutation.mutateAsync({
+        sourceChainId,
+        contractAddress: state.contract.contractAddress,
+        method: selectedFn.name,
+        abi: JSON.stringify(state.contract.abi),
+        args: (selectedFn.inputs || []).map((input: any) => {
+          const key = input.name || input.type;
+          return functionInputValues[key] || '';
+        }),
+      });
+
+      setGenericResult(response.result);
+      if (response.isWrite) {
+        toast.success(t('admin.contracts_view.detail.action_success'));
+      } else {
+        toast.success(t('admin.contracts_view.detail.query_success'));
+      }
+      actions.refetch();
+
     } catch (error: any) {
       toast.error(error?.message || t('admin.contracts_view.detail.action_failed'));
     }
@@ -153,7 +198,7 @@ export const AdminContractDetailView = ({ id }: Props) => {
             className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm"
           >
             <option value="">{t('admin.contracts_view.detail.select_function_placeholder')}</option>
-            {state.writableFunctions.map((fn) => (
+            {state.allFunctions.map((fn) => (
               <option key={fn.name} value={fn.name}>
                 {fn.name}
               </option>
@@ -188,12 +233,23 @@ export const AdminContractDetailView = ({ id }: Props) => {
               registerAdapterMutation.isPending ||
               setDefaultBridgeMutation.isPending ||
               setHyperbridgeConfigMutation.isPending ||
-              setCCIPConfigMutation.isPending
+              setCCIPConfigMutation.isPending ||
+              setLayerZeroConfigMutation.isPending ||
+              genericInteractMutation.isPending
             }
           >
             {t('admin.contracts_view.detail.run_action')}
           </Button>
         </div>
+
+        {genericResult !== null && (
+          <div className="mt-4 p-3 rounded-lg border border-white/10 bg-black/20 space-y-2">
+            <h4 className="text-sm font-medium text-emerald-300">{t('admin.contracts_view.detail.result')}</h4>
+            <pre className="text-xs text-foreground/80 overflow-x-auto whitespace-pre-wrap">
+              {typeof genericResult === 'object' ? JSON.stringify(genericResult, null, 2) : String(genericResult)}
+            </pre>
+          </div>
+        )}
       </Card>
 
       <Card className="p-5 bg-white/5 border-white/10 space-y-3">

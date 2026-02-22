@@ -17,17 +17,14 @@ export const useAdminContractDetail = (id: string) => {
     return [...new Set(names)].sort();
   }, [contract?.abi]);
 
-  const writableFunctions = useMemo(() => {
+  const allFunctions = useMemo(() => {
     const abi = contract?.abi;
-    if (!Array.isArray(abi)) return [] as Array<{ name: string; inputs: Array<{ name: string; type: string }> }>;
+    if (!Array.isArray(abi)) return [] as Array<{ name: string; inputs: Array<{ name: string; type: string }>; stateMutability: string }>;
     return abi
-      .filter((entry: any) => {
-        if (!entry || entry.type !== 'function' || !entry.name) return false;
-        const mutability = String(entry.stateMutability || '').toLowerCase();
-        return mutability !== 'view' && mutability !== 'pure';
-      })
+      .filter((entry: any) => entry && entry.type === 'function' && entry.name)
       .map((entry: any) => ({
         name: String(entry.name),
+        stateMutability: String(entry.stateMutability || 'nonpayable'),
         inputs: Array.isArray(entry.inputs)
           ? entry.inputs.map((input: any) => ({
               name: String(input?.name || ''),
@@ -36,6 +33,10 @@ export const useAdminContractDetail = (id: string) => {
           : [],
       }));
   }, [contract?.abi]);
+
+  const writableFunctions = useMemo(() => {
+    return allFunctions.filter(fn => fn.stateMutability !== 'view' && fn.stateMutability !== 'pure');
+  }, [allFunctions]);
 
   const generatedFields = useMemo(() => {
     const fields = new Set<string>();
@@ -66,6 +67,7 @@ export const useAdminContractDetail = (id: string) => {
       config,
       abiFunctions,
       writableFunctions,
+      allFunctions,
       generatedFields,
       isLoading: contractQuery.isLoading || configQuery.isLoading,
       isError: contractQuery.isError || configQuery.isError,

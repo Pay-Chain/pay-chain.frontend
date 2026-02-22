@@ -53,6 +53,7 @@ export const API_ENDPOINTS = {
   ADMIN_ONCHAIN_ADAPTER_CCIP_CONFIG: '/v1/admin/onchain-adapters/ccip-config',
   ADMIN_ONCHAIN_ADAPTER_LAYERZERO_CONFIG: '/v1/admin/onchain-adapters/layerzero-config',
   ADMIN_CONTRACTS_CONFIG_CHECK: '/v1/admin/contracts/config-check',
+  ADMIN_CONTRACT_INTERACT: '/v1/admin/contracts/interact',
   ADMIN_CONTRACT_BY_ID_CONFIG_CHECK: (id: string) => `/v1/admin/contracts/${id}/config-check`,
   ADMIN_CROSSCHAIN_CONFIG_OVERVIEW: '/v1/admin/crosschain-config/overview',
   ADMIN_CROSSCHAIN_CONFIG_PREFLIGHT: '/v1/admin/crosschain-config/preflight',

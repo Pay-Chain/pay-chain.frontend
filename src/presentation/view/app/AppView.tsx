@@ -5,8 +5,9 @@ import { useApp } from './useApp';
 import { ChainTokenSelector } from '@/presentation/components/organisms/ChainTokenSelector';
 import { Button, Input, Label } from '@/presentation/components/atoms';
 import { AmountTokenInput, WalletConnectButton } from '@/presentation/components/molecules';
-import { AlertTriangle, CheckCircle2, Send, Wallet } from 'lucide-react';
+import { AlertTriangle, ArrowDownUp, CheckCircle2, Send, Wallet } from 'lucide-react';
 import { useTranslation } from '@/presentation/hooks';
+import { cn } from '@/core/utils/cn';
 
 export default function AppView() {
   const { t } = useTranslation();
@@ -29,8 +30,10 @@ export default function AppView() {
     canUseMax,
     addressError,
     receiverPlaceholder,
+    isOwnAddress, setIsOwnAddress,
     isLoading, isSuccess, error, routeErrorDiagnostics, txHash,
-    handlePay
+    handlePay,
+    handleReversePair
   } = useApp();
 
   const selectedSourceChain = chains.find((chain) => chain.id === sourceChainId);
@@ -93,8 +96,8 @@ export default function AppView() {
       </div>
 
       <div className="card-glass p-8 shadow-glass space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-1.5">
+        <div className="flex flex-col sm:flex-row gap-4 items-end relative">
+          <div className="flex-1 w-full space-y-1.5 transition-all duration-300">
             <Label className="text-sm font-medium text-foreground/80 ml-1">{t('app_view.source_chain')}</Label>
             <ChainTokenSelector
               items={chainTokenItems}
@@ -107,7 +110,20 @@ export default function AppView() {
               disabled={!chains.length}
             />
           </div>
-          <div className="space-y-1.5">
+
+          <div className="flex items-center justify-center -my-2 sm:my-0 sm:pb-1 relative z-10 w-full sm:w-auto">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9 rounded-full bg-background/60 border border-border/50 shadow-glass backdrop-blur-md hover:bg-accent-purple/20 hover:border-accent-purple/50 transition-all active:scale-95 group"
+              onClick={handleReversePair}
+              disabled={!sourceChainId && !destChainId}
+            >
+              <ArrowDownUp className="h-4 w-4 text-muted group-hover:text-accent-purple transition-all duration-500 rotate-0 md:rotate-90" />
+            </Button>
+          </div>
+
+          <div className="flex-1 w-full space-y-1.5 transition-all duration-300">
             <Label className="text-sm font-medium text-foreground/80 ml-1">{t('app_view.destination_chain')}</Label>
             <ChainTokenSelector
               items={chainTokenItems}
@@ -133,14 +149,44 @@ export default function AppView() {
           onMaxClick={handleMaxClick}
         />
 
-        <Input
-          label={t('app_view.receiver_address')}
-          placeholder={destChainId ? receiverPlaceholder : t('payments.select_destination_chain_first')}
-          disabled={!destChainId}
-          value={receiver}
-          onChange={(e) => setReceiver(e.target.value)}
-          error={addressError || undefined}
-        />
+        <div className="space-y-2">
+          <div className="flex items-center justify-between px-1">
+            <Label className="text-sm font-medium text-foreground/80">{t('app_view.receiver_address')}</Label>
+            <div className="flex bg-white/5 border border-white/10 rounded-lg p-1">
+              <button
+                type="button"
+                onClick={() => setIsOwnAddress(true)}
+                className={cn(
+                  "px-3 py-1 text-[10px] uppercase tracking-wider rounded-md transition-all font-bold",
+                  isOwnAddress
+                    ? "bg-accent-purple text-white shadow-lg shadow-accent-purple/20"
+                    : "text-muted hover:text-foreground"
+                )}
+              >
+                {t('app_view.own_address')}
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsOwnAddress(false)}
+                className={cn(
+                  "px-3 py-1 text-[10px] uppercase tracking-wider rounded-md transition-all font-bold",
+                  !isOwnAddress
+                    ? "bg-accent-purple text-white shadow-lg shadow-accent-purple/20"
+                    : "text-muted hover:text-foreground"
+                )}
+              >
+                {t('app_view.other_address')}
+              </button>
+            </div>
+          </div>
+          <Input
+            placeholder={destChainId ? receiverPlaceholder : t('payments.select_destination_chain_first')}
+            disabled={!destChainId || isOwnAddress}
+            value={receiver}
+            onChange={(e) => setReceiver(e.target.value)}
+            error={addressError || undefined}
+          />
+        </div>
 
         {error && (
           <div className="flex items-start gap-3 p-4 rounded-xl bg-red-500/10 border border-red-500/30 animate-fade-in max-w-full">

@@ -20,6 +20,7 @@ import {
   PaymentBridgePayload,
   RoutePolicyPayload,
   TeamMemberPayload,
+  ContractInteractPayload,
 } from '../data_source/admin_data_source';
 
 export class AdminRepository {
@@ -255,5 +256,9 @@ export class AdminRepository {
 
   async checkTokenPairSupport(params: { chainId: string; tokenIn: string; tokenOut: string }): Promise<{ exists: boolean; isDirect: boolean; path: string[] }> {
     return this.dataSource.checkTokenPairSupport(params);
+  }
+
+  async interactWithContract(payload: ContractInteractPayload): Promise<{ result: any; isWrite: boolean }> {
+    return this.dataSource.interactWithContract(payload);
   }
 }

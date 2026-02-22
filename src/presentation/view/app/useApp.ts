@@ -60,6 +60,9 @@ export interface UseAppReturn {
   txHash: string | null;
   currentChain: any | undefined;
   handlePay: () => void;
+  isOwnAddress: boolean;
+  setIsOwnAddress: (val: boolean) => void;
+  handleReversePair: () => void;
 }
 
 export interface CreatePaymentAppParams {
@@ -105,6 +108,7 @@ export function useApp(): UseAppReturn {
   const [sourceTokenAddress, setSourceTokenAddress] = useState('');
   const [destTokenAddress, setDestTokenAddress] = useState('');
   const [receiver, setReceiver] = useState('');
+  const [isOwnAddress, setIsOwnAddress] = useState(false);
   const [initializedFromQuery, setInitializedFromQuery] = useState(false);
 
   // Derived Data
@@ -205,6 +209,17 @@ export function useApp(): UseAppReturn {
     setDestTokenAddress(item.tokenAddress);
   };
 
+  const handleReversePair = () => {
+    const tempChainId = sourceChainId;
+    const tempTokenAddress = sourceTokenAddress;
+
+    setSourceChainId(destChainId);
+    setSourceTokenAddress(destTokenAddress);
+
+    setDestChainId(tempChainId);
+    setDestTokenAddress(tempTokenAddress);
+  };
+
   const selectedDestChain = useMemo(
     () => chainItems.find((chain) => chain.id === destChainId),
     [chainItems, destChainId]
@@ -291,6 +306,12 @@ export function useApp(): UseAppReturn {
     getErc20Balance,
     getSplTokenBalance,
   ]);
+  
+  useEffect(() => {
+    if (isOwnAddress) {
+      setReceiver(address || '');
+    }
+  }, [isOwnAddress, address]);
 
   const formattedBalance = walletBalance?.formatted || '0';
   const canUseMax = Boolean(walletBalance && sourceChainId && sourceTokenAddress);
@@ -636,6 +657,9 @@ export function useApp(): UseAppReturn {
     txHash,
     currentChain: chainsData?.items?.find(c => String(c.networkId) === String(chainId) || c.id === chainId),
     handlePay,
+    isOwnAddress,
+    setIsOwnAddress,
+    handleReversePair,
   };
 }
 

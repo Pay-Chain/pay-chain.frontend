@@ -140,6 +140,14 @@ export interface RouteErrorDiagnosticsParams {
   paymentId: string;
 }
 
+export interface ContractInteractPayload {
+  sourceChainId: string;
+  contractAddress: string;
+  method: string;
+  abi: string;
+  args: any[];
+}
+
 export class AdminDataSource {
   private static instance: AdminDataSource;
 
@@ -555,6 +563,15 @@ export class AdminDataSource {
 
     const { data, error } = await httpClient.get<{ exists: boolean; isDirect: boolean; path: string[] }>(
       `${API_ENDPOINTS.TOKENS_CHECK_PAIR}?${query.toString()}`
+    );
+    if (error) throw new Error(error);
+    return data!;
+  }
+
+  async interactWithContract(payload: ContractInteractPayload): Promise<{ result: any; isWrite: boolean }> {
+    const { data, error } = await httpClient.post<{ result: any; isWrite: boolean }>(
+      API_ENDPOINTS.ADMIN_CONTRACT_INTERACT,
+      payload
     );
     if (error) throw new Error(error);
     return data!;

@@ -532,3 +532,9 @@ export const useCheckTokenPairSupport = () => {
       adminRepository.checkTokenPairSupport(params),
   });
 };
+
+export const useAdminGenericInteract = () => {
+  return useMutation({
+    mutationFn: (payload: any) => adminRepository.interactWithContract(payload),
+  });
+};
