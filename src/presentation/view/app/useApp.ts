@@ -679,7 +679,7 @@ export function useApp(): UseAppReturn {
         ? payment.signatureData.transactions.map((item) => ({
           kind: item?.kind,
           to: item?.to,
-          value: undefined,
+          value: item?.value,
           data: item?.data,
           spender: item?.spender,
           amount: item?.amount,
@@ -714,6 +714,17 @@ export function useApp(): UseAppReturn {
         if (chainId !== targetChainIdNum) {
           await switchChain({ chainId: targetChainIdNum });
         }
+
+        const plannedTransactions = Array.isArray(payment.signatureData?.transactions)
+          ? payment.signatureData.transactions
+              .map((item) => ({
+                kind: item?.kind,
+                to: item?.to as `0x${string}` | undefined,
+                data: item?.data as `0x${string}` | undefined,
+                value: String(item?.value || '').trim(),
+              }))
+              .filter((item) => item.to && item.data)
+          : [];
 
         const approvalTo = payment.signatureData?.approval?.to as `0x${string}` | undefined;
         const approvalSpender = payment.signatureData?.approval?.spender as `0x${string}` | undefined;
@@ -784,34 +795,55 @@ export function useApp(): UseAppReturn {
           feeSource: onchainCost ? 'onchain' : 'legacy',
         });
 
-        if (approvalTo && approvalSpender) {
-          approvalData = encodeFunctionData({
-            abi: erc20Abi,
-            functionName: 'approve',
-            args: [approvalSpender, approvalAmount],
-          });
-        }
-
-        if (approvalTo && approvalData) {
-          const approvalHash = await sendTransactionAsync({
-            to: approvalTo,
-            data: approvalData,
-            value: parseUnits('0', 0),
-          });
-          if (publicClient) {
-            const receipt = await publicClient.waitForTransactionReceipt({ hash: approvalHash });
-            if (receipt.status !== 'success') {
-              throw new Error('Approval transaction failed');
+        if (plannedTransactions.length > 0) {
+          let latestHash: `0x${string}` | null = null;
+          for (const tx of plannedTransactions) {
+            const txHash = await sendTransactionAsync({
+              to: tx.to as `0x${string}`,
+              data: tx.data as `0x${string}`,
+              value: tx.value ? BigInt(tx.value) : parseUnits('0', 0),
+            });
+            latestHash = txHash;
+            if (publicClient) {
+              const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash });
+              if (receipt.status !== 'success') {
+                throw new Error(`${tx.kind || 'transaction'} failed`);
+              }
             }
           }
-        }
+          if (latestHash) {
+            setTxHash(latestHash);
+          }
+        } else {
+          if (approvalTo && approvalSpender) {
+            approvalData = encodeFunctionData({
+              abi: erc20Abi,
+              functionName: 'approve',
+              args: [approvalSpender, approvalAmount],
+            });
+          }
 
-        const hash = await sendTransactionAsync({
-          to: payment.signatureData?.to as `0x${string}`,
-          data: payment.signatureData?.data as `0x${string}`,
-          value: payment.signatureData?.value ? BigInt(payment.signatureData.value) : parseUnits('0', 0),
-        });
-        setTxHash(hash);
+          if (approvalTo && approvalData) {
+            const approvalHash = await sendTransactionAsync({
+              to: approvalTo,
+              data: approvalData,
+              value: parseUnits('0', 0),
+            });
+            if (publicClient) {
+              const receipt = await publicClient.waitForTransactionReceipt({ hash: approvalHash });
+              if (receipt.status !== 'success') {
+                throw new Error('Approval transaction failed');
+              }
+            }
+          }
+
+          const hash = await sendTransactionAsync({
+            to: payment.signatureData?.to as `0x${string}`,
+            data: payment.signatureData?.data as `0x${string}`,
+            value: payment.signatureData?.value ? BigInt(payment.signatureData.value) : parseUnits('0', 0),
+          });
+          setTxHash(hash);
+        }
       } else if (sourceChain.startsWith('solana:')) {
         if (!publicKey || !sendSolTransaction) throw new Error(t('pay_page.connect_solana'));
         if (!payment.signatureData?.programId || !payment.signatureData?.data) {

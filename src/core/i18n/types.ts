@@ -1162,6 +1162,10 @@ export interface Dictionary {
         adapter_ccip: string;
         adapter_hyperbridge: string;
         adapter_layerzero: string;
+        privacy_module: string;
+        stealth_escrow_factory: string;
+        fee_policy_manager: string;
+        fee_strategy_default_v1: string;
         pool: string;
         vault: string;
         mock: string;

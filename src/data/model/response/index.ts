@@ -57,6 +57,7 @@ export interface CreatePaymentResponse {
     transactions?: Array<{
       kind?: string;
       to?: string;
+      value?: string;
       data?: string;
       spender?: string;
       amount?: string;
@@ -184,6 +185,7 @@ export interface CreatePaymentAppResponse {
     transactions?: Array<{
       kind?: string;
       to?: string;
+      value?: string;
       data?: string;
       spender?: string;
       amount?: string;
