@@ -54,6 +54,7 @@ export const API_ENDPOINTS = {
   ADMIN_ONCHAIN_ADAPTER_REGISTER: '/v1/admin/onchain-adapters/register',
   ADMIN_ONCHAIN_ADAPTER_SET_DEFAULT: '/v1/admin/onchain-adapters/default-bridge',
   ADMIN_ONCHAIN_ADAPTER_HYPERBRIDGE_CONFIG: '/v1/admin/onchain-adapters/hyperbridge-config',
+  ADMIN_ONCHAIN_ADAPTER_HYPERBRIDGE_TOKEN_GATEWAY_CONFIG: '/v1/admin/onchain-adapters/hyperbridge-token-gateway-config',
   ADMIN_ONCHAIN_ADAPTER_CCIP_CONFIG: '/v1/admin/onchain-adapters/ccip-config',
   ADMIN_ONCHAIN_ADAPTER_LAYERZERO_CONFIG: '/v1/admin/onchain-adapters/layerzero-config',
   ADMIN_ONCHAIN_ADAPTER_LAYERZERO_CONFIGURE_E2E: '/v1/admin/onchain-adapters/layerzero-configure-e2e',

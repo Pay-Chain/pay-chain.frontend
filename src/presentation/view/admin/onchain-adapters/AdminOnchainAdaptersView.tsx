@@ -57,8 +57,10 @@ export const AdminOnchainAdaptersView = () => {
           <p className="text-sm"><span className="text-muted">{t('admin.onchain_adapters_view.default_bridge_type')}:</span> {state.status.defaultBridgeType}</p>
           <p className="text-sm"><span className="text-muted">{t('admin.onchain_adapters_view.has_adapter_0')}:</span> {String(state.status.hasAdapterType0)}</p>
           <p className="text-sm"><span className="text-muted">{t('admin.onchain_adapters_view.has_adapter_1')}:</span> {String(state.status.hasAdapterType1)}</p>
+          <p className="text-sm"><span className="text-muted">Has Adapter Type 2:</span> {String(state.status.hasAdapterType2)}</p>
           <p className="text-sm"><span className="text-muted">{t('admin.onchain_adapters_view.adapter_0')}:</span> {state.status.adapterType0}</p>
           <p className="text-sm"><span className="text-muted">{t('admin.onchain_adapters_view.adapter_1')}:</span> {state.status.adapterType1}</p>
+          <p className="text-sm"><span className="text-muted">Adapter Type 2:</span> {state.status.adapterType2 || '-'}</p>
           <p className="text-sm"><span className="text-muted">{t('admin.onchain_adapters_view.hyperbridge_configured')}:</span> {String(state.status.hyperbridgeConfigured)}</p>
           <p className="text-sm"><span className="text-muted">{t('admin.onchain_adapters_view.hyperbridge_state_machine')}:</span> {state.status.hyperbridgeStateMachineId || '-'}</p>
           <p className="text-sm"><span className="text-muted">{t('admin.onchain_adapters_view.hyperbridge_destination_contract')}:</span> {state.status.hyperbridgeDestinationContract || '-'}</p>
@@ -79,6 +81,8 @@ export const AdminOnchainAdaptersView = () => {
             >
               <option value="0">0 - Hyperbridge</option>
               <option value="1">1 - CCIP</option>
+              <option value="2">2 - LayerZero</option>
+              <option value="3">3 - Hyperbridge Token Gateway</option>
             </select>
           </div>
           <Input
@@ -111,6 +115,8 @@ export const AdminOnchainAdaptersView = () => {
             >
               <option value="0">0 - Hyperbridge</option>
               <option value="1">1 - CCIP</option>
+              <option value="2">2 - LayerZero</option>
+              <option value="3">3 - Hyperbridge Token Gateway</option>
             </select>
           </div>
           <div className="flex items-end">

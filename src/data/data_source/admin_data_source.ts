@@ -72,6 +72,15 @@ export interface HyperbridgeConfigPayload {
   destinationContractHex?: string;
 }
 
+export interface HyperbridgeTokenGatewayConfigPayload {
+  sourceChainId: string;
+  destChainId: string;
+  stateMachineIdHex?: string;
+  settlementExecutorAddress?: string;
+  nativeCost?: string;
+  relayerFee?: string;
+}
+
 export interface CCIPConfigPayload {
   sourceChainId: string;
   destChainId: string;
@@ -134,6 +143,11 @@ export interface RoutePolicyPayload {
   defaultBridgeType: number;
   fallbackMode?: 'strict' | 'auto_fallback';
   fallbackOrder?: number[];
+  supportsTokenBridge?: boolean;
+  supportsDestSwap?: boolean;
+  supportsPrivacyForward?: boolean;
+  bridgeToken?: string;
+  status?: 'active' | 'paused' | 'deprecated';
   perByteRate?: string;
   overheadBytes?: string;
   minFee?: string;
@@ -445,6 +459,15 @@ export class AdminDataSource {
 
   async setHyperbridgeConfig(data: HyperbridgeConfigPayload): Promise<any> {
     const { data: response, error } = await httpClient.post<any>(API_ENDPOINTS.ADMIN_ONCHAIN_ADAPTER_HYPERBRIDGE_CONFIG, data);
+    if (error) throw new Error(error);
+    return response;
+  }
+
+  async setHyperbridgeTokenGatewayConfig(data: HyperbridgeTokenGatewayConfigPayload): Promise<any> {
+    const { data: response, error } = await httpClient.post<any>(
+      API_ENDPOINTS.ADMIN_ONCHAIN_ADAPTER_HYPERBRIDGE_TOKEN_GATEWAY_CONFIG,
+      data
+    );
     if (error) throw new Error(error);
     return response;
   }

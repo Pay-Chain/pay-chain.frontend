@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 
 jest.mock('@/presentation/view/admin/crosschain-configs/useAdminCrosschainConfigs', () => ({
   useAdminCrosschainConfigs: jest.fn(),
@@ -192,5 +192,147 @@ describe('AdminCrosschainConfigsView phase D diagnostics', () => {
     expect(screen.getAllByText(/quotePaymentFee\(legacy\)/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/quote reason:/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/execution reverted/i).length).toBeGreaterThan(0);
+  });
+
+  it('renders bridgeType=3 manual section and triggers save action', () => {
+    const noop = jest.fn();
+    const setHyperbridgeTokenGatewayManual = jest.fn();
+    const actions = {
+      refresh: noop,
+      setSourceChainId: noop,
+      setDestChainId: noop,
+      setStatusFilter: noop,
+      setupSelectedSource: noop,
+      recheckVisible: noop,
+      autoFixVisible: noop,
+      setPolicyDefaultBridgeType: noop,
+      setPolicyFallbackMode: noop,
+      setPolicyFallbackOrderInput: noop,
+      setPolicyPerByteRate: noop,
+      setPolicyOverheadBytes: noop,
+      setPolicyMinFee: noop,
+      setPolicyMaxFee: noop,
+      saveRoutePolicy: noop,
+      applyPreflightSuggestion: noop,
+      runPreflightNextStep: noop,
+      configureLayerZeroE2ESelected: noop,
+      handleManualSourceChainChange: noop,
+      handleManualDestChainChange: noop,
+      handleManualBridgeTypeChange: noop,
+      setManualAdapterAddress: noop,
+      registerAdapterManual: noop,
+      setDefaultBridgeManual: noop,
+      setDefaultBridgeQuick: noop,
+      setManualStateMachineIdHex: noop,
+      setManualDestinationContractHex: noop,
+      setHyperbridgeManual: noop,
+      setHyperbridgeTokenGatewayManual,
+      setManualCCIPChainSelector: noop,
+      setManualCCIPDestinationAdapterHex: noop,
+      setManualCCIPDestinationGasLimit: noop,
+      setManualCCIPDestinationExtraArgsHex: noop,
+      setManualCCIPDestinationFeeTokenAddress: noop,
+      setManualCCIPSourceChainSelector: noop,
+      setManualCCIPTrustedSenderHex: noop,
+      setManualCCIPAllowSourceChain: noop,
+      setCCIPManual: noop,
+      setManualLayerZeroDstEid: noop,
+      setManualLayerZeroSrcEid: noop,
+      setManualLayerZeroSenderAddress: noop,
+      setManualLayerZeroReceiverAddress: noop,
+      setManualLayerZeroPeerHex: noop,
+      setManualLayerZeroOptionsHex: noop,
+      setLayerZeroManual: noop,
+      verifySelectedSource: noop,
+      autoFixSelectedSourceErrors: noop,
+      exportWizardReport: noop,
+      recheckRoute: noop,
+      autoFixRoute: noop,
+    };
+
+    (useAdminCrosschainConfigs as jest.Mock).mockReturnValue({
+      state: {
+        sourceChains: [],
+        destinationChains: [],
+        sourceChainId: 'source-chain',
+        destChainId: 'dest-chain',
+        statusFilter: 'ALL',
+        isPending: false,
+        isLoading: false,
+        isPreflightLoading: false,
+        isRoutePolicyLoading: false,
+        routes: [],
+        preflight: null,
+        layerZeroE2EStatus: null,
+        isLayerZeroE2EStatusLoading: false,
+        activeRoutePolicy: null,
+        policyDefaultBridgeType: '0',
+        policyFallbackMode: 'strict',
+        policyFallbackOrderInput: '',
+        policyPerByteRate: '',
+        policyOverheadBytes: '',
+        policyMinFee: '',
+        policyMaxFee: '',
+        manualBridgeType: '3',
+        manualBridgeOptions: [
+          { bridgeType: '0', name: 'Hyperbridge' },
+          { bridgeType: '1', name: 'CCIP' },
+          { bridgeType: '2', name: 'LayerZero' },
+          { bridgeType: '3', name: 'Hyperbridge Token Gateway' },
+        ],
+        manualExecution: {
+          step1: { status: 'PENDING', txHashes: [] },
+          step2: { status: 'PENDING', txHashes: [] },
+          step3: { status: 'PENDING', txHashes: [] },
+          step4: { status: 'PENDING', txHashes: [] },
+        },
+        manualStepCompleted: { step1: true, step2: true, step3: false, step4: false },
+        manualCurrentStep: 3,
+        manualSourceChainId: '1',
+        manualDestChainId: '2',
+        manualAdapterAddress: '0x1111111111111111111111111111111111111111',
+        manualStateMachineIdHex: '0x45564d2d313337',
+        manualDestinationContractHex: '0x2222222222222222222222222222222222222222',
+        manualCCIPChainSelector: '',
+        manualCCIPDestinationAdapterHex: '',
+        manualCCIPDestinationGasLimit: '',
+        manualCCIPDestinationExtraArgsHex: '',
+        manualCCIPDestinationFeeTokenAddress: '',
+        manualCCIPSourceChainSelector: '',
+        manualCCIPTrustedSenderHex: '',
+        manualCCIPAllowSourceChain: true,
+        manualLayerZeroDstEid: '',
+        manualLayerZeroSrcEid: '',
+        manualLayerZeroSenderAddress: '',
+        manualLayerZeroReceiverAddress: '',
+        manualLayerZeroPeerHex: '',
+        manualLayerZeroOptionsHex: '',
+        manualSourceAdapterContracts: [],
+        manualDestHyperContracts: [],
+        manualDestHBTokenContracts: [
+          {
+            id: 'dest-hb-token-receiver',
+            name: 'HB Token Receiver',
+            contractAddress: '0x2222222222222222222222222222222222222222',
+          },
+        ],
+        manualDestCCIPContracts: [],
+        manualDestLayerZeroContracts: [],
+        selectedSourceRoutes: [],
+        selectedSourceErrorRoutes: [],
+        wizardReport: null,
+      },
+      actions,
+    });
+
+    render(<AdminCrosschainConfigsView />);
+
+    expect(
+      screen.getByText('admin.crosschain_configs_view.manual_destination_hb_token_receiver_contract')
+    ).toBeInTheDocument();
+
+    const saveButton = screen.getByRole('button', { name: 'admin.crosschain_configs_view.manual_save_hyperbridge' });
+    fireEvent.click(saveButton);
+    expect(setHyperbridgeTokenGatewayManual).toHaveBeenCalledTimes(1);
   });
 });

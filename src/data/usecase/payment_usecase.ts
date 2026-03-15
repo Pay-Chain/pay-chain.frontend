@@ -5,7 +5,12 @@ import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/rea
 import { useMemo } from 'react';
 import { paymentRepository } from '../repositories/repository_impl';
 import type { CreatePaymentRequest } from '../model/request';
-import type { PaymentPrivacyRecoveryAction, PaymentPrivacyStatus } from '../model/entity';
+import type {
+  PaymentEvent,
+  PaymentPrivacyRecoveryAction,
+  PaymentPrivacyStatus,
+  PaymentQuoteSnapshot,
+} from '../model/entity';
 
 export function usePaymentsQuery(page = 1, limit = 10) {
   return useQuery({
@@ -43,6 +48,57 @@ export function usePaymentEventsQuery(id: string) {
     },
     enabled: !!id,
   });
+}
+
+export function extractPaymentQuoteSnapshot(events: PaymentEvent[] | undefined | null): PaymentQuoteSnapshot | null {
+  if (!Array.isArray(events) || events.length === 0) {
+    return null;
+  }
+
+  for (let index = events.length - 1; index >= 0; index -= 1) {
+    const event = events[index];
+    if (String(event?.eventType || '').trim().toUpperCase() !== 'QUOTE_SNAPSHOT_CAPTURED') {
+      continue;
+    }
+
+    const metadata = event?.metadata;
+    if (!metadata || typeof metadata !== 'object') {
+      continue;
+    }
+
+    const record = metadata as Record<string, unknown>;
+    if (record.schema !== 'payment_quote_snapshot.v1') {
+      continue;
+    }
+
+    return {
+      schema: 'payment_quote_snapshot.v1',
+      previewApproval:
+        record.previewApproval && typeof record.previewApproval === 'object'
+          ? (record.previewApproval as PaymentQuoteSnapshot['previewApproval'])
+          : undefined,
+      quotePaymentCost:
+        record.quotePaymentCost && typeof record.quotePaymentCost === 'object'
+          ? (record.quotePaymentCost as PaymentQuoteSnapshot['quotePaymentCost'])
+          : undefined,
+    };
+  }
+
+  return null;
+}
+
+export function usePaymentQuoteSnapshotQuery(id: string) {
+  const eventsQuery = usePaymentEventsQuery(id);
+
+  return {
+    ...eventsQuery,
+    data: eventsQuery.data
+      ? {
+          ...eventsQuery.data,
+          quoteSnapshot: extractPaymentQuoteSnapshot(eventsQuery.data.events),
+        }
+      : undefined,
+  };
 }
 
 export function usePaymentPrivacyStatusQuery(id: string) {

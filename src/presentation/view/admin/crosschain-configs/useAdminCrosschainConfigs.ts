@@ -19,6 +19,7 @@ import {
   useSetCCIPConfig,
   useSetLayerZeroConfig,
   useSetHyperbridgeConfig,
+  useSetHyperbridgeTokenGatewayConfig,
   useSetOnchainDefaultBridge,
   useRoutePolicies,
   useCreateRoutePolicy,
@@ -32,6 +33,7 @@ const BRIDGE_TYPE_META: Record<string, string> = {
   '0': 'Hyperbridge',
   '1': 'CCIP',
   '2': 'LayerZero',
+  '3': 'Hyperbridge Token Gateway',
 };
 
 const toHex = (input: string) =>
@@ -280,6 +282,7 @@ export const useAdminCrosschainConfigs = () => {
   const registerAdapterMutation = useRegisterOnchainAdapter();
   const setDefaultBridgeMutation = useSetOnchainDefaultBridge();
   const setHyperbridgeConfigMutation = useSetHyperbridgeConfig();
+  const setHyperbridgeTokenGatewayConfigMutation = useSetHyperbridgeTokenGatewayConfig();
   const setCCIPConfigMutation = useSetCCIPConfig();
   const setLayerZeroConfigMutation = useSetLayerZeroConfig();
   const configureLayerZeroE2EMutation = useConfigureLayerZeroE2E();
@@ -302,7 +305,7 @@ export const useAdminCrosschainConfigs = () => {
 
   const normalizeBridgeType = (raw: any): string => {
     const val = String(raw ?? '').trim();
-    if (val === '0' || val === '1' || val === '2') return val;
+    if (val === '0' || val === '1' || val === '2' || val === '3') return val;
     return '';
   };
   const resolveBridgeType = (value: any): string => {
@@ -312,6 +315,7 @@ export const useAdminCrosschainConfigs = () => {
     const name = String(value?.name || '').toLowerCase();
     if (name.includes('layerzero') || /\blz\b/.test(name)) return '2';
     if (name.includes('ccip')) return '1';
+    if (name.includes('token gateway')) return '3';
     if (name.includes('hyperbridge') || name.includes('hyperlane')) return '0';
     return '';
   };
@@ -358,6 +362,7 @@ export const useAdminCrosschainConfigs = () => {
       { bridgeType: '0', name: 'Hyperbridge' },
       { bridgeType: '1', name: 'CCIP' },
       { bridgeType: '2', name: 'LayerZero' },
+      { bridgeType: '3', name: 'Hyperbridge Token Gateway' },
     ];
   }, [paymentBridgesQuery.data?.items, preflightQuery.data?.bridges]);
 
@@ -374,25 +379,33 @@ export const useAdminCrosschainConfigs = () => {
       ? 'ADAPTER_HYPERBRIDGE'
       : manualBridgeType === '1'
         ? 'ADAPTER_CCIP'
-        : 'ADAPTER_LAYERZERO';
+        : manualBridgeType === '3'
+          ? 'ADAPTER_HYPERBRIDGE_TOKEN_SENDER'
+          : 'ADAPTER_LAYERZERO';
   const sourceAdapterContractsQuery = useAdminContracts(1, 200, manualSourceChainId || undefined, sourceAdapterType);
   const destHyperContractsQuery = useAdminContracts(1, 200, manualDestChainId || undefined, 'ADAPTER_HYPERBRIDGE');
+  const destHBTokenContractsQuery = useAdminContracts(1, 200, manualDestChainId || undefined, 'ADAPTER_HYPERBRIDGE_TOKEN_RECEIVER');
   const destCCIPContractsQuery = useAdminContracts(1, 200, manualDestChainId || undefined, 'ADAPTER_CCIP');
   const destLayerZeroContractsQuery = useAdminContracts(1, 200, manualDestChainId || undefined, 'ADAPTER_LAYERZERO');
   const selectedSourceHyperContractsQuery = useAdminContracts(1, 200, sourceChainId || undefined, 'ADAPTER_HYPERBRIDGE');
   const selectedSourceCCIPContractsQuery = useAdminContracts(1, 200, sourceChainId || undefined, 'ADAPTER_CCIP');
   const selectedSourceLayerZeroContractsQuery = useAdminContracts(1, 200, sourceChainId || undefined, 'ADAPTER_LAYERZERO');
+  const selectedSourceHBTokenContractsQuery = useAdminContracts(1, 200, sourceChainId || undefined, 'ADAPTER_HYPERBRIDGE_TOKEN_SENDER');
   const selectedDestHyperContractsQuery = useAdminContracts(1, 200, destChainId || undefined, 'ADAPTER_HYPERBRIDGE');
+  const selectedDestHBTokenContractsQuery = useAdminContracts(1, 200, destChainId || undefined, 'ADAPTER_HYPERBRIDGE_TOKEN_RECEIVER');
   const selectedDestCCIPContractsQuery = useAdminContracts(1, 200, destChainId || undefined, 'ADAPTER_CCIP');
   const selectedDestLayerZeroContractsQuery = useAdminContracts(1, 200, destChainId || undefined, 'ADAPTER_LAYERZERO');
   const manualSourceAdapterContracts = sourceAdapterContractsQuery.data?.items || [];
   const manualDestHyperContracts = destHyperContractsQuery.data?.items || [];
+  const manualDestHBTokenContracts = destHBTokenContractsQuery.data?.items || [];
   const manualDestCCIPContracts = destCCIPContractsQuery.data?.items || [];
   const manualDestLayerZeroContracts = destLayerZeroContractsQuery.data?.items || [];
   const selectedSourceHyperContracts = selectedSourceHyperContractsQuery.data?.items || [];
   const selectedSourceCCIPContracts = selectedSourceCCIPContractsQuery.data?.items || [];
   const selectedSourceLayerZeroContracts = selectedSourceLayerZeroContractsQuery.data?.items || [];
+  const selectedSourceHBTokenContracts = selectedSourceHBTokenContractsQuery.data?.items || [];
   const selectedDestHyperContracts = selectedDestHyperContractsQuery.data?.items || [];
+  const selectedDestHBTokenContracts = selectedDestHBTokenContractsQuery.data?.items || [];
   const selectedDestCCIPContracts = selectedDestCCIPContractsQuery.data?.items || [];
   const selectedDestLayerZeroContracts = selectedDestLayerZeroContractsQuery.data?.items || [];
 
@@ -477,6 +490,7 @@ export const useAdminCrosschainConfigs = () => {
     registerAdapterMutation.isPending ||
     setDefaultBridgeMutation.isPending ||
     setHyperbridgeConfigMutation.isPending ||
+    setHyperbridgeTokenGatewayConfigMutation.isPending ||
     setCCIPConfigMutation.isPending ||
     setLayerZeroConfigMutation.isPending ||
     configureLayerZeroE2EMutation.isPending ||
@@ -513,7 +527,7 @@ export const useAdminCrosschainConfigs = () => {
     }
 
     const bridgeType = String(activeRoutePolicy?.defaultBridgeType ?? activeRoutePolicy?.default_bridge_type ?? '');
-    if (bridgeType === '0' || bridgeType === '1' || bridgeType === '2') {
+    if (bridgeType === '0' || bridgeType === '1' || bridgeType === '2' || bridgeType === '3') {
       setPolicyDefaultBridgeType(bridgeType);
     } else if (manualBridgeOptions.length) {
       setPolicyDefaultBridgeType(String(manualBridgeOptions[0].bridgeType));
@@ -563,6 +577,53 @@ export const useAdminCrosschainConfigs = () => {
     const autoHex = deriveEvmStateMachineHex(rawChainReference, selectedManualDestChain?.chainType);
     setManualStateMachineIdHex(autoHex);
   }, [manualBridgeType, manualDestChainId, selectedManualDestChain, manualOnchainStatusQuery.data?.hyperbridgeStateMachineId]);
+
+  useEffect(() => {
+    if (manualBridgeType !== '3') return;
+    if (!manualDestChainId) {
+      setManualStateMachineIdHex('');
+      setManualDestinationContractHex('');
+      return;
+    }
+
+    const statusStateMachine = String(manualOnchainStatusQuery.data?.hyperbridgeTokenGatewayStateMachineId || '').trim();
+    if (statusStateMachine && statusStateMachine !== '0x') {
+      setManualStateMachineIdHex(statusStateMachine);
+    } else {
+      const rawChainReference =
+        String(selectedManualDestChain?.caip2 || '').trim() ||
+        String(selectedManualDestChain?.id || '').trim() ||
+        String(manualDestChainId || '').trim();
+      const autoHex = deriveEvmStateMachineHex(rawChainReference, selectedManualDestChain?.chainType);
+      setManualStateMachineIdHex(autoHex);
+    }
+
+    const allValues = manualDestHBTokenContracts
+      .map((contract: any) => String(contract.contractAddress || '').trim())
+      .filter((addr) => /^0x[0-9a-fA-F]{40}$/.test(addr));
+    const statusSettlement = String(manualOnchainStatusQuery.data?.hyperbridgeTokenGatewaySettlementExecutor || '').trim();
+    if (/^0x[0-9a-fA-F]{40}$/.test(statusSettlement)) {
+      setManualDestinationContractHex(statusSettlement);
+      return;
+    }
+    if (!allValues.length) {
+      setManualDestinationContractHex('');
+      return;
+    }
+    const current = String(manualDestinationContractHex || '').toLowerCase();
+    const exists = allValues.some((item) => item.toLowerCase() === current);
+    if (!exists) {
+      setManualDestinationContractHex(allValues[0]);
+    }
+  }, [
+    manualBridgeType,
+    manualDestChainId,
+    selectedManualDestChain,
+    manualDestHBTokenContracts,
+    manualDestinationContractHex,
+    manualOnchainStatusQuery.data?.hyperbridgeTokenGatewayStateMachineId,
+    manualOnchainStatusQuery.data?.hyperbridgeTokenGatewaySettlementExecutor,
+  ]);
 
   useEffect(() => {
     if (manualBridgeType !== '1') return;
@@ -937,13 +998,17 @@ export const useAdminCrosschainConfigs = () => {
         ? (selectedSourceHyperContracts.length ? selectedSourceHyperContracts : manualSourceAdapterContracts)
         : normalizedBridgeType === '1'
           ? (selectedSourceCCIPContracts.length ? selectedSourceCCIPContracts : manualSourceAdapterContracts)
+          : normalizedBridgeType === '3'
+            ? (selectedSourceHBTokenContracts.length ? selectedSourceHBTokenContracts : manualSourceAdapterContracts)
           : manualSourceAdapterContracts;
     const destContracts =
       normalizedBridgeType === '0'
         ? (selectedDestHyperContracts.length ? selectedDestHyperContracts : manualDestHyperContracts)
         : normalizedBridgeType === '1'
           ? (selectedDestCCIPContracts.length ? selectedDestCCIPContracts : manualDestCCIPContracts)
-          : (selectedDestLayerZeroContracts.length ? selectedDestLayerZeroContracts : manualDestLayerZeroContracts);
+          : normalizedBridgeType === '3'
+            ? (selectedDestHBTokenContracts.length ? selectedDestHBTokenContracts : manualDestHBTokenContracts)
+            : (selectedDestLayerZeroContracts.length ? selectedDestLayerZeroContracts : manualDestLayerZeroContracts);
 
     if (manualBridgeType !== normalizedBridgeType) {
       setManualBridgeType(normalizedBridgeType);
@@ -977,6 +1042,11 @@ export const useAdminCrosschainConfigs = () => {
       const firstDestinationAddress = String(destContracts?.[0]?.contractAddress || '');
       if (firstDestinationAddress) {
         setManualDestinationContractHex(addressToPaddedBytesHex(firstDestinationAddress));
+      }
+    } else if (normalizedBridgeType === '3') {
+      const firstDestinationAddress = String(destContracts?.[0]?.contractAddress || '');
+      if (firstDestinationAddress) {
+        setManualDestinationContractHex(firstDestinationAddress);
       }
     } else if (normalizedBridgeType === '1') {
       const firstSourceAddress = String(sourceContracts?.[0]?.contractAddress || '');
@@ -1038,13 +1108,17 @@ export const useAdminCrosschainConfigs = () => {
         ? (selectedSourceHyperContracts.length ? selectedSourceHyperContracts : manualSourceAdapterContracts)
         : normalizedBridgeType === '1'
           ? (selectedSourceCCIPContracts.length ? selectedSourceCCIPContracts : manualSourceAdapterContracts)
+          : normalizedBridgeType === '3'
+            ? (selectedSourceHBTokenContracts.length ? selectedSourceHBTokenContracts : manualSourceAdapterContracts)
           : manualSourceAdapterContracts;
     const destContracts =
       normalizedBridgeType === '0'
         ? (selectedDestHyperContracts.length ? selectedDestHyperContracts : manualDestHyperContracts)
         : normalizedBridgeType === '1'
           ? (selectedDestCCIPContracts.length ? selectedDestCCIPContracts : manualDestCCIPContracts)
-          : (selectedDestLayerZeroContracts.length ? selectedDestLayerZeroContracts : manualDestLayerZeroContracts);
+          : normalizedBridgeType === '3'
+            ? (selectedDestHBTokenContracts.length ? selectedDestHBTokenContracts : manualDestHBTokenContracts)
+            : (selectedDestLayerZeroContracts.length ? selectedDestLayerZeroContracts : manualDestLayerZeroContracts);
     const suggestedStep = getSuggestedStep(checks);
 
     handleApplyPreflightSuggestion(bridgeType, checks, { silent: true });
@@ -1138,6 +1212,25 @@ export const useAdminCrosschainConfigs = () => {
             },
           });
           toast.success(t('admin.crosschain_configs_view.toasts.manual_layerzero_success'));
+        } else if (normalizedBridgeType === '3') {
+          const selectedDestChain = chains.find((item: any) => String(item?.id || '') === String(selectedDest));
+          const rawChainReference =
+            String(selectedDestChain?.caip2 || '').trim() ||
+            String(selectedDestChain?.id || '').trim() ||
+            String(selectedDest || '').trim();
+          const stateMachineIdHex = deriveEvmStateMachineHex(rawChainReference, selectedDestChain?.chainType);
+          const settlementExecutorAddress = String(destContracts?.[0]?.contractAddress || '').trim();
+          if (!stateMachineIdHex && !settlementExecutorAddress) {
+            toast.error(t('admin.crosschain_configs_view.toasts.preflight_missing_route_payload'));
+            return;
+          }
+          await setHyperbridgeTokenGatewayConfigMutation.mutateAsync({
+            sourceChainId: selectedSource,
+            destChainId: selectedDest,
+            stateMachineIdHex: stateMachineIdHex || undefined,
+            settlementExecutorAddress: settlementExecutorAddress || undefined,
+          });
+          toast.success(t('admin.crosschain_configs_view.toasts.manual_hyperbridge_success'));
         } else {
           toast.error(t('admin.crosschain_configs_view.toasts.manual_step_invalid'));
           return;
@@ -1289,6 +1382,44 @@ export const useAdminCrosschainConfigs = () => {
         destChainId: manualDestChainId,
         stateMachineIdHex: manualStateMachineIdHex || undefined,
         destinationContractHex: manualDestinationContractHex || undefined,
+      });
+      toast.success(t('admin.crosschain_configs_view.toasts.manual_hyperbridge_success'));
+      setManualStepCompleted((prev) => ({ ...prev, step3: true }));
+      setManualExecution((prev) => ({
+        ...prev,
+        step3: {
+          status: 'SUCCESS',
+          message: t('admin.crosschain_configs_view.toasts.manual_hyperbridge_success'),
+          txHashes: Array.isArray(result?.txHashes) ? result.txHashes.map((item: any) => String(item)) : [],
+        },
+      }));
+      setManualCurrentStep(4);
+      await overviewQuery.refetch();
+      await preflightQuery.refetch();
+    } catch (error: any) {
+      setManualExecution((prev) => ({
+        ...prev,
+        step3: { status: 'FAILED', message: error?.message || t('admin.crosschain_configs_view.toasts.manual_hyperbridge_failed'), txHashes: [] },
+      }));
+      toast.error(error?.message || t('admin.crosschain_configs_view.toasts.manual_hyperbridge_failed'));
+    }
+  };
+
+  const handleSetHyperbridgeTokenGatewayManual = async () => {
+    if (!manualStepCompleted.step2 || manualCurrentStep !== 3) {
+      toast.error(t('admin.crosschain_configs_view.toasts.manual_step_invalid'));
+      return;
+    }
+    if (!manualSourceChainId || !manualDestChainId || (!manualStateMachineIdHex && !manualDestinationContractHex)) {
+      toast.error(t('admin.crosschain_configs_view.toasts.manual_required_fields'));
+      return;
+    }
+    try {
+      const result = await setHyperbridgeTokenGatewayConfigMutation.mutateAsync({
+        sourceChainId: manualSourceChainId,
+        destChainId: manualDestChainId,
+        stateMachineIdHex: manualStateMachineIdHex || undefined,
+        settlementExecutorAddress: manualDestinationContractHex || undefined,
       });
       toast.success(t('admin.crosschain_configs_view.toasts.manual_hyperbridge_success'));
       setManualStepCompleted((prev) => ({ ...prev, step3: true }));
@@ -1862,6 +1993,7 @@ export const useAdminCrosschainConfigs = () => {
       destinationChains,
       manualSourceAdapterContracts,
       manualDestHyperContracts,
+      manualDestHBTokenContracts,
       manualDestCCIPContracts,
       manualDestLayerZeroContracts,
       routes,
@@ -1916,6 +2048,7 @@ export const useAdminCrosschainConfigs = () => {
       setDefaultBridgeManual: handleSetDefaultBridgeManual,
       setDefaultBridgeQuick: handleSetDefaultBridgeQuick,
       setHyperbridgeManual: handleSetHyperbridgeManual,
+      setHyperbridgeTokenGatewayManual: handleSetHyperbridgeTokenGatewayManual,
       setCCIPManual: handleSetCCIPManual,
       setLayerZeroManual: handleSetLayerZeroManual,
       refresh: async () => {

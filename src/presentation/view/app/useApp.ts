@@ -49,8 +49,8 @@ export interface UseAppReturn {
   setReceiver: (addr: string) => void;
   paymentMode: 'regular' | 'privacy';
   setPaymentMode: (mode: 'regular' | 'privacy') => void;
-  bridgeOptionSelection: 'default' | '0' | '1' | '2';
-  setBridgeOptionSelection: (value: 'default' | '0' | '1' | '2') => void;
+  bridgeOptionSelection: 'default' | '0' | '1' | '2' | '3';
+  setBridgeOptionSelection: (value: 'default' | '0' | '1' | '2' | '3') => void;
   bridgeTokenSource: string;
   setBridgeTokenSource: (value: string) => void;
   minBridgeAmountOut: string;
@@ -185,7 +185,7 @@ export function useApp(): UseAppReturn {
   const [destTokenAddress, setDestTokenAddress] = useState('');
   const [receiver, setReceiver] = useState('');
   const [paymentMode, setPaymentMode] = useState<'regular' | 'privacy'>('regular');
-  const [bridgeOptionSelection, setBridgeOptionSelection] = useState<'default' | '0' | '1' | '2'>('default');
+  const [bridgeOptionSelection, setBridgeOptionSelection] = useState<'default' | '0' | '1' | '2' | '3'>('default');
   const [bridgeTokenSource, setBridgeTokenSource] = useState('');
   const [minBridgeAmountOut, setMinBridgeAmountOut] = useState('');
   const [minDestAmountOut, setMinDestAmountOut] = useState('');

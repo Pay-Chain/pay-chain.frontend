@@ -71,6 +71,21 @@ export const AdminRoutePoliciesView = () => {
                     <span className="text-muted">{t('admin.route_policies_view.labels.fallback_order')}:</span>{' '}
                     {Array.isArray(item.fallbackOrder) ? item.fallbackOrder.join(', ') : '-'}
                   </p>
+                  <p className="text-sm">
+                    <span className="text-muted">supportsTokenBridge:</span> {item.supportsTokenBridge ? 'true' : 'false'}
+                  </p>
+                  <p className="text-sm">
+                    <span className="text-muted">supportsDestSwap:</span> {item.supportsDestSwap ? 'true' : 'false'}
+                  </p>
+                  <p className="text-sm">
+                    <span className="text-muted">supportsPrivacyForward:</span> {item.supportsPrivacyForward ? 'true' : 'false'}
+                  </p>
+                  <p className="text-sm">
+                    <span className="text-muted">bridgeToken:</span> {item.bridgeToken || '-'}
+                  </p>
+                  <p className="text-sm">
+                    <span className="text-muted">status:</span> {item.status || '-'}
+                  </p>
                 </div>
                 <div className="flex items-start gap-1">
                   <Button size="sm" variant="ghost" onClick={() => actions.openEdit(item)}>
@@ -132,6 +147,7 @@ export const AdminRoutePoliciesView = () => {
               <option value="0">0 - Hyperbridge</option>
               <option value="1">1 - CCIP</option>
               <option value="2">2 - LayerZero</option>
+              <option value="3">3 - Hyperbridge Token Gateway</option>
             </select>
           </div>
 
@@ -153,8 +169,55 @@ export const AdminRoutePoliciesView = () => {
             label={t('admin.route_policies_view.fallback_order_optional')}
             value={state.form.fallbackOrder}
             onChange={(e) => actions.setForm({ ...state.form, fallbackOrder: e.target.value })}
-            placeholder="0,1,2"
+            placeholder="0,1,2,3"
           />
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <label className="flex items-center gap-2 text-sm text-foreground/90">
+              <input
+                type="checkbox"
+                checked={state.form.supportsTokenBridge}
+                onChange={(e) => actions.setForm({ ...state.form, supportsTokenBridge: e.target.checked })}
+              />
+              supportsTokenBridge
+            </label>
+            <label className="flex items-center gap-2 text-sm text-foreground/90">
+              <input
+                type="checkbox"
+                checked={state.form.supportsDestSwap}
+                onChange={(e) => actions.setForm({ ...state.form, supportsDestSwap: e.target.checked })}
+              />
+              supportsDestSwap
+            </label>
+            <label className="flex items-center gap-2 text-sm text-foreground/90">
+              <input
+                type="checkbox"
+                checked={state.form.supportsPrivacyForward}
+                onChange={(e) => actions.setForm({ ...state.form, supportsPrivacyForward: e.target.checked })}
+              />
+              supportsPrivacyForward
+            </label>
+          </div>
+
+          <Input
+            label="Bridge token (optional)"
+            value={state.form.bridgeToken}
+            onChange={(e) => actions.setForm({ ...state.form, bridgeToken: e.target.value })}
+            placeholder="0x..."
+          />
+
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-foreground/80 ml-1">Status</label>
+            <select
+              value={state.form.status}
+              onChange={(e) => actions.setForm({ ...state.form, status: e.target.value })}
+              className="w-full h-11 px-4 rounded-xl border border-white/10 bg-black/40 text-foreground outline-none focus:ring-2 focus:ring-accent-purple/30"
+            >
+              <option value="active">active</option>
+              <option value="paused">paused</option>
+              <option value="deprecated">deprecated</option>
+            </select>
+          </div>
         </div>
       </BaseModal>
 

@@ -226,12 +226,13 @@ export default function AppView() {
               <Label className="text-xs text-foreground/80">Bridge Option</Label>
               <Select
                 value={bridgeOptionSelection}
-                onChange={(e) => setBridgeOptionSelection(e.target.value as 'default' | '0' | '1' | '2')}
+                onChange={(e) => setBridgeOptionSelection(e.target.value as 'default' | '0' | '1' | '2' | '3')}
               >
                 <option value="default">Default (null → SC default)</option>
                 <option value="0">Hyperbridge</option>
                 <option value="1">CCIP</option>
                 <option value="2">LayerZero</option>
+                <option value="3">Hyperbridge Token Gateway</option>
               </Select>
             </div>
 

@@ -960,7 +960,9 @@ export interface Dictionary {
       manual_state_machine_hex: string;
       manual_state_machine_auto_placeholder: string;
       manual_destination_hyper_contract: string;
+      manual_destination_hb_token_receiver_contract: string;
       select_destination_hyper_contract: string;
+      select_destination_hb_token_receiver_contract: string;
       manual_save_hyperbridge: string;
       manual_ccip_chain_selector: string;
       manual_destination_ccip_contract: string;

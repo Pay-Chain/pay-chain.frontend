@@ -362,6 +362,23 @@ export const useSetHyperbridgeConfig = () => {
   });
 };
 
+export const useSetHyperbridgeTokenGatewayConfig = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: {
+      sourceChainId: string;
+      destChainId: string;
+      stateMachineIdHex?: string;
+      settlementExecutorAddress?: string;
+      nativeCost?: string;
+      relayerFee?: string;
+    }) => adminRepository.setHyperbridgeTokenGatewayConfig(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'onchain-adapters', 'status'] });
+    },
+  });
+};
+
 export const useSetCCIPConfig = () => {
   const queryClient = useQueryClient();
   return useMutation({

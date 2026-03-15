@@ -66,16 +66,18 @@ export const AdminCrosschainConfigsView = () => {
   const isManualHyperbridge = String(state.manualBridgeType) === '0';
   const isManualCCIP = String(state.manualBridgeType) === '1';
   const isManualLayerZero = String(state.manualBridgeType) === '2';
+  const isManualHyperbridgeTokenGateway = String(state.manualBridgeType) === '3';
   const manualBridgeOptions = useMemo(() => {
     const canonicalNameByType: Record<string, string> = {
       '0': 'Hyperbridge',
       '1': 'CCIP',
       '2': 'LayerZero',
+      '3': 'Hyperbridge Token Gateway',
     };
     const uniq = new Map<string, { bridgeType: string; name: string }>();
     for (const item of state.manualBridgeOptions || []) {
       const type = String((item as any)?.bridgeType ?? '').trim();
-      if (type !== '0' && type !== '1' && type !== '2') continue;
+      if (type !== '0' && type !== '1' && type !== '2' && type !== '3') continue;
       uniq.set(type, {
         bridgeType: type,
         name: canonicalNameByType[type] || String((item as any)?.name || `Bridge ${type}`),
@@ -685,6 +687,48 @@ export const AdminCrosschainConfigsView = () => {
         {isManualHyperbridge && (
           <div className="flex justify-end">
             <Button size="sm" variant="secondary" onClick={() => actions.setHyperbridgeManual()} disabled={state.isPending || state.manualBridgeType !== '0' || state.manualCurrentStep !== 3}>
+              {t('admin.crosschain_configs_view.manual_save_hyperbridge')}
+            </Button>
+          </div>
+        )}
+        {isManualHyperbridgeTokenGateway && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <Input
+              label={t('admin.crosschain_configs_view.manual_state_machine_hex')}
+              placeholder={t('admin.crosschain_configs_view.manual_state_machine_auto_placeholder')}
+              value={state.manualStateMachineIdHex}
+              onChange={(e) => actions.setManualStateMachineIdHex(e.target.value)}
+              disabled={state.manualBridgeType !== '3' || state.manualCurrentStep !== 3}
+              readOnly
+            />
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-foreground/80 ml-1">
+                {t('admin.crosschain_configs_view.manual_destination_hb_token_receiver_contract')}
+              </label>
+              <select
+                className="h-11 rounded-full bg-white/5 border border-white/10 px-3 text-sm w-full"
+                value={state.manualDestinationContractHex}
+                onChange={(e) => actions.setManualDestinationContractHex(e.target.value)}
+                disabled={!state.manualDestChainId || state.manualBridgeType !== '3' || state.manualCurrentStep !== 3}
+              >
+                <option value="">{t('admin.crosschain_configs_view.select_destination_hb_token_receiver_contract')}</option>
+                {(state.manualDestHBTokenContracts || []).map((contract: any) => (
+                  <option key={contract.id} value={String(contract.contractAddress || '')}>
+                    {contract.name} ({contract.contractAddress})
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        )}
+        {isManualHyperbridgeTokenGateway && (
+          <div className="flex justify-end">
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => actions.setHyperbridgeTokenGatewayManual()}
+              disabled={state.isPending || state.manualBridgeType !== '3' || state.manualCurrentStep !== 3}
+            >
               {t('admin.crosschain_configs_view.manual_save_hyperbridge')}
             </Button>
           </div>

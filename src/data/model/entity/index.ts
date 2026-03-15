@@ -37,7 +37,31 @@ export interface PaymentEvent {
   chain: string;
   txHash?: string;
   blockNumber?: number;
+  metadata?: unknown;
   createdAt: string;
+}
+
+export interface PaymentQuoteSnapshotPreviewApproval {
+  requiredNativeFee?: string;
+  approvalToken?: string;
+  approvalAmount?: string;
+  approvalSpender?: string;
+}
+
+export interface PaymentQuoteSnapshotCost {
+  platformFeeToken?: string;
+  bridgeFeeNative?: string;
+  totalSourceTokenRequired?: string;
+  bridgeType?: number;
+  isSameChain?: boolean;
+  bridgeQuoteOk?: boolean;
+  bridgeQuoteReason?: string;
+}
+
+export interface PaymentQuoteSnapshot {
+  schema: 'payment_quote_snapshot.v1';
+  previewApproval?: PaymentQuoteSnapshotPreviewApproval;
+  quotePaymentCost?: PaymentQuoteSnapshotCost;
 }
 
 export interface PaymentPrivacyStatus {

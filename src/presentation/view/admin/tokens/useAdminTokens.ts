@@ -9,7 +9,7 @@ import { useUrlQueryState } from '@/presentation/hooks';
 import { QUERY_PARAM_KEYS } from '@/core/constants';
 import { SupportedTokenEntity } from '@/src/domain/entity/token/TokenEntity';
 import { useCheckTokenPairSupport } from '@/data/usecase/useAdmin';
-import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { useAccount, useSwitchChain, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { TOKEN_SWAPPER_ABI } from '@/core/constants/abis';
 import { toast } from 'sonner';
 import { useTranslation } from '@/presentation/hooks';
@@ -23,6 +23,7 @@ export const useAdminTokens = () => {
   const [limit] = useState(10);
 
   const { isConnected, chain: currentChain } = useAccount();
+  const { switchChain } = useSwitchChain();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -73,9 +74,48 @@ export const useAdminTokens = () => {
   // Fetch Chains
   const { data: chains } = useAdminChains();
 
-  // Fetch Swapper Contract for the selected chain
-  const { data: swapperContracts } = useAdminContracts(1, 1, pairCheckChainId, 'TOKEN_SWAPPER');
-  const swapperAddress = swapperContracts?.items?.[0]?.contractAddress as `0x${string}` | undefined;
+  // Fetch Swapper Contract candidates for the selected chain.
+  // Do not assume first row is active/latest because registry may contain old deployments.
+  const { data: swapperContracts } = useAdminContracts(1, 100, pairCheckChainId, 'TOKEN_SWAPPER');
+
+  const selectedPairChain = useMemo(() => {
+    return (chains?.items || []).find((chain) => String(chain.id) === String(pairCheckChainId));
+  }, [chains?.items, pairCheckChainId]);
+
+  const targetEvmChainId = useMemo(() => {
+    if (!selectedPairChain) return NaN;
+
+    const caip2 = String(selectedPairChain.caip2 || '').trim();
+    if (caip2.startsWith('eip155:')) {
+      const parsed = Number(caip2.split(':')[1]);
+      if (Number.isFinite(parsed) && parsed > 0) return parsed;
+    }
+
+    const networkId = Number(String(selectedPairChain.networkId || '').trim());
+    if (Number.isFinite(networkId) && networkId > 0) return networkId;
+
+    const legacyChainId = Number(String(selectedPairChain.chainId || '').trim());
+    if (Number.isFinite(legacyChainId) && legacyChainId > 0) return legacyChainId;
+
+    return NaN;
+  }, [selectedPairChain]);
+
+  const selectedSwapper = useMemo(() => {
+    const items = Array.isArray(swapperContracts?.items) ? [...swapperContracts.items] : [];
+    if (items.length === 0) return null;
+
+    const toScore = (item: any) => {
+      const activeScore = item?.isActive ? 1_000_000_000_000 : 0;
+      const blockScore = Number(item?.startBlock || 0);
+      const updatedScore = Date.parse(String(item?.updatedAt || item?.createdAt || '')) || 0;
+      return activeScore + blockScore + updatedScore;
+    };
+
+    items.sort((a, b) => toScore(b) - toScore(a));
+    return items[0] || null;
+  }, [swapperContracts?.items]);
+
+  const swapperAddress = selectedSwapper?.contractAddress as `0x${string}` | undefined;
 
   const createToken = useCreateToken();
   const updateToken = useUpdateToken();
@@ -161,8 +201,33 @@ export const useAdminTokens = () => {
     });
   };
 
-  const handleRegisterDirectPair = () => {
+  const ensureWalletOnTargetChain = async (): Promise<number | null> => {
+    if (!Number.isFinite(targetEvmChainId) || targetEvmChainId <= 0) {
+      toast.error(t('admin.tokens_view.toasts.create_failed', 'Registration failed') + ': Unsupported target chain');
+      return null;
+    }
+
+    if (currentChain?.id !== targetEvmChainId) {
+      try {
+        await switchChain({ chainId: targetEvmChainId });
+      } catch (error: any) {
+        toast.error(
+          `${t('admin.tokens_view.toasts.create_failed', 'Registration failed')}: ${
+            error?.message || `Please switch wallet network to chain ID ${targetEvmChainId}`
+          }`
+        );
+        return null;
+      }
+    }
+
+    return targetEvmChainId;
+  };
+
+  const handleRegisterDirectPair = async () => {
     if (!swapperAddress || !tokenInId || !tokenOutId) return;
+
+    const chainId = await ensureWalletOnTargetChain();
+    if (!chainId) return;
     
     const tokenIn = verificationTokensData?.items.find(t => t.id === tokenInId);
     const tokenOut = verificationTokensData?.items.find(t => t.id === tokenOutId);
@@ -174,14 +239,25 @@ export const useAdminTokens = () => {
       abi: TOKEN_SWAPPER_ABI,
       functionName: 'setV3Pool',
       args: [tokenIn.contractAddress as `0x${string}`, tokenOut.contractAddress as `0x${string}`, directFee],
+      chainId,
     }, {
       onSuccess: () => toast.success(t('admin.tokens_view.toasts.create_success', 'Registration transaction submitted')),
-      onError: (err) => toast.error(`${t('admin.tokens_view.toasts.create_failed', 'Registration failed')}: ${err.message}`),
+      onError: (err) => {
+        const msg = String(err?.message || '');
+        if (msg.toLowerCase().includes('ownable') || msg.toLowerCase().includes('not the owner')) {
+          toast.error(`${t('admin.tokens_view.toasts.create_failed', 'Registration failed')}: wallet is not TokenSwapper owner`);
+          return;
+        }
+        toast.error(`${t('admin.tokens_view.toasts.create_failed', 'Registration failed')}: ${msg}`);
+      },
     });
   };
 
-  const handleRegisterMultiHopPath = () => {
+  const handleRegisterMultiHopPath = async () => {
     if (!swapperAddress || !tokenInId || !tokenOutId || intermediateTokenIds.length === 0) return;
+
+    const chainId = await ensureWalletOnTargetChain();
+    if (!chainId) return;
     
     const tokenIn = verificationTokensData?.items.find(t => t.id === tokenInId);
     const tokenOut = verificationTokensData?.items.find(t => t.id === tokenOutId);
@@ -207,14 +283,24 @@ export const useAdminTokens = () => {
         tokenOut.contractAddress as `0x${string}`, 
         path
       ],
+      chainId,
     }, {
       onSuccess: () => toast.success(t('admin.tokens_view.toasts.create_success', 'Registration transaction submitted')),
-      onError: (err) => toast.error(`${t('admin.tokens_view.toasts.create_failed', 'Registration failed')}: ${err.message}`),
+      onError: (err) => {
+        const msg = String(err?.message || '');
+        if (msg.toLowerCase().includes('ownable') || msg.toLowerCase().includes('not the owner')) {
+          toast.error(`${t('admin.tokens_view.toasts.create_failed', 'Registration failed')}: wallet is not TokenSwapper owner`);
+          return;
+        }
+        toast.error(`${t('admin.tokens_view.toasts.create_failed', 'Registration failed')}: ${msg}`);
+      },
     });
   };
   
-  const handleResetV3Pool = () => {
+  const handleResetV3Pool = async () => {
     if (!swapperAddress || !tokenInId || !tokenOutId) return;
+    const chainId = await ensureWalletOnTargetChain();
+    if (!chainId) return;
     const items = verificationTokensData?.items || [];
     const tokenIn = items.find(t => t.id === tokenInId);
     const tokenOut = items.find(t => t.id === tokenOutId);
@@ -225,6 +311,7 @@ export const useAdminTokens = () => {
       abi: TOKEN_SWAPPER_ABI,
       functionName: 'removeV3Pool',
       args: [tokenIn.contractAddress as `0x${string}`, tokenOut.contractAddress as `0x${string}`],
+      chainId,
     }, {
       onSuccess: () => {
         toast.success(t('admin.tokens_view.pair_check.reset_success_v3', 'V3 fallback route removed successfully'));
@@ -237,8 +324,10 @@ export const useAdminTokens = () => {
     });
   };
 
-  const handleResetDirectPool = () => {
+  const handleResetDirectPool = async () => {
     if (!swapperAddress || !tokenInId || !tokenOutId) return;
+    const chainId = await ensureWalletOnTargetChain();
+    if (!chainId) return;
     const items = verificationTokensData?.items || [];
     const tokenIn = items.find(t => t.id === tokenInId);
     const tokenOut = items.find(t => t.id === tokenOutId);
@@ -249,6 +338,7 @@ export const useAdminTokens = () => {
       abi: TOKEN_SWAPPER_ABI,
       functionName: 'removeDirectPool',
       args: [tokenIn.contractAddress as `0x${string}`, tokenOut.contractAddress as `0x${string}`],
+      chainId,
     }, {
       onSuccess: () => {
         toast.success(t('admin.tokens_view.pair_check.reset_success_v4', 'Direct V4 route removed successfully'));
@@ -261,8 +351,10 @@ export const useAdminTokens = () => {
     });
   };
 
-  const handleResetMultiHopPath = () => {
+  const handleResetMultiHopPath = async () => {
     if (!swapperAddress || !tokenInId || !tokenOutId) return;
+    const chainId = await ensureWalletOnTargetChain();
+    if (!chainId) return;
     const items = verificationTokensData?.items || [];
     const tokenIn = items.find(t => t.id === tokenInId);
     const tokenOut = items.find(t => t.id === tokenOutId);
@@ -273,6 +365,7 @@ export const useAdminTokens = () => {
       abi: TOKEN_SWAPPER_ABI,
       functionName: 'removeMultiHopPath',
       args: [tokenIn.contractAddress as `0x${string}`, tokenOut.contractAddress as `0x${string}`],
+      chainId,
     }, {
       onSuccess: () => {
         toast.success(t('admin.tokens_view.pair_check.reset_success_multihop', 'Multi-hop path removed successfully'));

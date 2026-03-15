@@ -36,6 +36,11 @@ export const useAdminRoutePolicies = () => {
     defaultBridgeType: '0',
     fallbackMode: 'strict',
     fallbackOrder: '',
+    supportsTokenBridge: false,
+    supportsDestSwap: false,
+    supportsPrivacyForward: false,
+    bridgeToken: '',
+    status: 'active',
   });
 
   const listQuery = useRoutePolicies({
@@ -57,6 +62,11 @@ export const useAdminRoutePolicies = () => {
       defaultBridgeType: '0',
       fallbackMode: 'strict',
       fallbackOrder: '',
+      supportsTokenBridge: false,
+      supportsDestSwap: false,
+      supportsPrivacyForward: false,
+      bridgeToken: '',
+      status: 'active',
     });
     setIsModalOpen(true);
   };
@@ -69,6 +79,11 @@ export const useAdminRoutePolicies = () => {
       defaultBridgeType: String(item.defaultBridgeType ?? 0),
       fallbackMode: String(item.fallbackMode || 'strict'),
       fallbackOrder: Array.isArray(item.fallbackOrder) ? item.fallbackOrder.join(',') : '',
+      supportsTokenBridge: Boolean(item.supportsTokenBridge),
+      supportsDestSwap: Boolean(item.supportsDestSwap),
+      supportsPrivacyForward: Boolean(item.supportsPrivacyForward),
+      bridgeToken: String(item.bridgeToken || ''),
+      status: String(item.status || 'active'),
     });
     setIsModalOpen(true);
   };
@@ -81,6 +96,11 @@ export const useAdminRoutePolicies = () => {
       defaultBridgeType: Number(form.defaultBridgeType),
       fallbackMode: form.fallbackMode,
       fallbackOrder: fallbackOrder.length ? fallbackOrder : undefined,
+      supportsTokenBridge: Boolean(form.supportsTokenBridge),
+      supportsDestSwap: Boolean(form.supportsDestSwap),
+      supportsPrivacyForward: Boolean(form.supportsPrivacyForward),
+      bridgeToken: String(form.bridgeToken || '').trim() || undefined,
+      status: String(form.status || 'active') as 'active' | 'paused' | 'deprecated',
     };
 
     if (editingId) {

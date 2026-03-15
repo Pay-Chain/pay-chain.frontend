@@ -15,6 +15,7 @@ import {
   RouteErrorDiagnosticsParams,
   FeeConfigPayload,
   HyperbridgeConfigPayload,
+  HyperbridgeTokenGatewayConfigPayload,
   OnchainAdapterDefaultPayload,
   OnchainAdapterRegisterPayload,
   OnchainAdapterStatusParams,
@@ -185,6 +186,10 @@ export class AdminRepository {
 
   async setHyperbridgeConfig(data: HyperbridgeConfigPayload): Promise<any> {
     return this.dataSource.setHyperbridgeConfig(data);
+  }
+
+  async setHyperbridgeTokenGatewayConfig(data: HyperbridgeTokenGatewayConfigPayload): Promise<any> {
+    return this.dataSource.setHyperbridgeTokenGatewayConfig(data);
   }
 
   async setCCIPConfig(data: CCIPConfigPayload): Promise<any> {

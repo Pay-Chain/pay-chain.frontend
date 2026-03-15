@@ -19,6 +19,8 @@ export {
   usePaymentsQuery,
   usePaymentQuery,
   usePaymentEventsQuery,
+  usePaymentQuoteSnapshotQuery,
+  extractPaymentQuoteSnapshot,
   usePaymentPrivacyStatusQuery,
   usePaymentPrivacyStatusesQuery,
   useRetryPrivacyForwardMutation,
