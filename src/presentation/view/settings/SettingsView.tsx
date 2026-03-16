@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { KeyRound, Lock, ArrowRight } from 'lucide-react';
+import { KeyRound, Lock, ArrowRight, Webhook } from 'lucide-react';
 import { Button, Input } from '@/presentation/components/atoms';
 import { ROUTES } from '@/core/constants/routes';
 import { useChangePasswordMutation } from '@/data/usecase';
@@ -111,6 +111,27 @@ export default function SettingsView() {
             >
               {t('settings.password_card.update_password')}
             </Button>
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+          <div className="flex items-start justify-between gap-4">
+            <div className="space-y-2">
+              <div className="inline-flex items-center gap-2 text-sm text-accent-blue">
+                <Webhook className="w-4 h-4" />
+                Developer Tools
+              </div>
+              <h2 className="text-lg font-semibold text-foreground">Developer Hub</h2>
+              <p className="text-sm text-muted">
+                Manage your webhooks, delivery logs, and advanced merchant settings.
+              </p>
+            </div>
+            <Link href={ROUTES.MERCHANT_SETTINGS}>
+              <Button variant="secondary" size="sm" className="gap-2">
+                Configure
+                <ArrowRight className="w-4 h-4" />
+              </Button>
+            </Link>
           </div>
         </div>
       </div>

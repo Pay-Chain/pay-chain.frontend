@@ -65,13 +65,13 @@ export const AdminCrosschainConfigsView = () => {
   const { state, actions } = useAdminCrosschainConfigs();
   const isManualHyperbridge = String(state.manualBridgeType) === '0';
   const isManualCCIP = String(state.manualBridgeType) === '1';
-  const isManualLayerZero = String(state.manualBridgeType) === '2';
+  const isManualStargate = String(state.manualBridgeType) === '2';
   const isManualHyperbridgeTokenGateway = String(state.manualBridgeType) === '3';
   const manualBridgeOptions = useMemo(() => {
     const canonicalNameByType: Record<string, string> = {
       '0': 'Hyperbridge',
       '1': 'CCIP',
-      '2': 'LayerZero',
+      '2': 'Stargate',
       '3': 'Hyperbridge Token Gateway',
     };
     const uniq = new Map<string, { bridgeType: string; name: string }>();
@@ -484,35 +484,35 @@ export const AdminCrosschainConfigsView = () => {
       {state.sourceChainId && state.destChainId && (
         <Card className="p-5 bg-white/5 border-white/10 space-y-3">
           <div className="flex items-center justify-between gap-3">
-            <h3 className="text-base font-semibold text-foreground">{t('admin.crosschain_configs_view.layerzero_e2e_title')}</h3>
+            <h3 className="text-base font-semibold text-foreground">{t('admin.crosschain_configs_view.stargate_e2e_title')}</h3>
             <div className="flex items-center gap-2">
               <span
                 className={`inline-flex px-2 py-1 rounded-full border text-xs font-medium ${
-                  state.layerZeroE2EStatus?.ready ? statusClass('READY') : statusClass('ERROR')
+                  state.stargateE2EStatus?.ready ? statusClass('READY') : statusClass('ERROR')
                 }`}
               >
-                {state.layerZeroE2EStatus?.ready ? t('admin.crosschain_configs_view.success_status') : t('admin.crosschain_configs_view.error_status')}
+                {state.stargateE2EStatus?.ready ? t('admin.crosschain_configs_view.success_status') : t('admin.crosschain_configs_view.error_status')}
               </span>
               <Button
                 size="sm"
-                variant={state.layerZeroE2EStatus?.ready ? 'ghost' : 'primary'}
-                onClick={() => actions.configureLayerZeroE2ESelected()}
-                disabled={state.isPending || state.isLayerZeroE2EStatusLoading}
+                variant={state.stargateE2EStatus?.ready ? 'ghost' : 'primary'}
+                onClick={() => actions.configureStargateE2ESelected()}
+                disabled={state.isPending || state.isStargateE2EStatusLoading}
               >
-                {state.layerZeroE2EStatus?.ready
-                  ? t('admin.crosschain_configs_view.layerzero_e2e_reconfigure')
-                  : t('admin.crosschain_configs_view.layerzero_e2e_fix_now')}
+                {state.stargateE2EStatus?.ready
+                  ? t('admin.crosschain_configs_view.stargate_e2e_reconfigure')
+                  : t('admin.crosschain_configs_view.stargate_e2e_fix_now')}
               </Button>
             </div>
           </div>
-          {state.isLayerZeroE2EStatusLoading ? (
+          {state.isStargateE2EStatusLoading ? (
             <p className="text-sm text-muted">{t('admin.crosschain_configs_view.preflight_loading')}</p>
-          ) : !state.layerZeroE2EStatus ? (
-            <p className="text-sm text-muted">{t('admin.crosschain_configs_view.layerzero_e2e_empty')}</p>
+          ) : !state.stargateE2EStatus ? (
+            <p className="text-sm text-muted">{t('admin.crosschain_configs_view.stargate_e2e_empty')}</p>
           ) : (
             <div className="space-y-3">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                {Object.entries(state.layerZeroE2EStatus?.checks || {}).map(([key, value]) => (
+                {Object.entries(state.stargateE2EStatus?.checks || {}).map(([key, value]) => (
                   <span
                     key={key}
                     className={`inline-flex px-2 py-1 rounded-lg border text-xs ${preflightCheckClass(Boolean(value))}`}
@@ -521,9 +521,9 @@ export const AdminCrosschainConfigsView = () => {
                   </span>
                 ))}
               </div>
-              {Array.isArray(state.layerZeroE2EStatus?.issues) && state.layerZeroE2EStatus.issues.length > 0 && (
+              {Array.isArray(state.stargateE2EStatus?.issues) && state.stargateE2EStatus.issues.length > 0 && (
                 <div className="space-y-1">
-                  {state.layerZeroE2EStatus.issues.map((issue: any, idx: number) => (
+                  {state.stargateE2EStatus.issues.map((issue: any, idx: number) => (
                     <p key={`lz-issue-${idx}`} className="text-xs text-red-300/90">
                       {typeof issue === 'string'
                         ? issue
@@ -823,14 +823,14 @@ export const AdminCrosschainConfigsView = () => {
             </Button>
           </div>
         )}
-        {isManualLayerZero && (
+        {isManualStargate && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-foreground/80 ml-1">LayerZero Source Sender</label>
+              <label className="text-sm font-medium text-foreground/80 ml-1">Stargate Source Sender</label>
               <select
                 className="h-11 rounded-full bg-white/5 border border-white/10 px-3 text-sm w-full"
-                value={state.manualLayerZeroSenderAddress}
-                onChange={(e) => actions.setManualLayerZeroSenderAddress(e.target.value)}
+                value={state.manualStargateSenderAddress}
+                onChange={(e) => actions.setManualStargateSenderAddress(e.target.value)}
                 disabled={!state.manualSourceChainId || state.manualBridgeType !== '2' || state.manualCurrentStep !== 3}
               >
                 <option value="">{t('admin.crosschain_configs_view.manual_source_adapter')}</option>
@@ -842,15 +842,15 @@ export const AdminCrosschainConfigsView = () => {
               </select>
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-foreground/80 ml-1">LayerZero Destination Receiver</label>
+              <label className="text-sm font-medium text-foreground/80 ml-1">Stargate Destination Receiver</label>
               <select
                 className="h-11 rounded-full bg-white/5 border border-white/10 px-3 text-sm w-full"
-                value={state.manualLayerZeroReceiverAddress}
-                onChange={(e) => actions.setManualLayerZeroReceiverAddress(e.target.value)}
+                value={state.manualStargateReceiverAddress}
+                onChange={(e) => actions.setManualStargateReceiverAddress(e.target.value)}
                 disabled={!state.manualDestChainId || state.manualBridgeType !== '2' || state.manualCurrentStep !== 3}
               >
-                <option value="">{t('admin.crosschain_configs_view.select_destination_layerzero_contract')}</option>
-                {(state.manualDestLayerZeroContracts || []).map((contract: any) => (
+                <option value="">{t('admin.crosschain_configs_view.select_destination_stargate_contract')}</option>
+                {(state.manualDestStargateContracts || []).map((contract: any) => (
                   <option key={contract.id} value={contract.contractAddress}>
                     {contract.name} ({contract.contractAddress})
                   </option>
@@ -858,55 +858,55 @@ export const AdminCrosschainConfigsView = () => {
               </select>
             </div>
             <Input
-              label={t('admin.crosschain_configs_view.manual_layerzero_dst_eid')}
+              label={t('admin.crosschain_configs_view.manual_stargate_dst_eid')}
               placeholder="30110"
-              value={state.manualLayerZeroDstEid}
-              onChange={(e) => actions.setManualLayerZeroDstEid(e.target.value)}
+              value={state.manualStargateDstEid}
+              onChange={(e) => actions.setManualStargateDstEid(e.target.value)}
               disabled={state.manualBridgeType !== '2' || state.manualCurrentStep !== 3}
             />
             <Input
-              label="LayerZero Source EID"
+              label="Stargate Source EID"
               placeholder="30184"
-              value={state.manualLayerZeroSrcEid}
-              onChange={(e) => actions.setManualLayerZeroSrcEid(e.target.value)}
+              value={state.manualStargateSrcEid}
+              onChange={(e) => actions.setManualStargateSrcEid(e.target.value)}
               disabled={state.manualBridgeType !== '2' || state.manualCurrentStep !== 3}
             />
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-foreground/80 ml-1">{t('admin.crosschain_configs_view.manual_layerzero_peer_contract')}</label>
+              <label className="text-sm font-medium text-foreground/80 ml-1">{t('admin.crosschain_configs_view.manual_stargate_peer_contract')}</label>
               <select
                 className="h-11 rounded-full bg-white/5 border border-white/10 px-3 text-sm w-full"
-                value={state.manualLayerZeroPeerHex}
-                onChange={(e) => actions.setManualLayerZeroPeerHex(e.target.value)}
+                value={state.manualStargatePeerHex}
+                onChange={(e) => actions.setManualStargatePeerHex(e.target.value)}
                 disabled={!state.manualDestChainId || state.manualBridgeType !== '2' || state.manualCurrentStep !== 3}
               >
-                <option value="">{t('admin.crosschain_configs_view.select_destination_layerzero_contract')}</option>
-                {(state.manualDestLayerZeroContracts || []).map((contract: any) => (
+                <option value="">{t('admin.crosschain_configs_view.select_destination_stargate_contract')}</option>
+                {(state.manualDestStargateContracts || []).map((contract: any) => (
                   <option key={contract.id} value={addressToPaddedBytesHex(contract.contractAddress)}>
                     {contract.name} ({contract.contractAddress})
                   </option>
                 ))}
               </select>
-              {state.manualLayerZeroPeerHex && (
+              {state.manualStargatePeerHex && (
                 <p className="text-xs text-muted mt-1 break-all">
-                  {t('admin.crosschain_configs_view.manual_auto_hex')}: {state.manualLayerZeroPeerHex}
+                  {t('admin.crosschain_configs_view.manual_auto_hex')}: {state.manualStargatePeerHex}
                 </p>
               )}
             </div>
             <div className="md:col-span-2">
               <Input
-                label={t('admin.crosschain_configs_view.manual_layerzero_options_hex')}
+                label={t('admin.crosschain_configs_view.manual_stargate_options_hex')}
                 placeholder="0x"
-                value={state.manualLayerZeroOptionsHex}
-                onChange={(e) => actions.setManualLayerZeroOptionsHex(e.target.value)}
+                value={state.manualStargateOptionsHex}
+                onChange={(e) => actions.setManualStargateOptionsHex(e.target.value)}
                 disabled={state.manualBridgeType !== '2' || state.manualCurrentStep !== 3}
               />
             </div>
           </div>
         )}
-        {isManualLayerZero && (
+        {isManualStargate && (
           <div className="flex justify-end">
-            <Button size="sm" variant="secondary" onClick={() => actions.setLayerZeroManual()} disabled={state.isPending || state.manualBridgeType !== '2' || state.manualCurrentStep !== 3}>
-              {t('admin.crosschain_configs_view.manual_save_layerzero')}
+            <Button size="sm" variant="secondary" onClick={() => actions.setStargateManual()} disabled={state.isPending || state.manualBridgeType !== '2' || state.manualCurrentStep !== 3}>
+              {t('admin.crosschain_configs_view.manual_save_stargate')}
             </Button>
           </div>
         )}

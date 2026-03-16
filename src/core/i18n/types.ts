@@ -968,11 +968,11 @@ export interface Dictionary {
       manual_destination_ccip_contract: string;
       select_destination_ccip_contract: string;
       manual_save_ccip: string;
-      manual_layerzero_dst_eid: string;
-      manual_layerzero_peer_contract: string;
-      select_destination_layerzero_contract: string;
-      manual_layerzero_options_hex: string;
-      manual_save_layerzero: string;
+      manual_stargate_dst_eid: string;
+      manual_stargate_peer_contract: string;
+      select_destination_stargate_contract: string;
+      manual_stargate_options_hex: string;
+      manual_save_stargate: string;
       manual_auto_hex: string;
       manual_step_1: string;
       manual_step_2: string;
@@ -1034,10 +1034,10 @@ export interface Dictionary {
       unknown_status: string;
       yes: string;
       no: string;
-      layerzero_e2e_title: string;
-      layerzero_e2e_empty: string;
-      layerzero_e2e_fix_now: string;
-      layerzero_e2e_reconfigure: string;
+      stargate_e2e_title: string;
+      stargate_e2e_empty: string;
+      stargate_e2e_fix_now: string;
+      stargate_e2e_reconfigure: string;
       toasts: {
         recheck_success: string;
         recheck_failed: string;
@@ -1061,8 +1061,8 @@ export interface Dictionary {
         manual_hyperbridge_failed: string;
         manual_ccip_success: string;
         manual_ccip_failed: string;
-        manual_layerzero_success: string;
-        manual_layerzero_failed: string;
+        manual_stargate_success: string;
+        manual_stargate_failed: string;
         manual_step_invalid: string;
         preflight_suggestion_applied: string;
         preflight_missing_adapter_contract: string;
@@ -1163,7 +1163,7 @@ export interface Dictionary {
         token_swapper: string;
         adapter_ccip: string;
         adapter_hyperbridge: string;
-        adapter_layerzero: string;
+        adapter_stargate: string;
         privacy_module: string;
         stealth_escrow_factory: string;
         fee_policy_manager: string;

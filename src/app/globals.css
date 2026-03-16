@@ -4,6 +4,7 @@
 
 /* Import Tailwind and theme configuration */
 @import "../app.css";
+@import "../styles/payment-kita-theme.css";
 
 /* Ensure dark mode is always active */
 html {

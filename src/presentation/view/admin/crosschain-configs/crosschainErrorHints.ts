@@ -40,8 +40,8 @@ export const recommendActionByErrorCode = (code: string): string => {
       return 'Set state machine + destination contract Hyperbridge.';
     case 'CCIP_NOT_CONFIGURED':
       return 'Set CCIP chain selector + destination adapter.';
-    case 'LAYERZERO_NOT_CONFIGURED':
-      return 'Set LayerZero dstEid + peer.';
+    case 'STARGATE_NOT_CONFIGURED':
+      return 'Set Stargate dstEid + peer.';
     case 'FEE_QUOTE_FAILED':
       return 'Periksa fee quote, saldo native fee, dan konfigurasi route on-chain.';
     default:

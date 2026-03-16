@@ -9,6 +9,7 @@ import type {
   WalletResponse,
   WalletsResponse,
   MerchantStatusResponse,
+  WebhookLogsResponse,
   MessageResponse,
 } from '../../model/response';
 import type { Merchant } from '../../model/entity';
@@ -34,6 +35,14 @@ export interface IWalletRepository {
 
 // ============== Merchant Repository ==============
 export interface IMerchantRepository {
+  getMe(): Promise<ApiResponse<Merchant>>;
   applyMerchant(input: ApplyMerchantRequest): Promise<ApiResponse<Merchant>>;
   getMerchantStatus(): Promise<ApiResponse<MerchantStatusResponse>>;
+  updateSettings(input: { callbackUrl: string; webhookIsActive: boolean }): Promise<ApiResponse<Merchant>>;
+}
+
+// ============== Webhook Repository ==============
+export interface IWebhookRepository {
+  listLogs(page?: number, limit?: number): Promise<ApiResponse<WebhookLogsResponse>>;
+  testPing(url: string): Promise<ApiResponse<{ message: string }>>;
 }

@@ -402,18 +402,18 @@ export const useSetCCIPConfig = () => {
   });
 };
 
-export const useSetLayerZeroConfig = () => {
+export const useSetStargateConfig = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: { sourceChainId: string; destChainId: string; dstEid?: number; peerHex?: string; optionsHex?: string }) =>
-      adminRepository.setLayerZeroConfig(data),
+      adminRepository.setStargateConfig(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'onchain-adapters', 'status'] });
     },
   });
 };
 
-export const useConfigureLayerZeroE2E = () => {
+export const useConfigureStargateE2E = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: {
@@ -438,16 +438,16 @@ export const useConfigureLayerZeroE2E = () => {
         authorizeVaultSpender?: boolean;
         authorizeGatewayAdapter?: boolean;
       };
-    }) => adminRepository.configureLayerZeroE2E(data),
+    }) => adminRepository.configureStargateE2E(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'onchain-adapters', 'status'] });
-      queryClient.invalidateQueries({ queryKey: ['admin', 'layerzero-e2e-status'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'stargate-e2e-status'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'crosschain-config', 'overview'] });
     },
   });
 };
 
-export const useLayerZeroE2EStatus = (
+export const useStargateE2EStatus = (
   params?: {
     sourceChainId?: string;
     destChainId?: string;
@@ -462,7 +462,7 @@ export const useLayerZeroE2EStatus = (
   return useQuery({
     queryKey: [
       'admin',
-      'layerzero-e2e-status',
+      'stargate-e2e-status',
       params?.sourceChainId,
       params?.destChainId,
       params?.destinationReceiverAddress,
@@ -472,7 +472,7 @@ export const useLayerZeroE2EStatus = (
       params?.destinationGatewayAddress,
     ],
     queryFn: () =>
-      adminRepository.getLayerZeroE2EStatus({
+      adminRepository.getStargateE2EStatus({
         sourceChainId: params!.sourceChainId!,
         destChainId: params!.destChainId!,
         destinationReceiverAddress: params?.destinationReceiverAddress,

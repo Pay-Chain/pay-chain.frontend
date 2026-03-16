@@ -8,16 +8,16 @@ import {
   useAdminPaymentBridges,
   useAutoFixCrosschainRoute,
   useAutoFixCrosschainRoutesBulk,
-  useConfigureLayerZeroE2E,
+  useConfigureStargateE2E,
   useCrosschainConfigPreflight,
   useCrosschainConfigOverview,
-  useLayerZeroE2EStatus,
+  useStargateE2EStatus,
   useRegisterOnchainAdapter,
   useOnchainAdapterStatus,
   useRecheckCrosschainRoute,
   useRecheckCrosschainRoutesBulk,
   useSetCCIPConfig,
-  useSetLayerZeroConfig,
+  useSetStargateConfig,
   useSetHyperbridgeConfig,
   useSetHyperbridgeTokenGatewayConfig,
   useSetOnchainDefaultBridge,
@@ -32,7 +32,7 @@ type BridgeOption = { bridgeType: string; name: string };
 const BRIDGE_TYPE_META: Record<string, string> = {
   '0': 'Hyperbridge',
   '1': 'CCIP',
-  '2': 'LayerZero',
+  '2': 'Stargate',
   '3': 'Hyperbridge Token Gateway',
 };
 
@@ -47,15 +47,15 @@ const addressToPaddedBytesHex = (address: string): string => {
   return `0x${value.slice(2).padStart(64, '0')}`;
 };
 
-const resolveLayerZeroDstEid = (chain: any): string => {
+const resolveStargateDstEid = (chain: any): string => {
   const candidates = [
-    chain?.layerZeroEid,
-    chain?.layerZeroDstEid,
-    chain?.layerzeroDstEid,
+    chain?.stargateEid,
+    chain?.stargateDstEid,
+    chain?.stargateDstEid,
     chain?.lzDstEid,
     chain?.dstEid,
-    chain?.metadata?.layerZeroDstEid,
-    chain?.metadata?.layerzeroDstEid,
+    chain?.metadata?.stargateDstEid,
+    chain?.metadata?.stargateDstEid,
     chain?.metadata?.lzDstEid,
     chain?.metadata?.dstEid,
   ];
@@ -84,16 +84,16 @@ const resolveLayerZeroDstEid = (chain: any): string => {
   return '';
 };
 
-const resolveLayerZeroSrcEid = (chain: any): string => {
+const resolveStargateSrcEid = (chain: any): string => {
   const candidates = [
-    chain?.layerZeroEid,
-    chain?.layerZeroSrcEid,
-    chain?.layerzeroSrcEid,
+    chain?.stargateEid,
+    chain?.stargateSrcEid,
+    chain?.stargateSrcEid,
     chain?.lzSrcEid,
     chain?.srcEid,
-    chain?.metadata?.layerZeroEid,
-    chain?.metadata?.layerZeroSrcEid,
-    chain?.metadata?.layerzeroSrcEid,
+    chain?.metadata?.stargateEid,
+    chain?.metadata?.stargateSrcEid,
+    chain?.metadata?.stargateSrcEid,
     chain?.metadata?.lzSrcEid,
     chain?.metadata?.srcEid,
   ];
@@ -223,12 +223,12 @@ export const useAdminCrosschainConfigs = () => {
   const [manualCCIPSourceChainSelector, setManualCCIPSourceChainSelector] = useState('');
   const [manualCCIPTrustedSenderHex, setManualCCIPTrustedSenderHex] = useState('');
   const [manualCCIPAllowSourceChain, setManualCCIPAllowSourceChain] = useState(true);
-  const [manualLayerZeroDstEid, setManualLayerZeroDstEid] = useState('');
-  const [manualLayerZeroSrcEid, setManualLayerZeroSrcEid] = useState('');
-  const [manualLayerZeroSenderAddress, setManualLayerZeroSenderAddress] = useState('');
-  const [manualLayerZeroReceiverAddress, setManualLayerZeroReceiverAddress] = useState('');
-  const [manualLayerZeroPeerHex, setManualLayerZeroPeerHex] = useState('');
-  const [manualLayerZeroOptionsHex, setManualLayerZeroOptionsHex] = useState('');
+  const [manualStargateDstEid, setManualStargateDstEid] = useState('');
+  const [manualStargateSrcEid, setManualStargateSrcEid] = useState('');
+  const [manualStargateSenderAddress, setManualStargateSenderAddress] = useState('');
+  const [manualStargateReceiverAddress, setManualStargateReceiverAddress] = useState('');
+  const [manualStargatePeerHex, setManualStargatePeerHex] = useState('');
+  const [manualStargateOptionsHex, setManualStargateOptionsHex] = useState('');
   const [policyDefaultBridgeType, setPolicyDefaultBridgeType] = useState<string>('0');
   const [policyFallbackMode, setPolicyFallbackMode] = useState<'strict' | 'auto_fallback'>('strict');
   const [policyFallbackOrderInput, setPolicyFallbackOrderInput] = useState('');
@@ -284,8 +284,8 @@ export const useAdminCrosschainConfigs = () => {
   const setHyperbridgeConfigMutation = useSetHyperbridgeConfig();
   const setHyperbridgeTokenGatewayConfigMutation = useSetHyperbridgeTokenGatewayConfig();
   const setCCIPConfigMutation = useSetCCIPConfig();
-  const setLayerZeroConfigMutation = useSetLayerZeroConfig();
-  const configureLayerZeroE2EMutation = useConfigureLayerZeroE2E();
+  const setStargateConfigMutation = useSetStargateConfig();
+  const configureStargateE2EMutation = useConfigureStargateE2E();
   const routePoliciesQuery = useRoutePolicies({
     page: 1,
     limit: 1,
@@ -313,7 +313,7 @@ export const useAdminCrosschainConfigs = () => {
     if (direct) return direct;
 
     const name = String(value?.name || '').toLowerCase();
-    if (name.includes('layerzero') || /\blz\b/.test(name)) return '2';
+    if (name.includes('stargate') || /\blz\b/.test(name)) return '2';
     if (name.includes('ccip')) return '1';
     if (name.includes('token gateway')) return '3';
     if (name.includes('hyperbridge') || name.includes('hyperlane')) return '0';
@@ -361,7 +361,7 @@ export const useAdminCrosschainConfigs = () => {
     return [
       { bridgeType: '0', name: 'Hyperbridge' },
       { bridgeType: '1', name: 'CCIP' },
-      { bridgeType: '2', name: 'LayerZero' },
+      { bridgeType: '2', name: 'Stargate' },
       { bridgeType: '3', name: 'Hyperbridge Token Gateway' },
     ];
   }, [paymentBridgesQuery.data?.items, preflightQuery.data?.bridges]);
@@ -381,44 +381,44 @@ export const useAdminCrosschainConfigs = () => {
         ? 'ADAPTER_CCIP'
         : manualBridgeType === '3'
           ? 'ADAPTER_HYPERBRIDGE_TOKEN_SENDER'
-          : 'ADAPTER_LAYERZERO';
+          : 'ADAPTER_STARGATE';
   const sourceAdapterContractsQuery = useAdminContracts(1, 200, manualSourceChainId || undefined, sourceAdapterType);
   const destHyperContractsQuery = useAdminContracts(1, 200, manualDestChainId || undefined, 'ADAPTER_HYPERBRIDGE');
   const destHBTokenContractsQuery = useAdminContracts(1, 200, manualDestChainId || undefined, 'ADAPTER_HYPERBRIDGE_TOKEN_RECEIVER');
   const destCCIPContractsQuery = useAdminContracts(1, 200, manualDestChainId || undefined, 'ADAPTER_CCIP');
-  const destLayerZeroContractsQuery = useAdminContracts(1, 200, manualDestChainId || undefined, 'ADAPTER_LAYERZERO');
+  const destStargateContractsQuery = useAdminContracts(1, 200, manualDestChainId || undefined, 'ADAPTER_STARGATE');
   const selectedSourceHyperContractsQuery = useAdminContracts(1, 200, sourceChainId || undefined, 'ADAPTER_HYPERBRIDGE');
   const selectedSourceCCIPContractsQuery = useAdminContracts(1, 200, sourceChainId || undefined, 'ADAPTER_CCIP');
-  const selectedSourceLayerZeroContractsQuery = useAdminContracts(1, 200, sourceChainId || undefined, 'ADAPTER_LAYERZERO');
+  const selectedSourceStargateContractsQuery = useAdminContracts(1, 200, sourceChainId || undefined, 'ADAPTER_STARGATE');
   const selectedSourceHBTokenContractsQuery = useAdminContracts(1, 200, sourceChainId || undefined, 'ADAPTER_HYPERBRIDGE_TOKEN_SENDER');
   const selectedDestHyperContractsQuery = useAdminContracts(1, 200, destChainId || undefined, 'ADAPTER_HYPERBRIDGE');
   const selectedDestHBTokenContractsQuery = useAdminContracts(1, 200, destChainId || undefined, 'ADAPTER_HYPERBRIDGE_TOKEN_RECEIVER');
   const selectedDestCCIPContractsQuery = useAdminContracts(1, 200, destChainId || undefined, 'ADAPTER_CCIP');
-  const selectedDestLayerZeroContractsQuery = useAdminContracts(1, 200, destChainId || undefined, 'ADAPTER_LAYERZERO');
+  const selectedDestStargateContractsQuery = useAdminContracts(1, 200, destChainId || undefined, 'ADAPTER_STARGATE');
   const manualSourceAdapterContracts = sourceAdapterContractsQuery.data?.items || [];
   const manualDestHyperContracts = destHyperContractsQuery.data?.items || [];
   const manualDestHBTokenContracts = destHBTokenContractsQuery.data?.items || [];
   const manualDestCCIPContracts = destCCIPContractsQuery.data?.items || [];
-  const manualDestLayerZeroContracts = destLayerZeroContractsQuery.data?.items || [];
+  const manualDestStargateContracts = destStargateContractsQuery.data?.items || [];
   const selectedSourceHyperContracts = selectedSourceHyperContractsQuery.data?.items || [];
   const selectedSourceCCIPContracts = selectedSourceCCIPContractsQuery.data?.items || [];
-  const selectedSourceLayerZeroContracts = selectedSourceLayerZeroContractsQuery.data?.items || [];
+  const selectedSourceStargateContracts = selectedSourceStargateContractsQuery.data?.items || [];
   const selectedSourceHBTokenContracts = selectedSourceHBTokenContractsQuery.data?.items || [];
   const selectedDestHyperContracts = selectedDestHyperContractsQuery.data?.items || [];
   const selectedDestHBTokenContracts = selectedDestHBTokenContractsQuery.data?.items || [];
   const selectedDestCCIPContracts = selectedDestCCIPContractsQuery.data?.items || [];
-  const selectedDestLayerZeroContracts = selectedDestLayerZeroContractsQuery.data?.items || [];
+  const selectedDestStargateContracts = selectedDestStargateContractsQuery.data?.items || [];
 
   const statusSourceSenderAddress = String(
     selectedOnchainStatusQuery.data?.adapterType2 ||
-    selectedSourceLayerZeroContracts?.[0]?.contractAddress ||
-    manualLayerZeroSenderAddress ||
+    selectedSourceStargateContracts?.[0]?.contractAddress ||
+    manualStargateSenderAddress ||
     ''
   ).trim();
   const statusDestinationReceiverAddress = String(
-    selectedDestLayerZeroContracts?.[0]?.contractAddress ||
-    manualLayerZeroReceiverAddress ||
-    bytes32ToAddress(String(selectedOnchainStatusQuery.data?.layerZeroPeer || '')) ||
+    selectedDestStargateContracts?.[0]?.contractAddress ||
+    manualStargateReceiverAddress ||
+    bytes32ToAddress(String(selectedOnchainStatusQuery.data?.stargatePeer || '')) ||
     ''
   ).trim();
 
@@ -471,12 +471,12 @@ export const useAdminCrosschainConfigs = () => {
     () => sourceChains.find((chain: any) => String(chain.id) === String(manualSourceChainId)),
     [sourceChains, manualSourceChainId]
   );
-  const layerZeroE2EStatusQuery = useLayerZeroE2EStatus(
+  const stargateE2EStatusQuery = useStargateE2EStatus(
     {
       sourceChainId: sourceChainId || undefined,
       destChainId: destChainId || undefined,
       destinationReceiverAddress: statusDestinationReceiverAddress,
-      destinationSrcEid: Number(resolveLayerZeroSrcEid(selectedSourceChain || {})) || undefined,
+      destinationSrcEid: Number(resolveStargateSrcEid(selectedSourceChain || {})) || undefined,
       destinationSrcSenderHex: addressToPaddedBytesHex(statusSourceSenderAddress),
     },
     Boolean(sourceChainId && destChainId)
@@ -492,8 +492,8 @@ export const useAdminCrosschainConfigs = () => {
     setHyperbridgeConfigMutation.isPending ||
     setHyperbridgeTokenGatewayConfigMutation.isPending ||
     setCCIPConfigMutation.isPending ||
-    setLayerZeroConfigMutation.isPending ||
-    configureLayerZeroE2EMutation.isPending ||
+    setStargateConfigMutation.isPending ||
+    configureStargateE2EMutation.isPending ||
     createRoutePolicyMutation.isPending ||
     updateRoutePolicyMutation.isPending;
   const routes = useMemo(() => {
@@ -663,51 +663,51 @@ export const useAdminCrosschainConfigs = () => {
   useEffect(() => {
     if (manualBridgeType !== '2') return;
     if (!manualDestChainId) {
-      setManualLayerZeroDstEid('');
+      setManualStargateDstEid('');
       return;
     }
-    const statusDstEid = Number(manualOnchainStatusQuery.data?.layerZeroDstEid || 0);
+    const statusDstEid = Number(manualOnchainStatusQuery.data?.stargateDstEid || 0);
     if (Number.isFinite(statusDstEid) && statusDstEid > 0) {
-      setManualLayerZeroDstEid(String(statusDstEid));
+      setManualStargateDstEid(String(statusDstEid));
       return;
     }
-    setManualLayerZeroDstEid(resolveLayerZeroDstEid(selectedManualDestChain));
-  }, [manualBridgeType, manualDestChainId, selectedManualDestChain, manualOnchainStatusQuery.data?.layerZeroDstEid]);
+    setManualStargateDstEid(resolveStargateDstEid(selectedManualDestChain));
+  }, [manualBridgeType, manualDestChainId, selectedManualDestChain, manualOnchainStatusQuery.data?.stargateDstEid]);
 
   useEffect(() => {
     if (manualBridgeType !== '2') return;
     if (!manualSourceChainId) {
-      setManualLayerZeroSrcEid('');
+      setManualStargateSrcEid('');
       return;
     }
-    setManualLayerZeroSrcEid(resolveLayerZeroSrcEid(selectedManualSourceChain || {}));
+    setManualStargateSrcEid(resolveStargateSrcEid(selectedManualSourceChain || {}));
   }, [manualBridgeType, manualSourceChainId, selectedManualSourceChain]);
 
   useEffect(() => {
     if (manualBridgeType !== '2') return;
     if (!manualSourceChainId) {
-      setManualLayerZeroSenderAddress('');
+      setManualStargateSenderAddress('');
       return;
     }
     const sender = String(manualAdapterAddress || manualSourceAdapterContracts?.[0]?.contractAddress || '').trim();
     if (!sender) return;
-    if (String(manualLayerZeroSenderAddress || '').toLowerCase() !== sender.toLowerCase()) {
-      setManualLayerZeroSenderAddress(sender);
+    if (String(manualStargateSenderAddress || '').toLowerCase() !== sender.toLowerCase()) {
+      setManualStargateSenderAddress(sender);
     }
-  }, [manualBridgeType, manualSourceChainId, manualAdapterAddress, manualSourceAdapterContracts, manualLayerZeroSenderAddress]);
+  }, [manualBridgeType, manualSourceChainId, manualAdapterAddress, manualSourceAdapterContracts, manualStargateSenderAddress]);
 
   useEffect(() => {
     if (manualBridgeType !== '2') return;
     if (!manualDestChainId) {
-      setManualLayerZeroReceiverAddress('');
+      setManualStargateReceiverAddress('');
       return;
     }
-    const receiver = String(manualDestLayerZeroContracts?.[0]?.contractAddress || '').trim();
+    const receiver = String(manualDestStargateContracts?.[0]?.contractAddress || '').trim();
     if (!receiver) return;
-    if (String(manualLayerZeroReceiverAddress || '').toLowerCase() !== receiver.toLowerCase()) {
-      setManualLayerZeroReceiverAddress(receiver);
+    if (String(manualStargateReceiverAddress || '').toLowerCase() !== receiver.toLowerCase()) {
+      setManualStargateReceiverAddress(receiver);
     }
-  }, [manualBridgeType, manualDestChainId, manualDestLayerZeroContracts, manualLayerZeroReceiverAddress]);
+  }, [manualBridgeType, manualDestChainId, manualDestStargateContracts, manualStargateReceiverAddress]);
 
   useEffect(() => {
     if (!manualSourceChainId) {
@@ -809,62 +809,62 @@ export const useAdminCrosschainConfigs = () => {
   useEffect(() => {
     if (manualBridgeType !== '2') return;
     if (!manualDestChainId) {
-      setManualLayerZeroPeerHex('');
+      setManualStargatePeerHex('');
       return;
     }
-    if (!manualDestLayerZeroContracts.length) {
-      setManualLayerZeroPeerHex('');
+    if (!manualDestStargateContracts.length) {
+      setManualStargatePeerHex('');
       return;
     }
-    const allValues = manualDestLayerZeroContracts
+    const allValues = manualDestStargateContracts
       .map((contract: any) => addressToPaddedBytesHex(String(contract.contractAddress || '')))
       .filter(Boolean);
     if (!allValues.length) {
-      setManualLayerZeroPeerHex('');
+      setManualStargatePeerHex('');
       return;
     }
-    const onchainPeer = String(manualOnchainStatusQuery.data?.layerZeroPeer || '').trim();
+    const onchainPeer = String(manualOnchainStatusQuery.data?.stargatePeer || '').trim();
     if (onchainPeer) {
-      setManualLayerZeroPeerHex(onchainPeer);
+      setManualStargatePeerHex(onchainPeer);
       return;
     }
-    const receiverPeer = addressToPaddedBytesHex(String(manualLayerZeroReceiverAddress || ''));
+    const receiverPeer = addressToPaddedBytesHex(String(manualStargateReceiverAddress || ''));
     if (receiverPeer && allValues.includes(receiverPeer)) {
-      if (String(manualLayerZeroPeerHex || '').toLowerCase() !== receiverPeer.toLowerCase()) {
-        setManualLayerZeroPeerHex(receiverPeer);
+      if (String(manualStargatePeerHex || '').toLowerCase() !== receiverPeer.toLowerCase()) {
+        setManualStargatePeerHex(receiverPeer);
       }
       return;
     }
-    if (!allValues.includes(String(manualLayerZeroPeerHex))) {
-      setManualLayerZeroPeerHex(allValues[0]);
+    if (!allValues.includes(String(manualStargatePeerHex))) {
+      setManualStargatePeerHex(allValues[0]);
     }
   }, [
     manualBridgeType,
     manualDestChainId,
-    manualDestLayerZeroContracts,
-    manualOnchainStatusQuery.data?.layerZeroPeer,
-    manualLayerZeroPeerHex,
-    manualLayerZeroReceiverAddress,
+    manualDestStargateContracts,
+    manualOnchainStatusQuery.data?.stargatePeer,
+    manualStargatePeerHex,
+    manualStargateReceiverAddress,
   ]);
 
   useEffect(() => {
     if (manualBridgeType !== '2') return;
     if (!manualDestChainId) {
-      setManualLayerZeroOptionsHex('');
+      setManualStargateOptionsHex('');
       return;
     }
 
-    const onchainOptions = String(manualOnchainStatusQuery.data?.layerZeroOptionsHex || '').trim();
+    const onchainOptions = String(manualOnchainStatusQuery.data?.stargateOptionsHex || '').trim();
     if (onchainOptions) {
-      setManualLayerZeroOptionsHex(onchainOptions);
+      setManualStargateOptionsHex(onchainOptions);
       return;
     }
 
     // Keep a deterministic default for manual flow even if on-chain value not set yet.
-    if (!String(manualLayerZeroOptionsHex || '').trim()) {
-      setManualLayerZeroOptionsHex('0x');
+    if (!String(manualStargateOptionsHex || '').trim()) {
+      setManualStargateOptionsHex('0x');
     }
-  }, [manualBridgeType, manualDestChainId, manualOnchainStatusQuery.data?.layerZeroOptionsHex, manualLayerZeroOptionsHex]);
+  }, [manualBridgeType, manualDestChainId, manualOnchainStatusQuery.data?.stargateOptionsHex, manualStargateOptionsHex]);
 
   const handleRecheck = async (payload: { sourceChainId: string; destChainId: string }) => {
     try {
@@ -911,12 +911,12 @@ export const useAdminCrosschainConfigs = () => {
     setManualCCIPSourceChainSelector('');
     setManualCCIPTrustedSenderHex('');
     setManualCCIPAllowSourceChain(true);
-    setManualLayerZeroDstEid('');
-    setManualLayerZeroSrcEid('');
-    setManualLayerZeroSenderAddress('');
-    setManualLayerZeroReceiverAddress('');
-    setManualLayerZeroPeerHex('');
-    setManualLayerZeroOptionsHex('');
+    setManualStargateDstEid('');
+    setManualStargateSrcEid('');
+    setManualStargateSenderAddress('');
+    setManualStargateReceiverAddress('');
+    setManualStargatePeerHex('');
+    setManualStargateOptionsHex('');
     resetManualStepper();
   };
 
@@ -1008,7 +1008,7 @@ export const useAdminCrosschainConfigs = () => {
           ? (selectedDestCCIPContracts.length ? selectedDestCCIPContracts : manualDestCCIPContracts)
           : normalizedBridgeType === '3'
             ? (selectedDestHBTokenContracts.length ? selectedDestHBTokenContracts : manualDestHBTokenContracts)
-            : (selectedDestLayerZeroContracts.length ? selectedDestLayerZeroContracts : manualDestLayerZeroContracts);
+            : (selectedDestStargateContracts.length ? selectedDestStargateContracts : manualDestStargateContracts);
 
     if (manualBridgeType !== normalizedBridgeType) {
       setManualBridgeType(normalizedBridgeType);
@@ -1023,19 +1023,19 @@ export const useAdminCrosschainConfigs = () => {
       setManualCCIPSourceChainSelector('');
       setManualCCIPTrustedSenderHex('');
       setManualCCIPAllowSourceChain(true);
-      setManualLayerZeroDstEid('');
-      setManualLayerZeroSrcEid('');
-      setManualLayerZeroSenderAddress('');
-      setManualLayerZeroReceiverAddress('');
-      setManualLayerZeroPeerHex('');
-      setManualLayerZeroOptionsHex('');
+      setManualStargateDstEid('');
+      setManualStargateSrcEid('');
+      setManualStargateSenderAddress('');
+      setManualStargateReceiverAddress('');
+      setManualStargatePeerHex('');
+      setManualStargateOptionsHex('');
     }
 
     const firstSourceAddress = String(sourceContracts?.[0]?.contractAddress || '');
     if (firstSourceAddress) {
       setManualAdapterAddress(firstSourceAddress);
       if (normalizedBridgeType === '2') {
-        setManualLayerZeroSenderAddress(firstSourceAddress);
+        setManualStargateSenderAddress(firstSourceAddress);
       }
     }
     if (normalizedBridgeType === '0') {
@@ -1070,18 +1070,18 @@ export const useAdminCrosschainConfigs = () => {
     } else if (normalizedBridgeType === '2') {
       const firstDestinationAddress = String(destContracts?.[0]?.contractAddress || '');
       if (firstDestinationAddress) {
-        setManualLayerZeroReceiverAddress(firstDestinationAddress);
-        setManualLayerZeroPeerHex(addressToPaddedBytesHex(firstDestinationAddress));
+        setManualStargateReceiverAddress(firstDestinationAddress);
+        setManualStargatePeerHex(addressToPaddedBytesHex(firstDestinationAddress));
       }
-      if (!manualLayerZeroDstEid) {
+      if (!manualStargateDstEid) {
         const selectedDestChain = chains.find((item: any) => String(item?.id || '') === String(selectedDest));
-        const dstEid = resolveLayerZeroDstEid(selectedDestChain);
-        if (dstEid) setManualLayerZeroDstEid(dstEid);
+        const dstEid = resolveStargateDstEid(selectedDestChain);
+        if (dstEid) setManualStargateDstEid(dstEid);
       }
-      if (!manualLayerZeroSrcEid) {
+      if (!manualStargateSrcEid) {
         const selectedSourceChain = chains.find((item: any) => String(item?.id || '') === String(selectedSource));
-        const srcEid = resolveLayerZeroSrcEid(selectedSourceChain);
-        if (srcEid) setManualLayerZeroSrcEid(srcEid);
+        const srcEid = resolveStargateSrcEid(selectedSourceChain);
+        if (srcEid) setManualStargateSrcEid(srcEid);
       }
     }
 
@@ -1118,7 +1118,7 @@ export const useAdminCrosschainConfigs = () => {
           ? (selectedDestCCIPContracts.length ? selectedDestCCIPContracts : manualDestCCIPContracts)
           : normalizedBridgeType === '3'
             ? (selectedDestHBTokenContracts.length ? selectedDestHBTokenContracts : manualDestHBTokenContracts)
-            : (selectedDestLayerZeroContracts.length ? selectedDestLayerZeroContracts : manualDestLayerZeroContracts);
+            : (selectedDestStargateContracts.length ? selectedDestStargateContracts : manualDestStargateContracts);
     const suggestedStep = getSuggestedStep(checks);
 
     handleApplyPreflightSuggestion(bridgeType, checks, { silent: true });
@@ -1181,8 +1181,8 @@ export const useAdminCrosschainConfigs = () => {
           const peerHex = destinationAddress ? addressToPaddedBytesHex(destinationAddress) : '';
           const selectedDestChain = chains.find((item: any) => String(item?.id || '') === String(selectedDest));
           const selectedSourceChain = chains.find((item: any) => String(item?.id || '') === String(selectedSource));
-          const dstEidRaw = resolveLayerZeroDstEid(selectedDestChain);
-          const srcEidRaw = resolveLayerZeroSrcEid(selectedSourceChain);
+          const dstEidRaw = resolveStargateDstEid(selectedDestChain);
+          const srcEidRaw = resolveStargateSrcEid(selectedSourceChain);
           const dstEid = dstEidRaw ? Number(dstEidRaw) : undefined;
           const srcEid = srcEidRaw ? Number(srcEidRaw) : undefined;
           const srcSenderHex = senderAddress ? addressToPaddedBytesHex(senderAddress) : '';
@@ -1190,7 +1190,7 @@ export const useAdminCrosschainConfigs = () => {
             toast.error(t('admin.crosschain_configs_view.toasts.preflight_missing_route_payload'));
             return;
           }
-          await configureLayerZeroE2EMutation.mutateAsync({
+          await configureStargateE2EMutation.mutateAsync({
             sourceChainId: selectedSource,
             destChainId: selectedDest,
             source: {
@@ -1211,7 +1211,7 @@ export const useAdminCrosschainConfigs = () => {
               authorizeGatewayAdapter: false,
             },
           });
-          toast.success(t('admin.crosschain_configs_view.toasts.manual_layerzero_success'));
+          toast.success(t('admin.crosschain_configs_view.toasts.manual_stargate_success'));
         } else if (normalizedBridgeType === '3') {
           const selectedDestChain = chains.find((item: any) => String(item?.id || '') === String(selectedDest));
           const rawChainReference =
@@ -1484,7 +1484,7 @@ export const useAdminCrosschainConfigs = () => {
     }
   };
 
-  const handleSetLayerZeroManual = async () => {
+  const handleSetStargateManual = async () => {
     if (!manualStepCompleted.step2 || manualCurrentStep !== 3) {
       toast.error(t('admin.crosschain_configs_view.toasts.manual_step_invalid'));
       return;
@@ -1495,14 +1495,14 @@ export const useAdminCrosschainConfigs = () => {
     }
     try {
       const senderAddress = String(
-        manualLayerZeroSenderAddress || manualAdapterAddress || manualSourceAdapterContracts?.[0]?.contractAddress || ''
+        manualStargateSenderAddress || manualAdapterAddress || manualSourceAdapterContracts?.[0]?.contractAddress || ''
       );
       const receiverAddress = String(
-        manualLayerZeroReceiverAddress || manualDestLayerZeroContracts?.[0]?.contractAddress || ''
+        manualStargateReceiverAddress || manualDestStargateContracts?.[0]?.contractAddress || ''
       );
-      const dstEid = Number(manualLayerZeroDstEid || resolveLayerZeroDstEid(selectedManualDestChain || {})) || undefined;
-      const srcEid = Number(manualLayerZeroSrcEid || resolveLayerZeroSrcEid(selectedManualSourceChain || {})) || undefined;
-      const dstPeerHex = manualLayerZeroPeerHex || (receiverAddress ? addressToPaddedBytesHex(receiverAddress) : '');
+      const dstEid = Number(manualStargateDstEid || resolveStargateDstEid(selectedManualDestChain || {})) || undefined;
+      const srcEid = Number(manualStargateSrcEid || resolveStargateSrcEid(selectedManualSourceChain || {})) || undefined;
+      const dstPeerHex = manualStargatePeerHex || (receiverAddress ? addressToPaddedBytesHex(receiverAddress) : '');
       const srcSenderHex = senderAddress ? addressToPaddedBytesHex(senderAddress) : '';
       const missing: string[] = [];
       if (!senderAddress) missing.push('senderAddress');
@@ -1516,7 +1516,7 @@ export const useAdminCrosschainConfigs = () => {
         return;
       }
 
-      const result = await configureLayerZeroE2EMutation.mutateAsync({
+      const result = await configureStargateE2EMutation.mutateAsync({
         sourceChainId: manualSourceChainId,
         destChainId: manualDestChainId,
         source: {
@@ -1525,7 +1525,7 @@ export const useAdminCrosschainConfigs = () => {
           senderAddress,
           dstEid,
           dstPeerHex,
-          optionsHex: manualLayerZeroOptionsHex || '',
+          optionsHex: manualStargateOptionsHex || '',
           registerDelegate: false,
           authorizeVaultSpender: true,
         },
@@ -1537,30 +1537,30 @@ export const useAdminCrosschainConfigs = () => {
           authorizeGatewayAdapter: true,
         },
       });
-      toast.success(t('admin.crosschain_configs_view.toasts.manual_layerzero_success'));
+      toast.success(t('admin.crosschain_configs_view.toasts.manual_stargate_success'));
       setManualStepCompleted((prev) => ({ ...prev, step3: true }));
       setManualExecution((prev) => ({
         ...prev,
         step3: {
           status: 'SUCCESS',
-          message: t('admin.crosschain_configs_view.toasts.manual_layerzero_success'),
+          message: t('admin.crosschain_configs_view.toasts.manual_stargate_success'),
           txHashes: Array.isArray(result?.txHashes) ? result.txHashes.map((item: any) => String(item)) : [],
         },
       }));
       setManualCurrentStep(4);
       await overviewQuery.refetch();
       await preflightQuery.refetch();
-      await layerZeroE2EStatusQuery.refetch();
+      await stargateE2EStatusQuery.refetch();
     } catch (error: any) {
       setManualExecution((prev) => ({
         ...prev,
-        step3: { status: 'FAILED', message: error?.message || t('admin.crosschain_configs_view.toasts.manual_layerzero_failed'), txHashes: [] },
+        step3: { status: 'FAILED', message: error?.message || t('admin.crosschain_configs_view.toasts.manual_stargate_failed'), txHashes: [] },
       }));
-      toast.error(error?.message || t('admin.crosschain_configs_view.toasts.manual_layerzero_failed'));
+      toast.error(error?.message || t('admin.crosschain_configs_view.toasts.manual_stargate_failed'));
     }
   };
 
-  const handleConfigureLayerZeroE2ESelected = async () => {
+  const handleConfigureStargateE2ESelected = async () => {
     if (!sourceChainId || !destChainId) {
       toast.error(t('admin.crosschain_configs_view.toasts.select_source_chain_first'));
       return;
@@ -1568,27 +1568,27 @@ export const useAdminCrosschainConfigs = () => {
 
     const senderAddress = String(
       selectedOnchainStatusQuery.data?.adapterType2 ||
-      selectedSourceLayerZeroContracts?.[0]?.contractAddress ||
+      selectedSourceStargateContracts?.[0]?.contractAddress ||
       ''
     );
     const receiverAddress = String(
-      selectedDestLayerZeroContracts?.[0]?.contractAddress ||
-      manualDestLayerZeroContracts?.[0]?.contractAddress ||
-      bytes32ToAddress(String(selectedOnchainStatusQuery.data?.layerZeroPeer || '')) ||
+      selectedDestStargateContracts?.[0]?.contractAddress ||
+      manualDestStargateContracts?.[0]?.contractAddress ||
+      bytes32ToAddress(String(selectedOnchainStatusQuery.data?.stargatePeer || '')) ||
       ''
     );
     const dstEid =
-      Number(selectedOnchainStatusQuery.data?.layerZeroDstEid || 0) ||
-      Number(resolveLayerZeroDstEid(selectedDestChain || {})) ||
+      Number(selectedOnchainStatusQuery.data?.stargateDstEid || 0) ||
+      Number(resolveStargateDstEid(selectedDestChain || {})) ||
       resolveLzEidFromChainRef(String(selectedOnchainStatusQuery.data?.destChainId || '')) ||
       undefined;
     const srcEid =
-      Number(resolveLayerZeroSrcEid(selectedSourceChain || {})) ||
+      Number(resolveStargateSrcEid(selectedSourceChain || {})) ||
       resolveLzEidFromChainRef(String(selectedOnchainStatusQuery.data?.sourceChainId || '')) ||
       undefined;
     const dstPeerHex = receiverAddress
       ? addressToPaddedBytesHex(receiverAddress)
-      : String(selectedOnchainStatusQuery.data?.layerZeroPeer || '').trim();
+      : String(selectedOnchainStatusQuery.data?.stargatePeer || '').trim();
     const srcSenderHex = senderAddress ? addressToPaddedBytesHex(senderAddress) : '';
 
     const missing: string[] = [];
@@ -1604,7 +1604,7 @@ export const useAdminCrosschainConfigs = () => {
     }
 
     try {
-      await configureLayerZeroE2EMutation.mutateAsync({
+      await configureStargateE2EMutation.mutateAsync({
         sourceChainId,
         destChainId,
         source: {
@@ -1627,10 +1627,10 @@ export const useAdminCrosschainConfigs = () => {
       });
       await overviewQuery.refetch();
       await preflightQuery.refetch();
-      await layerZeroE2EStatusQuery.refetch();
-      toast.success(t('admin.crosschain_configs_view.toasts.manual_layerzero_success'));
+      await stargateE2EStatusQuery.refetch();
+      toast.success(t('admin.crosschain_configs_view.toasts.manual_stargate_success'));
     } catch (error: any) {
-      toast.error(error?.message || t('admin.crosschain_configs_view.toasts.manual_layerzero_failed'));
+      toast.error(error?.message || t('admin.crosschain_configs_view.toasts.manual_stargate_failed'));
     }
   };
 
@@ -1973,12 +1973,12 @@ export const useAdminCrosschainConfigs = () => {
       manualCCIPSourceChainSelector,
       manualCCIPTrustedSenderHex,
       manualCCIPAllowSourceChain,
-      manualLayerZeroDstEid,
-      manualLayerZeroSrcEid,
-      manualLayerZeroSenderAddress,
-      manualLayerZeroReceiverAddress,
-      manualLayerZeroPeerHex,
-      manualLayerZeroOptionsHex,
+      manualStargateDstEid,
+      manualStargateSrcEid,
+      manualStargateSenderAddress,
+      manualStargateReceiverAddress,
+      manualStargatePeerHex,
+      manualStargateOptionsHex,
       policyDefaultBridgeType,
       policyFallbackMode,
       policyFallbackOrderInput,
@@ -1995,15 +1995,15 @@ export const useAdminCrosschainConfigs = () => {
       manualDestHyperContracts,
       manualDestHBTokenContracts,
       manualDestCCIPContracts,
-      manualDestLayerZeroContracts,
+      manualDestStargateContracts,
       routes,
       activeRoutePolicy,
       selectedSourceRoutes,
       selectedSourceErrorRoutes,
       wizardReport,
       preflight: preflightQuery.data,
-      layerZeroE2EStatus: layerZeroE2EStatusQuery.data,
-      isLayerZeroE2EStatusLoading: layerZeroE2EStatusQuery.isLoading || layerZeroE2EStatusQuery.isFetching,
+      stargateE2EStatus: stargateE2EStatusQuery.data,
+      isStargateE2EStatusLoading: stargateE2EStatusQuery.isLoading || stargateE2EStatusQuery.isFetching,
       isRoutePolicyLoading: routePoliciesQuery.isLoading || routePoliciesQuery.isFetching,
       isPreflightLoading: preflightQuery.isLoading || preflightQuery.isFetching,
       isLoading: chainQuery.isLoading || overviewQuery.isLoading,
@@ -2030,12 +2030,12 @@ export const useAdminCrosschainConfigs = () => {
       setManualCCIPSourceChainSelector,
       setManualCCIPTrustedSenderHex,
       setManualCCIPAllowSourceChain,
-      setManualLayerZeroDstEid,
-      setManualLayerZeroSrcEid,
-      setManualLayerZeroSenderAddress,
-      setManualLayerZeroReceiverAddress,
-      setManualLayerZeroPeerHex,
-      setManualLayerZeroOptionsHex,
+      setManualStargateDstEid,
+      setManualStargateSrcEid,
+      setManualStargateSenderAddress,
+      setManualStargateReceiverAddress,
+      setManualStargatePeerHex,
+      setManualStargateOptionsHex,
       setPolicyDefaultBridgeType,
       setPolicyFallbackMode,
       setPolicyFallbackOrderInput,
@@ -2050,7 +2050,7 @@ export const useAdminCrosschainConfigs = () => {
       setHyperbridgeManual: handleSetHyperbridgeManual,
       setHyperbridgeTokenGatewayManual: handleSetHyperbridgeTokenGatewayManual,
       setCCIPManual: handleSetCCIPManual,
-      setLayerZeroManual: handleSetLayerZeroManual,
+      setStargateManual: handleSetStargateManual,
       refresh: async () => {
         await overviewQuery.refetch();
         if (sourceChainId && destChainId) {
@@ -2067,7 +2067,7 @@ export const useAdminCrosschainConfigs = () => {
       exportWizardReport: handleExportWizardReport,
       applyPreflightSuggestion: handleApplyPreflightSuggestion,
       runPreflightNextStep: handleRunPreflightNextStep,
-      configureLayerZeroE2ESelected: handleConfigureLayerZeroE2ESelected,
+      configureStargateE2ESelected: handleConfigureStargateE2ESelected,
     },
   };
 };

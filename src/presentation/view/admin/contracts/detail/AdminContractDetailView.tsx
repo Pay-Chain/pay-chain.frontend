@@ -7,7 +7,7 @@ import { Button, Card } from '@/presentation/components/atoms';
 import { useTranslation } from '@/presentation/hooks';
 import { useAdminContractDetail } from './useAdminContractDetail';
 import { Input } from '@/presentation/components/atoms';
-import { useAdminGenericInteract, useRegisterOnchainAdapter, useSetCCIPConfig, useSetHyperbridgeConfig, useSetLayerZeroConfig, useSetOnchainDefaultBridge } from '@/data/usecase/useAdmin';
+import { useAdminGenericInteract, useRegisterOnchainAdapter, useSetCCIPConfig, useSetHyperbridgeConfig, useSetStargateConfig, useSetOnchainDefaultBridge } from '@/data/usecase/useAdmin';
 import { toast } from 'sonner';
 
 type Props = {
@@ -28,7 +28,7 @@ export const AdminContractDetailView = ({ id }: Props) => {
   const setDefaultBridgeMutation = useSetOnchainDefaultBridge();
   const setHyperbridgeConfigMutation = useSetHyperbridgeConfig();
   const setCCIPConfigMutation = useSetCCIPConfig();
-  const setLayerZeroConfigMutation = useSetLayerZeroConfig();
+  const setStargateConfigMutation = useSetStargateConfig();
   const genericInteractMutation = useAdminGenericInteract();
   const [selectedFunction, setSelectedFunction] = useState('');
   const [functionInputValues, setFunctionInputValues] = useState<Record<string, string>>({});
@@ -92,7 +92,7 @@ export const AdminContractDetailView = ({ id }: Props) => {
         return;
       }
       if (selectedFn.name === 'setRoute') {
-        await setLayerZeroConfigMutation.mutateAsync({
+        await setStargateConfigMutation.mutateAsync({
           sourceChainId,
           destChainId: functionInputValues.destChainId || '',
           dstEid: functionInputValues.dstEid ? Number(functionInputValues.dstEid) : undefined,
@@ -103,7 +103,7 @@ export const AdminContractDetailView = ({ id }: Props) => {
         return;
       }
       if (selectedFn.name === 'setEnforcedOptions') {
-        await setLayerZeroConfigMutation.mutateAsync({
+        await setStargateConfigMutation.mutateAsync({
           sourceChainId,
           destChainId: functionInputValues.destChainId || '',
           optionsHex: functionInputValues.options || '',
@@ -234,7 +234,7 @@ export const AdminContractDetailView = ({ id }: Props) => {
               setDefaultBridgeMutation.isPending ||
               setHyperbridgeConfigMutation.isPending ||
               setCCIPConfigMutation.isPending ||
-              setLayerZeroConfigMutation.isPending ||
+              setStargateConfigMutation.isPending ||
               genericInteractMutation.isPending
             }
           >

@@ -10,6 +10,8 @@ import { WalletConnectButton } from '@/presentation/components/molecules';
 import { Loader2, Copy, Check, AlertCircle, Clock } from 'lucide-react';
 import { httpClient } from '@/core/network';
 import { useTranslation } from '@/presentation/hooks';
+import { QRDisplay } from '@/presentation/components/organisms/checkout/QRDisplay';
+import { MethodSelector, MethodType } from '@/presentation/components/organisms/checkout/MethodSelector';
 
 // Extended PaymentRequest for this page (server response includes txData)
 interface PaymentRequestResponse {
@@ -45,6 +47,7 @@ export default function PayPage() {
   const [timeLeft, setTimeLeft] = useState(0);
   const [isCopied, setIsCopied] = useState(false);
   const [isPaying, setIsPaying] = useState(false);
+  const [activeMethod, setActiveMethod] = useState<MethodType>('dompetku');
 
   // EVM Hooks
   const { address: evmAddress, isConnected: isEvmConnected } = useAccount();
@@ -236,129 +239,133 @@ export default function PayPage() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-gray-950 via-gray-900 to-gray-950 flex items-center justify-center p-6 text-white">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-pk-bg flex items-center justify-center p-6 text-white overflow-hidden relative">
+      {/* Background Decorative Elements */}
+      <div className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-20">
+        <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-pk-brand rounded-full blur-[120px] animate-pulse"></div>
+        <div className="absolute bottom-[-10%] left-[-10%] w-[400px] h-[400px] bg-indigo-900 rounded-full blur-[100px]" style={{ animationDelay: '2s' }}></div>
+      </div>
+
+      <div className="w-full max-w-md relative z-10">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-12">
-            <Loader2 className="animate-spin h-10 w-10 text-blue-500 mb-4" />
-            <p className="text-gray-400">{t('pay_page.loading')}</p>
+            <Loader2 className="animate-spin h-10 w-10 text-pk-brand mb-4" />
+            <p className="text-pk-text-secondary">{t('pay_page.loading')}</p>
           </div>
         ) : error ? (
-          <div className="bg-gray-900 rounded-2xl border border-gray-800 p-8 text-center">
-            <div className="w-16 h-16 mx-auto bg-red-500/20 rounded-full flex items-center justify-center mb-4">
+          <div className="pk-card p-8 text-center">
+            <div className="w-16 h-16 mx-auto bg-red-500/20 rounded-2xl flex items-center justify-center mb-6">
               <AlertCircle className="w-8 h-8 text-red-400" />
             </div>
             <h2 className="text-xl font-bold text-white mb-2">{t('pay_page.error_title')}</h2>
-            <p className="text-gray-400">{error}</p>
+            <p className="text-pk-text-secondary">{error}</p>
+            <Button onClick={() => window.location.reload()} className="mt-6 w-full px-6 py-3">
+              Retry Load
+            </Button>
           </div>
         ) : (
           paymentRequest && (
-            <div className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden shadow-2xl">
-              {/* Header */}
-              <div className="bg-linear-to-r from-blue-600 to-blue-500 p-6 text-center">
-                <div className="flex items-center justify-center gap-2 text-white/80 text-sm mb-2">
-                  <Clock className="w-4 h-4" />
-                  {t('pay_page.expires_in')} {formatTimeLeft(timeLeft)}
-                </div>
-                <h1 className="text-3xl font-bold text-white">
-                  {formatAmount(paymentRequest.amount, paymentRequest.decimals)}
-                </h1>
-                <p className="text-white/80 mt-1">{getChainName(paymentRequest.chainId)}</p>
-              </div>
-
-              {/* Details */}
-              <div className="p-6 space-y-4">
-                <div className="bg-gray-800/50 rounded-lg p-4">
-                  <h3 className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">
-                    {t('pay_page.contract_address')}
-                  </h3>
-                  <div className="flex items-center gap-2">
-                    <code className="text-blue-400 text-sm flex-1 truncate">
-                      {paymentRequest.contractAddress}
-                    </code>
-                    <button
-                      onClick={() => {
-                        navigator.clipboard.writeText(paymentRequest.contractAddress);
-                      }}
-                      className="p-1.5 text-gray-400 hover:text-white transition-colors"
-                    >
-                      <Copy className="w-4 h-4" />
-                    </button>
+            <div className="space-y-6">
+              <div className="pk-card overflow-hidden">
+                {/* Header Section */}
+                <div className="p-8 text-center bg-white/5 border-b border-white/5">
+                  <div className="flex items-center justify-center gap-2 text-pk-text-secondary text-sm mb-4 bg-white/5 w-fit mx-auto px-4 py-1.5 rounded-full border border-white/5">
+                    <Clock className="w-4 h-4 text-pk-brand" />
+                    <span className="font-mono">{formatTimeLeft(timeLeft)}</span>
+                  </div>
+                  <div className="text-4xl font-extrabold text-white tracking-tight mb-1">
+                    {formatAmount(paymentRequest.amount, paymentRequest.decimals)}
+                  </div>
+                  <div className="text-pk-text-secondary font-medium tracking-wide uppercase text-xs">
+                    {getChainName(paymentRequest.chainId)}
                   </div>
                 </div>
 
-                <div className="bg-gray-800/50 rounded-lg p-4">
-                  <h3 className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">
-                    {t('pay_page.transaction_data')} ({paymentRequest.txData.hex ? 'HEX' : paymentRequest.txData.base58 ? 'BASE58' : 'BASE64'})
-                  </h3>
-                  <div className="relative">
-                    <pre className="text-xs text-gray-300 bg-gray-900 rounded p-3 overflow-x-auto max-h-32 font-mono scrollbar-thin">
-                      {paymentRequest.txData.hex || paymentRequest.txData.base58 || paymentRequest.txData.base64}
-                    </pre>
-                    <button
-                      onClick={copyTxData}
-                      className="absolute top-2 right-2 px-2 py-1 bg-gray-700 hover:bg-gray-600 text-xs text-white rounded transition-colors flex items-center gap-1"
-                    >
-                      {isCopied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                      {isCopied ? t('pay_page.tx_data_copy_success') : t('pay_page.tx_data_copy')}
-                    </button>
+                {/* Method Selector */}
+                <div className="p-8">
+                  <MethodSelector activeMethod={activeMethod} onChange={setActiveMethod} />
+                  
+                  <div className="mt-8 transition-all duration-500 transform">
+                    {activeMethod === 'dompetku' && (
+                      <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+                        <QRDisplay value={`paymentkita://pay/${requestId}`} />
+                        <div className="text-center">
+                          <p className="text-sm text-pk-text-secondary">
+                            Scan with DompetKu app for instant confirmation.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {activeMethod === 'wallet' && (
+                      <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+                        <div className="bg-white/5 rounded-2xl p-6 border border-white/5">
+                           <h3 className="text-sm font-semibold text-white mb-4">Direct Wallet Payment</h3>
+                           <ol className="space-y-4 text-sm text-pk-text-secondary">
+                             <li className="flex gap-3 items-center">
+                               <div className="w-6 h-6 rounded-full bg-pk-brand/20 text-pk-brand flex items-center justify-center text-xs font-bold">1</div>
+                               Connect your {needsEvm ? 'EVM' : 'Solana'} wallet
+                             </li>
+                             <li className="flex gap-3 items-center">
+                               <div className="w-6 h-6 rounded-full bg-pk-brand/20 text-pk-brand flex items-center justify-center text-xs font-bold">2</div>
+                               Approve the transaction
+                             </li>
+                           </ol>
+                        </div>
+                        
+                        <Button
+                          onClick={handlePay}
+                          disabled={isPaying || timeLeft <= 0 || !isWalletReady}
+                          loading={isPaying}
+                          className="pk-button-primary w-full py-6 text-lg font-extrabold"
+                        >
+                          {isPaying ? t('pay_page.processing') : t('pay_page.pay_now')}
+                        </Button>
+                        
+                        {!isWalletReady && (
+                          <WalletConnectButton size="lg" className="w-full bg-white/5 border border-white/10 hover:bg-white/10 text-white rounded-xl py-6" connectLabel={t('common.connect')} />
+                        )}
+                      </div>
+                    )}
+
+                    {activeMethod === 'manual' && (
+                      <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+                        <div className="bg-white/5 rounded-2xl p-6 border border-white/5 space-y-6">
+                          <div>
+                            <label className="text-[10px] font-bold text-pk-text-secondary uppercase tracking-widest mb-2 block">Destination Token Address</label>
+                            <div className="flex items-center gap-3">
+                              <code className="text-pk-brand text-xs font-mono flex-1 truncate bg-black/20 p-2 rounded">
+                                {paymentRequest.contractAddress}
+                              </code>
+                              <button onClick={() => navigator.clipboard.writeText(paymentRequest.contractAddress)} className="p-2 text-pk-text-secondary hover:text-white transition-colors">
+                                <Copy className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <label className="text-[10px] font-bold text-pk-text-secondary uppercase tracking-widest mb-2 block">Hex Data</label>
+                            <div className="relative">
+                              <pre className="text-[10px] text-gray-300 bg-black/30 rounded-xl p-4 overflow-x-auto max-h-32 font-mono scrollbar-hide border border-white/5">
+                                {paymentRequest.txData.hex || paymentRequest.txData.base58 || paymentRequest.txData.base64}
+                              </pre>
+                              <button
+                                onClick={copyTxData}
+                                className="absolute top-2 right-2 p-2 bg-pk-brand/20 hover:bg-pk-brand/40 text-pk-brand rounded-lg transition-all"
+                              >
+                                {isCopied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-gray-800/50 rounded-lg p-4">
-                    <h3 className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">
-                      {t('pay_page.chain_id')}
-                    </h3>
-                    <p className="text-white font-medium truncate">{paymentRequest.chainId}</p>
-                  </div>
-                  <div className="bg-gray-800/50 rounded-lg p-4">
-                    <h3 className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">
-                      {t('pay_page.decimals')}
-                    </h3>
-                    <p className="text-white font-medium">{paymentRequest.decimals}</p>
-                  </div>
+                <div className="p-4 text-center border-t border-white/5 bg-black/20">
+                  <p className="text-[10px] text-pk-text-secondary font-bold tracking-widest uppercase">Powered by PaymentKita Gateway</p>
                 </div>
-              </div>
-
-              {/* Instructions */}
-              <div className="border-t border-gray-800 p-6">
-                <h3 className="font-medium text-white mb-3">{t('pay_page.how_to_pay')}</h3>
-                <ol className="space-y-3 text-sm text-gray-400">
-                  <li className="flex gap-3">
-                    <span className="shrink-0 w-6 h-6 bg-blue-500/20 text-blue-400 rounded-full flex items-center justify-center text-xs font-medium">
-                      1
-                    </span>
-                    <span>
-                      {t('pay_page.step_1')}{' '}
-                      <strong className="text-white">{getChainName(paymentRequest.chainId)}</strong>
-                    </span>
-                  </li>
-                  <li className="flex gap-3">
-                    <span className="shrink-0 w-6 h-6 bg-blue-500/20 text-blue-400 rounded-full flex items-center justify-center text-xs font-medium">
-                      2
-                    </span>
-                    <span>{t('pay_page.step_2')}</span>
-                  </li>
-                </ol>
-
-                <Button
-                  onClick={handlePay}
-                  disabled={isPaying || timeLeft <= 0 || !isWalletReady}
-                  loading={isPaying}
-                  className="w-full mt-6 py-6 text-lg font-bold shadow-lg shadow-blue-500/20"
-                >
-                  {isPaying ? t('pay_page.processing') : t('pay_page.pay_now')}
-                </Button>
-                {!isWalletReady && (
-                  <div className="mt-3">
-                    <WalletConnectButton size="default" className="w-full" connectLabel={t('common.connect')} />
-                  </div>
-                )}
-              </div>
-
-              <div className="border-t border-gray-800 p-4 text-center">
-                <p className="text-xs text-gray-500">{t('pay_page.powered_by')}</p>
               </div>
             </div>
           )
@@ -403,27 +410,28 @@ function uuidToBytes32(value: string): Uint8Array {
   }
   return out;
 }
-  const decodeBase58 = (input: string): Uint8Array => {
-    const alphabet = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
-    const base = BigInt(58);
-    let value = BigInt(0);
 
-    for (const c of input) {
-      const idx = alphabet.indexOf(c);
-      if (idx < 0) throw new Error('invalid base58');
-      value = value * base + BigInt(idx);
-    }
+const decodeBase58 = (input: string): Uint8Array => {
+  const alphabet = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+  const base = BigInt(58);
+  let value = BigInt(0);
 
-    const out: number[] = [];
-    while (value > 0) {
-      out.push(Number(value % BigInt(256)));
-      value /= BigInt(256);
-    }
-    out.reverse();
+  for (const c of input) {
+    const idx = alphabet.indexOf(c);
+    if (idx < 0) throw new Error('invalid base58');
+    value = value * base + BigInt(idx);
+  }
 
-    let leading = 0;
-    while (leading < input.length && input[leading] === '1') {
-      leading += 1;
-    }
-    return new Uint8Array([...new Array(leading).fill(0), ...out]);
-  };
+  const out: number[] = [];
+  while (value > 0) {
+    out.push(Number(value % BigInt(256)));
+    value /= BigInt(256);
+  }
+  out.reverse();
+
+  let leading = 0;
+  while (leading < input.length && input[leading] === '1') {
+    leading += 1;
+  }
+  return new Uint8Array([...new Array(leading).fill(0), ...out]);
+};

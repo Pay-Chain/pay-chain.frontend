@@ -231,7 +231,7 @@ export default function AppView() {
                 <option value="default">Default (null → SC default)</option>
                 <option value="0">Hyperbridge</option>
                 <option value="1">CCIP</option>
-                <option value="2">LayerZero</option>
+                <option value="2">Stargate</option>
                 <option value="3">Hyperbridge Token Gateway</option>
               </Select>
             </div>

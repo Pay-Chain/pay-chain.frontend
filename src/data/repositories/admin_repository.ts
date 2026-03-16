@@ -2,9 +2,9 @@ import {
   AdminDataSource,
   AdminStats,
   BridgeConfigPayload,
-  LayerZeroConfigPayload,
-  LayerZeroE2EConfigurePayload,
-  LayerZeroE2EStatusParams,
+  StargateConfigPayload,
+  StargateE2EConfigurePayload,
+  StargateE2EStatusParams,
   CrosschainBulkAutoFixPayload,
   CrosschainBulkRecheckPayload,
   CrosschainAutoFixPayload,
@@ -196,16 +196,16 @@ export class AdminRepository {
     return this.dataSource.setCCIPConfig(data);
   }
 
-  async setLayerZeroConfig(data: LayerZeroConfigPayload): Promise<any> {
-    return this.dataSource.setLayerZeroConfig(data);
+  async setStargateConfig(data: StargateConfigPayload): Promise<any> {
+    return this.dataSource.setStargateConfig(data);
   }
 
-  async configureLayerZeroE2E(data: LayerZeroE2EConfigurePayload): Promise<any> {
-    return this.dataSource.configureLayerZeroE2E(data);
+  async configureStargateE2E(data: StargateE2EConfigurePayload): Promise<any> {
+    return this.dataSource.configureStargateE2E(data);
   }
 
-  async getLayerZeroE2EStatus(params: LayerZeroE2EStatusParams): Promise<any> {
-    return this.dataSource.getLayerZeroE2EStatus(params);
+  async getStargateE2EStatus(params: StargateE2EStatusParams): Promise<any> {
+    return this.dataSource.getStargateE2EStatus(params);
   }
 
   async getCrosschainOverview(params?: CrosschainOverviewParams): Promise<{ items: any[]; meta?: any }> {

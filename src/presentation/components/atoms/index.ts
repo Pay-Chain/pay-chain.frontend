@@ -11,3 +11,4 @@ export * from './PaymentKitaLogo';
 export * from './WalletNetworkIcon';
 export * from './Tabs';
 export * from './ChainTokenIcon';
+export * from './Switch';

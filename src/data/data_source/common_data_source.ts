@@ -67,12 +67,20 @@ export const walletDataSource = new WalletDataSource();
 
 // ============== Merchant Data Source ==============
 class MerchantDataSource {
+  async getMe() {
+    return httpClient.get<Merchant>(API_ENDPOINTS.MERCHANT_ME);
+  }
+
   async apply(request: ApplyMerchantRequest) {
     return httpClient.post<Merchant>(API_ENDPOINTS.MERCHANT_APPLY, request);
   }
 
   async getStatus() {
     return httpClient.get<MerchantStatusResponse>(API_ENDPOINTS.MERCHANT_STATUS);
+  }
+
+  async updateSettings(request: { callbackUrl: string; webhookIsActive: boolean }) {
+    return httpClient.patch<Merchant>(API_ENDPOINTS.MERCHANT_UPDATE_SETTINGS, request);
   }
 }
 

@@ -102,7 +102,7 @@ export interface Chain {
   logoUrl?: string;
   isActive: boolean;
   ccipChainSelector?: string;
-  layerZeroEid?: number;
+  stargateEid?: number;
 }
 
 // Token entity
@@ -144,6 +144,26 @@ export interface Merchant {
   status: string;
   taxId?: string;
   businessAddress?: string;
+  callbackUrl?: string;
+  webhookSecret?: string;
+  webhookIsActive?: boolean;
+}
+
+// Webhook Log entity
+export interface WebhookLog {
+  id: string;
+  merchantId: string;
+  paymentId: string;
+  eventType: string;
+  payload: any;
+  deliveryStatus: 'pending' | 'delivering' | 'delivered' | 'retrying' | 'failed' | 'dropped';
+  httpStatus?: number;
+  responseBody?: string;
+  retryCount: number;
+  nextRetryAt?: string;
+  lastAttemptAt?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 // Payment request entity

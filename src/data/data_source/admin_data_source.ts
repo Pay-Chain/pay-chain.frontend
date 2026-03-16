@@ -95,7 +95,7 @@ export interface CCIPConfigPayload {
   allowSourceChain?: boolean;
 }
 
-export interface LayerZeroConfigPayload {
+export interface StargateConfigPayload {
   sourceChainId: string;
   destChainId: string;
   dstEid?: number;
@@ -103,7 +103,7 @@ export interface LayerZeroConfigPayload {
   optionsHex?: string;
 }
 
-export interface LayerZeroE2EConfigurePayload {
+export interface StargateE2EConfigurePayload {
   sourceChainId: string;
   destChainId: string;
   source: {
@@ -127,7 +127,7 @@ export interface LayerZeroE2EConfigurePayload {
   };
 }
 
-export interface LayerZeroE2EStatusParams {
+export interface StargateE2EStatusParams {
   sourceChainId: string;
   destChainId: string;
   destinationReceiverAddress?: string;
@@ -478,19 +478,19 @@ export class AdminDataSource {
     return response;
   }
 
-  async setLayerZeroConfig(data: LayerZeroConfigPayload): Promise<any> {
-    const { data: response, error } = await httpClient.post<any>(API_ENDPOINTS.ADMIN_ONCHAIN_ADAPTER_LAYERZERO_CONFIG, data);
+  async setStargateConfig(data: StargateConfigPayload): Promise<any> {
+    const { data: response, error } = await httpClient.post<any>(API_ENDPOINTS.ADMIN_ONCHAIN_ADAPTER_STARGATE_CONFIG, data);
     if (error) throw new Error(error);
     return response;
   }
 
-  async configureLayerZeroE2E(data: LayerZeroE2EConfigurePayload): Promise<any> {
-    const { data: response, error } = await httpClient.post<any>(API_ENDPOINTS.ADMIN_ONCHAIN_ADAPTER_LAYERZERO_CONFIGURE_E2E, data);
+  async configureStargateE2E(data: StargateE2EConfigurePayload): Promise<any> {
+    const { data: response, error } = await httpClient.post<any>(API_ENDPOINTS.ADMIN_ONCHAIN_ADAPTER_STARGATE_CONFIGURE_E2E, data);
     if (error) throw new Error(error);
     return response?.result || response;
   }
 
-  async getLayerZeroE2EStatus(params: LayerZeroE2EStatusParams): Promise<any> {
+  async getStargateE2EStatus(params: StargateE2EStatusParams): Promise<any> {
     const query = new URLSearchParams();
     query.append('sourceChainId', params.sourceChainId);
     query.append('destChainId', params.destChainId);
@@ -499,7 +499,7 @@ export class AdminDataSource {
     if (params.destinationSrcSenderHex) query.append('destinationSrcSenderHex', params.destinationSrcSenderHex);
     if (params.destinationVaultAddress) query.append('destinationVaultAddress', params.destinationVaultAddress);
     if (params.destinationGatewayAddress) query.append('destinationGatewayAddress', params.destinationGatewayAddress);
-    const { data, error } = await httpClient.get<{ status: any }>(`${API_ENDPOINTS.ADMIN_ONCHAIN_ADAPTER_LAYERZERO_E2E_STATUS}?${query.toString()}`);
+    const { data, error } = await httpClient.get<{ status: any }>(`${API_ENDPOINTS.ADMIN_ONCHAIN_ADAPTER_STARGATE_E2E_STATUS}?${query.toString()}`);
     if (error) throw new Error(error);
     return data?.status;
   }

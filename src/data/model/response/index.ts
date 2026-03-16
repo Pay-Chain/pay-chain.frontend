@@ -8,6 +8,7 @@ import type {
   Wallet,
   PaymentRequest,
   ApiKey,
+  WebhookLog,
   PaymentPrivacyStatus,
   PaymentPrivacyRecoveryTx,
 } from '../entity';
@@ -112,6 +113,11 @@ export interface MerchantStatusResponse {
   merchantType?: string;
   businessName?: string;
   message: string;
+}
+
+export interface WebhookLogsResponse {
+  items: WebhookLog[];
+  meta: Pagination;
 }
 
 // Payment Request responses

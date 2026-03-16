@@ -19,5 +19,6 @@ export const ROUTES = {
   PAYMENT_REQUESTS: '/payment-requests',
   WALLETS: '/wallets',
   MERCHANT: '/merchant',
+  MERCHANT_SETTINGS: '/merchant/settings',
   SETTINGS: '/settings',
 } as const;

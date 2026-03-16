@@ -1,0 +1,89 @@
+:root {
+  /* Color Palette */
+  --pk-brand: #6366f1;
+  --pk-brand-dark: #4f46e5;
+  --pk-bg: #0f172a;
+  --pk-surface: #1e293b;
+  --pk-border: #334155;
+  --pk-text-primary: #f8fafc;
+  --pk-text-secondary: #94a3b8;
+  --pk-success: #10b981;
+  
+  /* Glassmorphism */
+  --pk-glass-bg: rgba(30, 41, 59, 0.7);
+  --pk-glass-blur: blur(16px);
+  --pk-glass-border: rgba(255, 255, 255, 0.1);
+  
+  /* Animations */
+  --pk-ease: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pk-card {
+  background: var(--pk-glass-bg);
+  backdrop-filter: var(--pk-glass-blur);
+  border: 1px solid var(--pk-glass-border);
+  border-radius: 24px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  transition: transform var(--pk-ease) 0.3s, box-shadow var(--pk-ease) 0.3s;
+}
+
+.pk-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 35px 60px -15px rgba(0, 0, 0, 0.6);
+}
+
+.pk-button-primary {
+  background: var(--pk-brand);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 600;
+  transition: all var(--pk-ease) 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+}
+
+.pk-button-primary:hover {
+  background: var(--pk-brand-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4);
+}
+
+.pk-button-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+@keyframes pk-scan {
+  0% { top: 0; opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+.animate-pk-scan {
+  animation: pk-scan 2.5s linear infinite;
+}
+
+.pk-qr-container {
+  position: relative;
+  padding: 1rem;
+  background: white;
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+.pk-qr-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--pk-brand);
+  box-shadow: 0 0 15px var(--pk-brand);
+  z-index: 10;
+}

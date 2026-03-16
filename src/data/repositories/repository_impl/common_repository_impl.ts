@@ -62,12 +62,20 @@ export const walletRepository = new WalletRepositoryImpl();
 
 // ============== Merchant Repository ==============
 class MerchantRepositoryImpl implements IMerchantRepository {
+  async getMe() {
+    return merchantDataSource.getMe();
+  }
+
   async applyMerchant(input: ApplyMerchantRequest) {
     return merchantDataSource.apply(input);
   }
 
   async getMerchantStatus() {
     return merchantDataSource.getStatus();
+  }
+
+  async updateSettings(input: { callbackUrl: string; webhookIsActive: boolean }) {
+    return merchantDataSource.updateSettings(input);
   }
 }
 

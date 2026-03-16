@@ -4,3 +4,4 @@ export { usePaymentStore } from './usePaymentStore';
 export { useTranslation } from './useTranslation';
 export { useWalletConnectModal } from './useWalletConnectModal';
 export { useUrlQueryState } from './useUrlQueryState';
+export { useWebhookSettings } from './useWebhookSettings';

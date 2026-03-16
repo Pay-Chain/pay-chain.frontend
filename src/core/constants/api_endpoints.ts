@@ -29,8 +29,14 @@ export const API_ENDPOINTS = {
   WALLET_BY_ID: (id: string) => `/v1/wallets/${id}`,
 
   // Merchants
+  MERCHANT_ME: '/v1/merchants/me',
   MERCHANT_APPLY: '/v1/merchants/apply',
   MERCHANT_STATUS: '/v1/merchants/status',
+  MERCHANT_UPDATE_SETTINGS: '/v1/merchants/settings',
+
+  // Webhooks
+  WEBHOOK_LOGS: '/v1/merchants/webhooks/logs',
+  WEBHOOK_TEST_PING: '/v1/merchants/webhooks/test',
 
   // Admin
   ADMIN_STATS: '/v1/admin/stats',
@@ -56,9 +62,9 @@ export const API_ENDPOINTS = {
   ADMIN_ONCHAIN_ADAPTER_HYPERBRIDGE_CONFIG: '/v1/admin/onchain-adapters/hyperbridge-config',
   ADMIN_ONCHAIN_ADAPTER_HYPERBRIDGE_TOKEN_GATEWAY_CONFIG: '/v1/admin/onchain-adapters/hyperbridge-token-gateway-config',
   ADMIN_ONCHAIN_ADAPTER_CCIP_CONFIG: '/v1/admin/onchain-adapters/ccip-config',
-  ADMIN_ONCHAIN_ADAPTER_LAYERZERO_CONFIG: '/v1/admin/onchain-adapters/layerzero-config',
-  ADMIN_ONCHAIN_ADAPTER_LAYERZERO_CONFIGURE_E2E: '/v1/admin/onchain-adapters/layerzero-configure-e2e',
-  ADMIN_ONCHAIN_ADAPTER_LAYERZERO_E2E_STATUS: '/v1/admin/onchain-adapters/layerzero-e2e-status',
+  ADMIN_ONCHAIN_ADAPTER_STARGATE_CONFIG: '/v1/admin/onchain-adapters/stargate-config',
+  ADMIN_ONCHAIN_ADAPTER_STARGATE_CONFIGURE_E2E: '/v1/admin/onchain-adapters/stargate-configure-e2e',
+  ADMIN_ONCHAIN_ADAPTER_STARGATE_E2E_STATUS: '/v1/admin/onchain-adapters/stargate-e2e-status',
   ADMIN_CONTRACTS_CONFIG_CHECK: '/v1/admin/contracts/config-check',
   ADMIN_CONTRACT_INTERACT: '/v1/admin/contracts/interact',
   ADMIN_CONTRACT_BY_ID_CONFIG_CHECK: (id: string) => `/v1/admin/contracts/${id}/config-check`,
