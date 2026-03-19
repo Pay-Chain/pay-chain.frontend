@@ -416,10 +416,10 @@ export const AdminTokensView = () => {
 
                     {state.isConnected && (
                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-in slide-in-from-top-4 duration-500">
-                        {/* Direct Pair Registration */}
+                        {/* Direct V3 Pair Registration */}
                         <Card className="p-6 bg-white/5 border-white/10 rounded-2xl">
-                          <h3 className="text-base font-bold text-foreground mb-1">{t('admin.tokens_view.register.direct_title', 'Register Direct V3 Pool')}</h3>
-                          <p className="text-xs text-muted mb-6">{t('admin.tokens_view.register.direct_desc', 'Register a direct Uniswap V3 pool with a specific fee tier.')}</p>
+                          <h3 className="text-base font-bold text-foreground mb-1">{t('admin.tokens_view.register.direct_v3_title', 'Register Direct V3 Pool')}</h3>
+                          <p className="text-xs text-muted mb-6">{t('admin.tokens_view.register.direct_v3_desc', 'Register a direct Uniswap V3 pool with a specific fee tier.')}</p>
                           
                           <div className="space-y-4">
                             <div>
@@ -444,7 +444,68 @@ export const AdminTokensView = () => {
                               loading={state.isRegistrationPending}
                               glow
                             >
-                              {t('admin.tokens_view.register.register_button', 'Register Direct Route')}
+                              {t('admin.tokens_view.register.register_v3_button', 'Register V3 Route')}
+                            </Button>
+                          </div>
+                        </Card>
+
+                        {/* Direct V4 Pair Registration */}
+                        <Card className="p-6 bg-white/5 border-white/10 rounded-2xl">
+                          <h3 className="text-base font-bold text-foreground mb-1">{t('admin.tokens_view.register.direct_v4_title', 'Register Direct V4 Pool')}</h3>
+                          <p className="text-xs text-muted mb-6">{t('admin.tokens_view.register.direct_v4_desc', 'Register a direct Uniswap V4 pool with Hooks support.')}</p>
+                          
+                          <div className="space-y-4">
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="space-y-1.5">
+                                <span className="text-[10px] font-bold text-muted uppercase tracking-wider ml-1">Fee (bps)</span>
+                                <Input
+                                  type="number"
+                                  placeholder="100"
+                                  value={state.directV4Fee}
+                                  onChange={(e) => actions.setDirectV4Fee(Number(e.target.value))}
+                                  className="h-9 text-xs"
+                                />
+                              </div>
+                              <div className="space-y-1.5">
+                                <span className="text-[10px] font-bold text-muted uppercase tracking-wider ml-1">Tick Spacing</span>
+                                <Input
+                                  type="number"
+                                  placeholder="10"
+                                  value={state.directV4TickSpacing}
+                                  onChange={(e) => actions.setDirectV4TickSpacing(Number(e.target.value))}
+                                  className="h-9 text-xs"
+                                />
+                              </div>
+                            </div>
+
+                            <div className="space-y-1.5">
+                              <span className="text-[10px] font-bold text-muted uppercase tracking-wider ml-1">Hooks Address</span>
+                              <Input
+                                placeholder="0x..."
+                                value={state.directV4Hooks}
+                                onChange={(e) => actions.setDirectV4Hooks(e.target.value)}
+                                className="h-9 text-xs font-mono"
+                              />
+                            </div>
+
+                            <div className="space-y-1.5">
+                              <span className="text-[10px] font-bold text-muted uppercase tracking-wider ml-1">Hook Data (Hex)</span>
+                              <Input
+                                placeholder="0x"
+                                value={state.directV4HookData}
+                                onChange={(e) => actions.setDirectV4HookData(e.target.value)}
+                                className="h-9 text-xs font-mono"
+                              />
+                            </div>
+
+                            <Button 
+                              onClick={actions.handleRegisterDirectV4Pool} 
+                              className="w-full rounded-xl" 
+                              disabled={!state.swapperAddress || state.isRegistrationPending}
+                              loading={state.isRegistrationPending}
+                              glow
+                            >
+                              {t('admin.tokens_view.register.register_v4_button', 'Register V4 Route')}
                             </Button>
                           </div>
                         </Card>

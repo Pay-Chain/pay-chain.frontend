@@ -1,11 +1,13 @@
-'use client';
-
-import { useParams } from 'next/navigation';
 import { AdminContractDetailView } from '@/presentation/view/admin/contracts/detail/AdminContractDetailView';
 
-export default function AdminContractDetailPage() {
-  const params = useParams<{ id: string }>();
-  const id = String(params?.id || '');
-  return <AdminContractDetailView id={id} />;
+// Next.js 15+ Page props
+interface PageProps {
+  params: Promise<{ id: string }>;
 }
 
+export default async function AdminContractDetailPage({ params }: PageProps) {
+  const resolvedParams = await params;
+  const id = String(resolvedParams?.id || '');
+  
+  return <AdminContractDetailView id={id} />;
+}

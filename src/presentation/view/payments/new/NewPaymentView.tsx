@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Input, Label } from '@/presentation/components/atoms';
+import { Button, Input, Label, Card } from '@/presentation/components/atoms';
 import { useNewPayment } from './useNewPayment';
 import { ArrowLeft, Send, AlertTriangle, Wallet } from 'lucide-react';
 import Link from 'next/link';
@@ -166,7 +166,7 @@ export function NewPaymentView() {
       </div>
 
       {/* Form Card */}
-      <div className="card-glass p-8 shadow-glass">
+      <Card variant="glass" size="lg" className="p-8 shadow-glass">
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Payment Details Section */}
           <div className="space-y-6">
@@ -336,7 +336,7 @@ export function NewPaymentView() {
             </Button>
           </div>
         </form>
-      </div>
+      </Card>
     </div>
   );
 }

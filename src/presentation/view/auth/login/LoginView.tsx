@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Button, Input } from '@/presentation/components/atoms';
+import { Button, Input, Card } from '@/presentation/components/atoms';
 import { useLogin } from './useLogin';
 import { useTranslation } from '@/presentation/hooks';
 import { Sparkles } from 'lucide-react';
@@ -29,7 +29,7 @@ export function LoginView() {
         </div>
 
         {/* Form Card */}
-        <div className="card-glass p-8 shadow-glass">
+        <Card variant="glass" size="lg" className="p-8 shadow-glass">
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <Input
               label={t('auth.email')}
@@ -101,7 +101,7 @@ export function LoginView() {
               </Link>
             </p>
           </div>
-        </div>
+        </Card>
       </div>
     </div>
   );

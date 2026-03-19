@@ -14,6 +14,20 @@ export const TOKEN_SWAPPER_ABI = [
     inputs: [
       { internalType: 'address', name: 'tokenIn', type: 'address' },
       { internalType: 'address', name: 'tokenOut', type: 'address' },
+      { internalType: 'uint24', name: 'fee', type: 'uint24' },
+      { internalType: 'int24', name: 'tickSpacing', type: 'int24' },
+      { internalType: 'address', name: 'hooks', type: 'address' },
+      { internalType: 'bytes', name: 'hookData', type: 'bytes' },
+    ],
+    name: 'setDirectPool',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      { internalType: 'address', name: 'tokenIn', type: 'address' },
+      { internalType: 'address', name: 'tokenOut', type: 'address' },
       { internalType: 'address[]', name: 'path', type: 'address[]' },
     ],
     name: 'setMultiHopPath',

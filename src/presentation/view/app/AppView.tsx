@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useApp } from './useApp';
 import { ChainTokenSelector } from '@/presentation/components/organisms/ChainTokenSelector';
-import { Button, Input, Label, Select } from '@/presentation/components/atoms';
+import { Button, Input, Label, Select, Card } from '@/presentation/components/atoms';
 import { AmountTokenInput, BaseModal, WalletConnectButton } from '@/presentation/components/molecules';
 import { AlertTriangle, ArrowDownUp, CheckCircle2, Send, Wallet } from 'lucide-react';
 import { useTranslation } from '@/presentation/hooks';
@@ -72,7 +72,7 @@ export default function AppView() {
   return (
     <div className="w-full max-w-4xl mx-auto space-y-6 animate-fade-in py-8 rounded-4xl">
       {isSuccess && (
-        <div className="card-glass p-8 shadow-glass text-center space-y-4">
+        <Card variant="glass" size="lg" className="p-8 shadow-glass text-center space-y-4">
           <div className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/15 border border-emerald-500/30">
             <CheckCircle2 className="h-7 w-7 text-emerald-400" />
           </div>
@@ -89,7 +89,7 @@ export default function AppView() {
               {t('app_view.view_explorer')}
             </a>
           )}
-        </div>
+        </Card>
       )}
 
       <div>
@@ -100,7 +100,7 @@ export default function AppView() {
         <h5 className="heading-2 text-foreground">{t('app_view.title')}</h5>
       </div>
 
-      <div className="card-glass p-8 shadow-glass space-y-6">
+      <Card variant="glass" size="lg" className="p-8 shadow-glass space-y-6">
         <div className="flex flex-col sm:flex-row gap-4 items-end relative">
           <div className="flex-1 w-full space-y-1.5 transition-all duration-300">
             <Label className="text-sm font-medium text-foreground/80 ml-1">{t('app_view.source_chain')}</Label>
@@ -308,10 +308,10 @@ export default function AppView() {
             </Button>
           )}
         </div>
-      </div >
+      </Card>
 
       {tempTxList.length > 0 && (
-        <div className="card-glass p-6 shadow-glass space-y-3">
+        <Card variant="glass" size="lg" className="p-6 shadow-glass space-y-3">
           <h6 className="text-sm font-semibold text-foreground">{t('payments.history')}</h6>
           <div className="space-y-2">
             {tempTxList.map((item) => (
@@ -331,7 +331,7 @@ export default function AppView() {
               </div>
             ))}
           </div>
-        </div>
+        </Card>
       )}
     </div >
   );

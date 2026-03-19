@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { Button, Card } from '@/presentation/components/atoms';
+import { Card } from '@/presentation/components/atoms';
 import Navbar from '@/presentation/components/organisms/Navbar';
 import { getServerDictionary } from '@/core/i18n/server';
 import { translate } from '@/core/i18n/translate';
@@ -313,7 +313,7 @@ export default async function LandingPage() {
 
           <div className="grid lg:grid-cols-2 gap-8 items-start">
             <div className="space-y-6 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-              <div className="card-glass p-8">
+              <Card variant="glass" size="lg" className="p-8">
                 <h3 className="heading-3 mb-4">{t('public_home.requests_section.what_you_get_title')}</h3>
                 <ul className="space-y-4">
                   {[
@@ -328,9 +328,9 @@ export default async function LandingPage() {
                     </li>
                   ))}
                 </ul>
-              </div>
+              </Card>
 
-              <div className="card-glass p-8">
+              <Card variant="glass" size="lg" className="p-8">
                 <div className="flex items-center gap-3 mb-4">
                   <Clock className="w-5 h-5 text-accent-green" />
                   <h3 className="heading-3">{t('public_home.requests_section.expiration_title')}</h3>
@@ -338,11 +338,11 @@ export default async function LandingPage() {
                 <p className="text-muted leading-relaxed">
                   {t('public_home.requests_section.expiration_description')}
                 </p>
-              </div>
+              </Card>
             </div>
 
             <div className="animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-              <div className="card-glass p-8 relative overflow-hidden">
+              <Card variant="glass" size="lg" className="p-8 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-96 h-96 bg-accent-blue/10 rounded-full blur-[100px] -mr-32 -mt-32" />
                 <div className="bg-black/40 rounded-xl p-6 border border-white/5 font-mono text-sm leading-relaxed overflow-x-auto custom-scrollbar">
                   <div className="text-accent-purple mb-2">{t('public_home.requests_section.response_title')}</div>
@@ -351,7 +351,7 @@ export default async function LandingPage() {
                 <p className="mt-4 text-xs text-muted/70">
                   {t('public_home.requests_section.tip')}
                 </p>
-              </div>
+              </Card>
             </div>
           </div>
         </div>
@@ -372,7 +372,7 @@ export default async function LandingPage() {
           </div>
 
           <div className="grid lg:grid-cols-2 gap-8 items-start">
-            <div className="card-glass p-8 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+            <Card variant="glass" size="lg" className="p-8 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
               <h3 className="heading-3 mb-4">{t('public_home.fees_section.formula_title')}</h3>
               <div className="bg-black/40 rounded-xl p-6 border border-white/5 font-mono text-sm leading-relaxed overflow-x-auto custom-scrollbar">
                 <pre className="text-muted/90 whitespace-pre-wrap">{feeFormulaExample}</pre>
@@ -380,7 +380,7 @@ export default async function LandingPage() {
               <p className="mt-4 text-sm text-muted leading-relaxed">
                 {t('public_home.fees_section.formula_note')}
               </p>
-            </div>
+            </Card>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
               <Card variant="glass" size="md" className="h-full">
@@ -438,17 +438,17 @@ export default async function LandingPage() {
       {/* Footer CTA */}
       <section className="py-24 relative overflow-hidden">
         <div className="container-app">
-          <div className="text-center max-w-3xl mx-auto card-glass px-8 py-16 shadow-glass relative group animate-fade-in-up">
+          <Card variant="glass" className="text-center max-w-3xl mx-auto px-8 py-16 shadow-2xl rounded-[3rem] relative group animate-fade-in-up border-white/10 overflow-hidden">
             {/* Glow effect */}
-            <div className="absolute inset-0 bg-linear-to-r from-accent-purple/10 to-accent-blue/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl" />
+            <div className="absolute inset-0 bg-linear-to-r from-primary/10 to-accent-blue/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
             <div className="relative z-10">
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent-green/10 border border-accent-green/20 mb-6">
-                  <Sparkles className="w-4 h-4 text-accent-green" />
-                <span className="text-xs text-accent-green font-medium">{t('public_home.cta.badge')}</span>
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent-green/10 border border-accent-green/20 mb-6 font-bold">
+                <Sparkles className="w-4 h-4 text-accent-green" />
+                <span className="text-xs text-accent-green font-black uppercase tracking-widest">{t('public_home.cta.badge')}</span>
               </div>
-              <h2 className="heading-2 text-foreground mb-6">{t('public_home.cta.title')}</h2>
-              <p className="body-lg text-muted mb-10 max-w-xl mx-auto">
+              <h2 className="text-4xl md:text-5xl font-black text-foreground mb-6 italic tracking-tight">{t('public_home.cta.title')}</h2>
+              <p className="body-lg text-muted/60 mb-10 max-w-xl mx-auto font-medium">
                 {t('public_home.cta.subtitle')}
               </p>
               <HomeCtaActions
@@ -456,7 +456,7 @@ export default async function LandingPage() {
                 secondaryLabel={t('public_home.cta.contact_sales')}
               />
             </div>
-          </div>
+          </Card>
         </div>
       </section>
 

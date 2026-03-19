@@ -11,4 +11,5 @@ export * from './ChainTokenSelectorTrigger';
 export * from './ChainTokenFilterChip';
 export * from './ChainTokenOptionRow';
 export * from './AmountTokenInput';
+export * from './StatCard';
 export type { WalletConnectButtonProps } from './WalletConnectButton';

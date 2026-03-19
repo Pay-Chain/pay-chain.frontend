@@ -8,6 +8,7 @@ interface CardProps {
   variant?: CardVariant;
   size?: CardSize;
   className?: string;
+  style?: React.CSSProperties;
   hoverable?: boolean;
   onClick?: () => void;
 }
@@ -30,6 +31,7 @@ export function Card({
   variant = 'default',
   size = 'md',
   className = '',
+  style,
   hoverable = false,
   onClick,
 }: CardProps) {
@@ -41,6 +43,7 @@ export function Card({
   return (
     <div
       className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${hoverStyles} ${className}`}
+      style={style}
       onClick={onClick}
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}

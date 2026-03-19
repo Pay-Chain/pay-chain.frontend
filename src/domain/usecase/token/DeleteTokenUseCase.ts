@@ -1,4 +1,4 @@
-import { TokenRepository } from "@/src/domain/repository/TokenRepository";
+import { TokenRepository } from "@/domain/repository/TokenRepository";
 
 export class DeleteTokenUseCase {
   constructor(private tokenRepository: TokenRepository) {}

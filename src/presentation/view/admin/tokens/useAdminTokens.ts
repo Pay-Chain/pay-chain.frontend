@@ -7,7 +7,7 @@ import { useDeleteToken } from '@/presentation/hooks/useTokenList/useDeleteToken
 import { useDebounce } from '@/presentation/hooks/useDebounce';
 import { useUrlQueryState } from '@/presentation/hooks';
 import { QUERY_PARAM_KEYS } from '@/core/constants';
-import { SupportedTokenEntity } from '@/src/domain/entity/token/TokenEntity';
+import { SupportedTokenEntity } from '@/domain/entity/token/TokenEntity';
 import { useCheckTokenPairSupport } from '@/data/usecase/useAdmin';
 import { useAccount, useSwitchChain, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { TOKEN_SWAPPER_ABI } from '@/core/constants/abis';
@@ -48,6 +48,10 @@ export const useAdminTokens = () => {
 
   // Registration state
   const [directFee, setDirectFee] = useState<number>(3000);
+  const [directV4Fee, setDirectV4Fee] = useState<number>(100);
+  const [directV4TickSpacing, setDirectV4TickSpacing] = useState<number>(10);
+  const [directV4Hooks, setDirectV4Hooks] = useState<string>('0x0000000000000000000000000000000000000000');
+  const [directV4HookData, setDirectV4HookData] = useState<string>('0x');
   const [intermediateTokenIds, setIntermediateTokenIds] = useState<string[]>([]);
 
   const checkPairSupport = useCheckTokenPairSupport();
@@ -253,6 +257,43 @@ export const useAdminTokens = () => {
     });
   };
 
+  const handleRegisterDirectV4Pool = async () => {
+    if (!swapperAddress || !tokenInId || !tokenOutId) return;
+
+    const chainId = await ensureWalletOnTargetChain();
+    if (!chainId) return;
+    
+    const tokenIn = verificationTokensData?.items.find(t => t.id === tokenInId);
+    const tokenOut = verificationTokensData?.items.find(t => t.id === tokenOutId);
+
+    if (!tokenIn?.contractAddress || !tokenOut?.contractAddress) return;
+
+    writeContract({
+      address: swapperAddress,
+      abi: TOKEN_SWAPPER_ABI,
+      functionName: 'setDirectPool',
+      args: [
+        tokenIn.contractAddress as `0x${string}`, 
+        tokenOut.contractAddress as `0x${string}`, 
+        directV4Fee, 
+        directV4TickSpacing, 
+        (directV4Hooks || '0x0000000000000000000000000000000000000000') as `0x${string}`, 
+        (directV4HookData || '0x') as `0x${string}`
+      ],
+      chainId,
+    }, {
+      onSuccess: () => toast.success(t('admin.tokens_view.toasts.create_success', 'V4 Registration transaction submitted')),
+      onError: (err) => {
+        const msg = String(err?.message || '');
+        if (msg.toLowerCase().includes('ownable') || msg.toLowerCase().includes('not the owner')) {
+          toast.error(`${t('admin.tokens_view.toasts.create_failed', 'Registration failed')}: wallet is not TokenSwapper owner`);
+          return;
+        }
+        toast.error(`${t('admin.tokens_view.toasts.create_failed', 'Registration failed')}: ${msg}`);
+      },
+    });
+  };
+
   const handleRegisterMultiHopPath = async () => {
     if (!swapperAddress || !tokenInId || !tokenOutId || intermediateTokenIds.length === 0) return;
 
@@ -409,6 +450,10 @@ export const useAdminTokens = () => {
       isRegistrationPending: isTxPending || isWaitingForReceipt,
       isTxSuccess,
       directFee,
+      directV4Fee,
+      directV4TickSpacing,
+      directV4Hooks,
+      directV4HookData,
       intermediateTokenIds,
     },
     actions: {
@@ -438,6 +483,10 @@ export const useAdminTokens = () => {
       handleCheckPair,
       resetPairCheck,
       setDirectFee,
+      setDirectV4Fee,
+      setDirectV4TickSpacing,
+      setDirectV4Hooks,
+      setDirectV4HookData,
       setIntermediateTokenIds,
       addHop: () => setIntermediateTokenIds(prev => [...prev, '']),
       removeHop: (index: number) => setIntermediateTokenIds(prev => prev.filter((_, i) => i !== index)),
@@ -447,6 +496,7 @@ export const useAdminTokens = () => {
         return next;
       }),
       handleRegisterDirectPair,
+      handleRegisterDirectV4Pool,
       handleRegisterMultiHopPath,
       handleResetV3Pool,
       handleResetDirectPool,

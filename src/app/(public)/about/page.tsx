@@ -58,7 +58,7 @@ export default async function AboutPage() {
 
         {/* System Architecture Diagram (Conceptual) */}
         <section className="container-app mb-24 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-          <div className="card-glass p-8 relative overflow-hidden">
+          <Card variant="glass" size="lg" className="p-8 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-96 h-96 bg-accent-blue/10 rounded-full blur-[100px] -mr-32 -mt-32" />
             <div className="flex items-center gap-3 mb-8">
               <Layers className="w-6 h-6 text-accent-blue" />
@@ -88,15 +88,15 @@ export default async function AboutPage() {
                 ))}
               </div>
             </div>
-          </div>
+          </Card>
         </section>
 
         {/* Bridges & Security Grid */}
         <section className="container-app mb-24">
           <div className="grid md:grid-cols-2 gap-8">
             {/* Bridge Technology */}
-            <div className="animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-              <div className="card-glass p-8 h-full">
+            <div className="animate-fade-in-up h-full" style={{ animationDelay: '200ms' }}>
+              <Card variant="glass" size="lg" className="p-8 h-full">
                 <div className="flex items-center gap-3 mb-6">
                   <Network className="w-6 h-6 text-accent-purple" />
                   <h2 className="className heading-3">{t('public_about.bridge_infrastructure.title')}</h2>
@@ -114,12 +114,12 @@ export default async function AboutPage() {
                     </div>
                   ))}
                 </div>
-              </div>
+              </Card>
             </div>
 
             {/* Smart Contracts */}
-            <div className="animate-fade-in-up" style={{ animationDelay: '300ms' }}>
-              <div className="card-glass p-8 h-full">
+            <div className="animate-fade-in-up h-full" style={{ animationDelay: '300ms' }}>
+              <Card variant="glass" size="lg" className="p-8 h-full">
                 <div className="flex items-center gap-3 mb-6">
                   <Code2 className="w-6 h-6 text-accent-green" />
                   <h2 className="heading-3">{t('public_about.smart_contracts.title')}</h2>
@@ -137,7 +137,7 @@ export default async function AboutPage() {
                     </div>
                    ))}
                 </div>
-              </div>
+              </Card>
             </div>
           </div>
         </section>

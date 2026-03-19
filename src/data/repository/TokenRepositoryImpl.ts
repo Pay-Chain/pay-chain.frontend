@@ -1,8 +1,8 @@
-import { TokenRepository } from "@/src/domain/repository/TokenRepository";
-import { TokenDataSource } from "@/src/data/datasource/token/TokenDataSource";
-import { TokenFilterParams } from "@/src/data/model/response/token/TokenResponse";
-import { SupportedTokenEntity } from "@/src/domain/entity/token/TokenEntity";
-import { PaginatedResponse } from "@/src/core/model/Pagination";
+import { TokenRepository } from "@/domain/repository/TokenRepository";
+import { TokenDataSource } from "@/data/datasource/token/TokenDataSource";
+import { TokenFilterParams } from "@/data/model/response/token/TokenResponse";
+import { SupportedTokenEntity } from "@/domain/entity/token/TokenEntity";
+import { PaginatedResponse } from "@/core/model/Pagination";
 
 export class TokenRepositoryImpl implements TokenRepository {
   constructor(private dataSource: TokenDataSource) {}

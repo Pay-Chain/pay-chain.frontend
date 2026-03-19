@@ -380,19 +380,19 @@ export const useAdminCrosschainConfigs = () => {
       : manualBridgeType === '1'
         ? 'ADAPTER_CCIP'
         : manualBridgeType === '3'
-          ? 'ADAPTER_HYPERBRIDGE_TOKEN_SENDER'
+          ? 'ADAPTER_HYPERBRIDGE'
           : 'ADAPTER_STARGATE';
   const sourceAdapterContractsQuery = useAdminContracts(1, 200, manualSourceChainId || undefined, sourceAdapterType);
   const destHyperContractsQuery = useAdminContracts(1, 200, manualDestChainId || undefined, 'ADAPTER_HYPERBRIDGE');
-  const destHBTokenContractsQuery = useAdminContracts(1, 200, manualDestChainId || undefined, 'ADAPTER_HYPERBRIDGE_TOKEN_RECEIVER');
+  const destHBTokenContractsQuery = useAdminContracts(1, 200, manualDestChainId || undefined, 'ADAPTER_HYPERBRIDGE');
   const destCCIPContractsQuery = useAdminContracts(1, 200, manualDestChainId || undefined, 'ADAPTER_CCIP');
   const destStargateContractsQuery = useAdminContracts(1, 200, manualDestChainId || undefined, 'ADAPTER_STARGATE');
   const selectedSourceHyperContractsQuery = useAdminContracts(1, 200, sourceChainId || undefined, 'ADAPTER_HYPERBRIDGE');
   const selectedSourceCCIPContractsQuery = useAdminContracts(1, 200, sourceChainId || undefined, 'ADAPTER_CCIP');
   const selectedSourceStargateContractsQuery = useAdminContracts(1, 200, sourceChainId || undefined, 'ADAPTER_STARGATE');
-  const selectedSourceHBTokenContractsQuery = useAdminContracts(1, 200, sourceChainId || undefined, 'ADAPTER_HYPERBRIDGE_TOKEN_SENDER');
+  const selectedSourceHBTokenContractsQuery = useAdminContracts(1, 200, sourceChainId || undefined, 'ADAPTER_HYPERBRIDGE');
   const selectedDestHyperContractsQuery = useAdminContracts(1, 200, destChainId || undefined, 'ADAPTER_HYPERBRIDGE');
-  const selectedDestHBTokenContractsQuery = useAdminContracts(1, 200, destChainId || undefined, 'ADAPTER_HYPERBRIDGE_TOKEN_RECEIVER');
+  const selectedDestHBTokenContractsQuery = useAdminContracts(1, 200, destChainId || undefined, 'ADAPTER_HYPERBRIDGE');
   const selectedDestCCIPContractsQuery = useAdminContracts(1, 200, destChainId || undefined, 'ADAPTER_CCIP');
   const selectedDestStargateContractsQuery = useAdminContracts(1, 200, destChainId || undefined, 'ADAPTER_STARGATE');
   const manualSourceAdapterContracts = sourceAdapterContractsQuery.data?.items || [];

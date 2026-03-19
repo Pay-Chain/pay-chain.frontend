@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Button, Input } from '@/presentation/components/atoms';
+import { Button, Input, Card } from '@/presentation/components/atoms';
 import { WalletConnectButton } from '@/presentation/components/molecules';
 import { useRegister } from './useRegister';
 import { useTranslation } from '@/presentation/hooks';
@@ -74,7 +74,7 @@ export function RegisterView() {
         </div>
 
         {/* Form Card */}
-        <div className="card-glass p-8 shadow-glass">
+        <Card variant="glass" size="lg" className="p-8 shadow-glass">
           {form.formState.errors.root && (
             <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-red-400 text-sm mb-6 animate-fade-in">
               {form.formState.errors.root.message}
@@ -178,7 +178,7 @@ export function RegisterView() {
               </Link>
             </p>
           </div>
-        </div>
+        </Card>
       </div>
     </div>
   );

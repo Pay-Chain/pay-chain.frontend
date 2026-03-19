@@ -12,3 +12,6 @@ export * from './WalletNetworkIcon';
 export * from './Tabs';
 export * from './ChainTokenIcon';
 export * from './Switch';
+export * from './Badge';
+export * from './ErrorBoundary';
+export * from './SkipLinks';

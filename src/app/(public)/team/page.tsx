@@ -85,7 +85,7 @@ export default async function TeamPage() {
 
         {/* Join Us CTA */}
         <section className="container-app mt-24">
-          <div className="card-glass p-12 text-center animate-fade-in-up" style={{ animationDelay: '400ms' }}>
+          <Card variant="glass" size="lg" className="p-12 text-center animate-fade-in-up" style={{ animationDelay: '400ms' }}>
             <h2 className="heading-2 mb-4">{t('public_team.cta.title')}</h2>
             <p className="text-muted max-w-xl mx-auto mb-8">
               {t('public_team.cta.subtitle')}
@@ -93,7 +93,7 @@ export default async function TeamPage() {
             <a href="#" className="inline-flex items-center justify-center px-6 py-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-all font-medium">
               {t('public_team.cta.button')}
             </a>
-          </div>
+          </Card>
         </section>
       </main>
     </div>

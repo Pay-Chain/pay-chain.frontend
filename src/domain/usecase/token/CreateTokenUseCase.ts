@@ -1,5 +1,5 @@
-import { TokenRepository } from "@/src/domain/repository/TokenRepository";
-import { CreateSupportedTokenRequest, TokenListResponse } from "@/src/data/model/response/token/TokenResponse";
+import { TokenRepository } from "@/domain/repository/TokenRepository";
+import { CreateSupportedTokenRequest, TokenListResponse } from "@/data/model/response/token/TokenResponse";
 
 export class CreateTokenUseCase {
   constructor(private tokenRepository: TokenRepository) {}
