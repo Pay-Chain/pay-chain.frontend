@@ -62,4 +62,5 @@ jobs:
               "$IMAGE_NAME:latest"
 
             docker image prune -f
+            sudo sync; echo 3 > /proc/sys/vm/drop_caches
           EOF
