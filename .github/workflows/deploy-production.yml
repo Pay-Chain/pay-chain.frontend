@@ -3,7 +3,7 @@ name: Deploy Frontend Production
 on:
   push:
     branches:
-      - production
+      - main
   workflow_dispatch:
 
 jobs:
@@ -34,9 +34,9 @@ jobs:
             set -e
             cd "$REMOTE_APP_DIR"
 
-            git fetch origin production
-            git checkout production
-            git pull origin production
+            git fetch origin main
+            git checkout main
+            git pull origin main
 
             if [ -f .env ]; then
               set -a
