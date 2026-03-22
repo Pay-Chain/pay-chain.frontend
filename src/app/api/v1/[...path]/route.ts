@@ -33,7 +33,8 @@ async function proxyRequest(
   request.headers.forEach((value, key) => {
     // Do not forward transport/compression headers that can break proxy decoding.
     const lower = key.toLowerCase();
-    if (lower !== 'host' && lower !== 'cookie' && lower !== 'accept-encoding') {
+    const forbiddenHeaders = ['host', 'cookie', 'accept-encoding', 'connection', 'keep-alive'];
+    if (!forbiddenHeaders.includes(lower)) {
       headers.set(key, value);
     }
   });
