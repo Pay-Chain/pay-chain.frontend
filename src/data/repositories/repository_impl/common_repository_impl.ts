@@ -99,12 +99,20 @@ class PaymentRequestRepositoryImpl {
     return paymentRequestDataSource.getById(id);
   }
 
+  async getCreatePaymentById(id: string) {
+    return paymentRequestDataSource.getCreatePaymentById(id);
+  }
+
   async listPaymentRequests(page = 1, limit = 10) {
     return paymentRequestDataSource.list(page, limit);
   }
 
   async getPublicPaymentRequest(id: string) {
     return paymentRequestDataSource.getPublic(id);
+  }
+
+  async getResolvedPublicPaymentRequest(id: string) {
+    return paymentRequestDataSource.getResolvedPublic(id);
   }
 }
 

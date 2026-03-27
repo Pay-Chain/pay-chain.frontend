@@ -216,6 +216,8 @@ export interface PartnerPaymentInstructionResponse {
   program_id?: string;
   data_base58?: string;
   data_base64?: string;
+  approval_to?: string;
+  approval_hex_data?: string;
 }
 
 export interface PartnerPaymentSessionResponse {
@@ -223,6 +225,7 @@ export interface PartnerPaymentSessionResponse {
   status: 'PENDING' | 'COMPLETED' | 'EXPIRED' | 'CANCELLED' | 'FAILED';
   amount: string;
   amount_decimals: number;
+  payment_token_symbol?: string;
   dest_chain: string;
   dest_token: string;
   dest_wallet: string;

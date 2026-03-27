@@ -20,7 +20,9 @@ export const API_ENDPOINTS = {
   // Payment Requests
   PAYMENT_REQUESTS: '/v1/payment-requests',
   PAYMENT_REQUEST_BY_ID: (id: string) => `/v1/payment-requests/${id}`,
+  CREATE_PAYMENT_BY_ID: (id: string) => `/v1/create-payment/${id}`,
   PAY_PUBLIC: (id: string) => `/v1/pay/${id}`,
+  PAYMENT_RESOLVE_PUBLIC: (id: string) => `/v1/payment/${id}`,
   PARTNER_PAYMENT_SESSION_BY_ID: (id: string) => `/v1/partner/payment-sessions/${id}`,
   PARTNER_PAYMENT_SESSION_RESOLVE_CODE: '/v1/partner/payment-sessions/resolve-code',
 

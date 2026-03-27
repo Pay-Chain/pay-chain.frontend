@@ -1,9 +1,10 @@
 'use client';
 
 import React from 'react';
-import { Smartphone, Wallet, QrCode } from 'lucide-react';
+import { Smartphone, Wallet } from 'lucide-react';
+import { useTranslation } from '@/presentation/hooks';
 
-export type MethodType = 'dompetku' | 'wallet' | 'manual';
+export type MethodType = 'dompetku' | 'wallet';
 
 interface MethodSelectorProps {
   activeMethod: MethodType;
@@ -25,25 +26,21 @@ const Tab = ({ active, onClick, label, icon: Icon }: { active: boolean, onClick:
 );
 
 export const MethodSelector = ({ activeMethod, onChange }: MethodSelectorProps) => {
+  const { t } = useTranslation();
+
   return (
     <div className="flex space-x-2 bg-slate-900/50 p-1.5 rounded-2xl border border-pk-border backdrop-blur-sm">
       <Tab 
         active={activeMethod === 'dompetku'} 
         onClick={() => onChange('dompetku')}
-        label="DompetKu"
+        label={t('pay_page.methods.dompetku', 'QR')}
         icon={Smartphone}
       />
       <Tab 
         active={activeMethod === 'wallet'} 
         onClick={() => onChange('wallet')}
-        label="Wallet"
+        label={t('pay_page.methods.wallet', 'Wallet')}
         icon={Wallet}
-      />
-      <Tab 
-        active={activeMethod === 'manual'} 
-        onClick={() => onChange('manual')}
-        label="Manual"
-        icon={QrCode}
       />
     </div>
   );

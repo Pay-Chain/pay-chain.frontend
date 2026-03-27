@@ -67,12 +67,14 @@ async function proxyRequest(
       console.log(`[Proxy] Forwarding API Key headers for ${targetPath}`);
     }
 
-    // Fallback for public app payment flow:
-    // if user is not logged in and no API key headers are provided,
-    // sign /v1/payment-app using admin API credentials from env.
     const hasForwardedApiHeaders = headers.has('X-Api-Key') && headers.has('X-Timestamp') && headers.has('X-Signature');
-    const isPaymentAppEndpoint = targetPath === '/api/v1/payment-app';
-    if (!sessionId && !hasForwardedApiHeaders && isPaymentAppEndpoint && ADMIN_API_KEY && ADMIN_SECRET_KEY) {
+    const isPublicAppEndpoint = targetPath.startsWith('/api/v1/payment-app') || 
+      targetPath.includes('/privacy-status') || 
+      targetPath.includes('/privacy/') || 
+      targetPath === '/api/v1/chains' || 
+      targetPath.startsWith('/api/v1/tokens');
+
+    if (!sessionId && !hasForwardedApiHeaders && isPublicAppEndpoint && ADMIN_API_KEY && ADMIN_SECRET_KEY) {
       const timestamp = Math.floor(Date.now() / 1000).toString();
       const pathForSigning = searchParams ? `${targetPath}?${searchParams}` : targetPath;
       const bodyHash = createHash('sha256').update(body).digest('hex');
@@ -148,7 +150,7 @@ async function proxyRequest(
 
     // Standard Response Handling
     if (
-      isPaymentAppEndpoint &&
+      isPublicAppEndpoint &&
       usedAdminFallback &&
       response.status === 401 &&
       typeof data?.error === 'string' &&

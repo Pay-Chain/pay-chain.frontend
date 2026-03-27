@@ -113,10 +113,17 @@ export class HttpClient {
       }
 
       const responseText = await response.text();
+      const contentType = response.headers.get('content-type');
+      const isJson = contentType?.toLowerCase().includes('application/json');
+      
       let data: any;
 
       try {
-        data = responseText ? JSON.parse(responseText) : {};
+        if (isJson && responseText) {
+          data = JSON.parse(responseText);
+        } else {
+          data = responseText ? { message: responseText } : {};
+        }
       } catch (parseError) {
         if (!response.ok) {
           return { error: responseText || `Request failed with status ${response.status}` };
@@ -126,10 +133,10 @@ export class HttpClient {
       }
 
       if (!response.ok) {
-        return { error: data.error || data.message || `Request failed with status ${response.status}` };
+        return { error: (data.error || data.message || `Request failed with status ${response.status}`) as string };
       }
 
-      return { data };
+      return { data: isJson ? data : (data.message || data) };
     } catch (error) {
       console.error('HTTP Client Error:', error);
       return { error: 'Network error' };

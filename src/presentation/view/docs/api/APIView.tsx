@@ -28,7 +28,7 @@ export function APIView() {
   const [openId, setOpenId] = useState<string | null>(endpoints[0]?.items[0]?.id ?? null);
   const [apiKey, setApiKey] = useState('');
   const [secretKey, setSecretKey] = useState('');
-  const [pathValue, setPathValue] = useState('/api/v1/partner/payment-sessions/replace-with-session-id');
+  const [pathValue, setPathValue] = useState('/api/v1/partner/payment-sessions/0195f1d4-6d3a-7f5f-b8e9-9b4c04d5a111');
   const [bodyById, setBodyById] = useState<Record<string, string>>({});
   const [testingId, setTestingId] = useState<string | null>(null);
   const [resultById, setResultById] = useState<Record<string, string>>({});
@@ -48,7 +48,15 @@ export function APIView() {
     setRequestStateById((current) => ({ ...current, [endpoint.id]: 'idle' }));
     try {
       const isPathParam = endpoint.path.includes(':id');
-      const requestPath = isPathParam ? pathValue : endpoint.path;
+      const requestPath = isPathParam ? pathValue.trim() : endpoint.path;
+      if (isPathParam && (!requestPath || requestPath.includes(':id') || requestPath.includes('replace-with-session-id'))) {
+        setResultById((current) => ({
+          ...current,
+          [endpoint.id]: 'Path Override harus diisi dengan session id yang valid. Contoh: /api/v1/partner/payment-sessions/<uuid>',
+        }));
+        setRequestStateById((current) => ({ ...current, [endpoint.id]: 'error' }));
+        return;
+      }
       const requestUrl = resolveRequestUrl(requestPath);
       const body = normalizedBody[endpoint.id] || '';
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
@@ -124,7 +132,7 @@ export function APIView() {
         <div className="grid gap-4 lg:grid-cols-3">
           <Input label="Partner API Key" value={apiKey} onChange={(e) => setApiKey(e.target.value)} placeholder="pk_live_..." />
           <Input label="Partner Secret Key" type="password" value={secretKey} onChange={(e) => setSecretKey(e.target.value)} placeholder="sk_live_..." />
-          <Input label="Path Override for :id Routes" value={pathValue} onChange={(e) => setPathValue(e.target.value)} placeholder="/api/v1/partner/payment-sessions/replace-with-session-id" />
+          <Input label="Path Override for :id Routes" value={pathValue} onChange={(e) => setPathValue(e.target.value)} placeholder="/api/v1/partner/payment-sessions/<uuid>" />
         </div>
       </Card>
 

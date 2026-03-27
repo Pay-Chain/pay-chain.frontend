@@ -106,6 +106,10 @@ class PaymentRequestDataSource {
     return httpClient.get<PaymentRequestResponse>(API_ENDPOINTS.PAYMENT_REQUEST_BY_ID(id));
   }
 
+  async getCreatePaymentById(id: string): Promise<ApiResponse<PaymentRequestResponse>> {
+    return httpClient.get<PaymentRequestResponse>(API_ENDPOINTS.CREATE_PAYMENT_BY_ID(id));
+  }
+
   async list(page = 1, limit = 10) {
     return httpClient.get<PaymentRequestsResponse>(
       `${API_ENDPOINTS.PAYMENT_REQUESTS}?page=${page}&limit=${limit}`
@@ -114,6 +118,10 @@ class PaymentRequestDataSource {
 
   async getPublic(id: string): Promise<ApiResponse<PaymentRequestResponse>> {
     return httpClient.get<PaymentRequestResponse>(API_ENDPOINTS.PAY_PUBLIC(id));
+  }
+
+  async getResolvedPublic(id: string): Promise<ApiResponse<PaymentRequestResponse>> {
+    return httpClient.get<PaymentRequestResponse>(API_ENDPOINTS.PAYMENT_RESOLVE_PUBLIC(id));
   }
 }
 

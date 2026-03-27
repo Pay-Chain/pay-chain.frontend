@@ -4,10 +4,18 @@ import { ENV } from '@/core/config/env';
 
 const BACKEND_URL = ENV.BACKEND_URL;
 const INTERNAL_PROXY_SECRET = ENV.INTERNAL_PROXY_SECRET;
+const PUBLIC_PATH_PREFIXES = ['/pay', '/checkout'];
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  
+
+  const isPublicPath = PUBLIC_PATH_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
+  );
+  if (isPublicPath) {
+    return NextResponse.next();
+  }
+
   const sessionId = request.cookies.get('session_id')?.value;
 
   // 1. Check for session existence

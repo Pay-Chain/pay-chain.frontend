@@ -475,6 +475,27 @@ export interface Dictionary {
     loading: string;
     expired_error: string;
     network_error: string;
+    completed: string;
+    checkout_or_pay: string;
+    scan_to_pay: string;
+    scan_hint: string;
+    wallet_checkout_title: string;
+    wallet_step_1: string;
+    wallet_step_2: string;
+    destination_label: string;
+    network_label: string;
+    destination_contract_program: string;
+    transaction_interaction_data: string;
+    payment_confirmed: string;
+    security_notice: string;
+    order_confirmed: string;
+    order_expired: string;
+    order_pending: string;
+    methods: {
+      dompetku: string;
+      wallet: string;
+      manual: string;
+    };
     pay_with: string;
     expires_in: string;
     expired: string;
