@@ -30,8 +30,9 @@ jobs:
           HOST_PORT="${HOST_PORT:-3000}"
           CONTAINER_PORT="${CONTAINER_PORT:-3000}"
 
-          ssh "${{ secrets.LOGIN_VPS }}" <<EOF
+          ssh "${{ secrets.LOGIN_VPS }}" "REMOTE_APP_DIR='${REMOTE_APP_DIR}' CONTAINER_NAME='${CONTAINER_NAME}' HOST_PORT='${HOST_PORT}' CONTAINER_PORT='${CONTAINER_PORT}' IMAGE_NAME='${IMAGE_NAME}' bash -se" <<'EOF'
             set -e
+            REMOTE_APP_DIR="${REMOTE_APP_DIR/#\~/$HOME}"
             cd "$REMOTE_APP_DIR"
 
             git fetch origin main
