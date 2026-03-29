@@ -73,7 +73,6 @@ export interface Dictionary {
   nav: {
     more: string;
     merchant: string;
-    paymentRequests: string;
   };
   payments: {
     title: string;
@@ -98,6 +97,7 @@ export interface Dictionary {
     token_address: string;
     error_label: string;
     form_error_label: string;
+    copied: string;
     connect_wallet_continue_notice: string;
     connect_wallet_notice: string;
     confirm: string;
@@ -233,21 +233,6 @@ export interface Dictionary {
       password_min_register: string;
       password_mismatch: string;
     };
-  };
-  payment_requests: {
-    title: string;
-    create: string;
-    badge: string;
-    subtitle: string;
-    loading: string;
-    no_requests_title: string;
-    no_requests_desc: string;
-    token: string;
-    native: string;
-    status: string;
-    no_description: string;
-    copy_link: string;
-    copied: string;
   };
   home: {
     loading_payments: string;
@@ -1385,6 +1370,8 @@ export interface Dictionary {
       mental_model_badge: string;
       mental_model_formula: string;
       mental_model_desc: string;
+      expires_in_title: string;
+      expires_in_desc: string;
       category_partner_flow: string;
       category_runtime_support: string;
       category_legacy: string;
@@ -1447,6 +1434,7 @@ export interface Dictionary {
       endpoint_resolve_desc: string;
       quote_intro: string;
       create_payment_intro: string;
+      expires_in_note: string;
       backend_example_title: string;
       backend_example_desc: string;
       topology_title: string;
