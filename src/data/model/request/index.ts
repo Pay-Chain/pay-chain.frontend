@@ -11,6 +11,9 @@ export interface RegisterRequest {
   walletAddress?: string;
   walletChainId?: string;
   walletSignature?: string;
+  isMerchant?: boolean;
+  businessName?: string;
+  merchantType?: string;
 }
 
 export interface RefreshTokenRequest {
@@ -37,13 +40,17 @@ export interface CreatePaymentRequest {
   decimals: number;
 }
 
-// Payment request requests
-export interface CreatePaymentRequestRequest {
-  chainId: string;
-  tokenAddress: string;
-  amount: string;
-  decimals: number;
-  description?: string;
+export type CreatePaymentPricingType =
+  | 'invoice_currency'
+  | 'payment_token_fixed'
+  | 'payment_token_dynamic';
+
+export interface CreatePartnerCreatePaymentRequest {
+  chain_id: string;
+  selected_token: string;
+  pricing_type: CreatePaymentPricingType;
+  requested_amount: string;
+  expires_in?: string;
 }
 
 // Wallet requests
